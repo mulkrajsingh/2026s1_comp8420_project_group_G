@@ -1,9 +1,8 @@
-"""Hybrid retrieval rankers.
+"""Hybrid retrieval rankers for BM25, dense, and multi-signal fusion.
 
-Production path: :class:`HybridRRFRanker` — BM25 + SPECTER2 fused with weighted RRF.
-
-Evaluation baseline: :class:`HybridRanker` — legacy 6-signal weighted min-max ensemble
-(TF-IDF, BM25, embedding, section-aware, recency, category).
+HybridRRFRanker is the production path. It fuses BM25 and SPECTER2 with
+weighted reciprocal rank fusion. HybridRanker keeps a legacy six-signal ensemble
+for evaluation comparisons.
 """
 
 from __future__ import annotations

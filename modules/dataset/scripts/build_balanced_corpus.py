@@ -1,4 +1,9 @@
-"""Build a deterministic category- and time-balanced arXiv PaperRecord corpus."""
+"""Build a category- and time-balanced arXiv PaperRecord corpus.
+
+Streams a raw arXiv JSONL snapshot and reservoir-samples records into fixed
+quotas per target category and publication-era bucket. Output order and counts
+are deterministic for a given seed and input file.
+"""
 
 from __future__ import annotations
 
@@ -239,6 +244,7 @@ def build_balanced_corpus(
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Return the CLI argument parser for corpus construction."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--raw", required=True, type=Path)
     parser.add_argument("--out", required=True, type=Path)
@@ -249,6 +255,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
+    """Parse CLI arguments and write the balanced corpus plus optional report."""
     args = build_parser().parse_args()
     report = build_balanced_corpus(
         args.raw,

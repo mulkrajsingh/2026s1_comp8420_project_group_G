@@ -1,4 +1,8 @@
-"""Runtime backend for local Ollama generation."""
+"""Runtime backend for local Ollama generation.
+
+Selects token and reasoning budgets per task, compacts prompt inputs, and records
+latency and source-ID usage for each ``/api/generate`` call.
+"""
 
 from __future__ import annotations
 
@@ -79,6 +83,8 @@ def _ollama_keep_alive() -> str | int:
 
 @dataclass(frozen=True)
 class ModelVariant:
+    """Describes one deployable Ollama model tag used in comparisons."""
+
     name: str
     role: str
     quantization: str
@@ -90,6 +96,8 @@ class ModelVariant:
 
 @dataclass(frozen=True)
 class GenerationConfig:
+    """Sampling parameters passed through to Ollama ``options``."""
+
     temperature: float = 0.2
     max_new_tokens: int = DEFAULT_MAX_NEW_TOKENS
     top_p: float = 0.9
@@ -97,6 +105,8 @@ class GenerationConfig:
 
 @dataclass(frozen=True)
 class GenerationPolicy:
+    """Resolved thinking, context, timeout, and output budgets for one prompt."""
+
     thinking_enabled: bool
     context_window: int
     max_new_tokens: int
@@ -106,6 +116,8 @@ class GenerationPolicy:
 
 @dataclass(frozen=True)
 class GenerationResult:
+    """Normalized result from one Ollama generation call."""
+
     text: str
     backend: str
     model: str
@@ -143,10 +155,12 @@ MODEL_VARIANTS = [
 
 
 def source_ids_used(text: str) -> list[str]:
+    """Return sorted source IDs cited in generated text."""
     return sorted(output_source_ids(text))
 
 
 def build_runtime(ollama_host: str = DEFAULT_OLLAMA_HOST) -> "OllamaRuntime":
+    """Construct an Ollama runtime client for the given host URL."""
     return OllamaRuntime(ollama_host)
 
 
@@ -552,6 +566,7 @@ def _compact_input_for_prompt(prompt_input: Any, *, task: str) -> Any:
 
 
 def prompt_text_for_record(prompt_record: dict[str, Any], strategy: str) -> str:
+    """Serialize a prompt record into the text sent to Ollama."""
     prompt_key = "few_shot_prompt" if strategy == "few_shot" else "zero_shot_prompt"
     payload = {
         "task": prompt_record["task"],
@@ -689,6 +704,7 @@ class OllamaRuntime:
 
 
 def runtime_notes_markdown() -> str:
+    """Return a Markdown table of configured model variants for comparison runs."""
     rows = [
         "| Variant | Ollama tag | Role | Quantization | Adapter | Notes |",
         "| --- | --- | --- | --- | --- | --- |",

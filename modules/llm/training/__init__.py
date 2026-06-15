@@ -1,2 +1,2 @@
-"""Training and evaluation utilities for the Mulkraj workstream."""
+"""Training and evaluation utilities for the Mulkraj LLM workstream."""
 

@@ -1,4 +1,7 @@
-"""Evidence and citation-safety checks for generated LLM outputs."""
+"""Evidence and citation-safety checks for generated LLM outputs.
+
+Compares cited source IDs and known APA strings against a ``RagEvidencePack``.
+"""
 
 from __future__ import annotations
 
@@ -13,10 +16,12 @@ _SOURCE_TOKEN = re.compile(
 
 
 def evidence_source_ids(pack: dict[str, Any]) -> set[str]:
+    """Return source IDs available in an evidence pack."""
     return {str(snippet["source_id"]) for snippet in pack.get("evidence_snippets", [])}
 
 
 def output_source_ids(text: str) -> set[str]:
+    """Extract source IDs and arXiv-style identifiers from generated text."""
     source_ids = set(
         re.findall(
             r"(?<![A-Za-z0-9._:-])\d{4}\.\d{4,5}(?:v\d+)?(?![A-Za-z0-9._:-])",
@@ -32,6 +37,7 @@ def output_source_ids(text: str) -> set[str]:
 
 
 def citation_strings(pack: dict[str, Any]) -> set[str]:
+    """Return non-empty APA citation strings from recommendation metadata."""
     return {
         str(candidate.get("apa_citation", "")).strip()
         for candidate in pack.get("candidates", [])
@@ -40,6 +46,7 @@ def citation_strings(pack: dict[str, Any]) -> set[str]:
 
 
 def check_generation(text: str, pack: dict[str, Any]) -> dict[str, Any]:
+    """Audit source-ID usage and basic citation grounding for one output."""
     available = evidence_source_ids(pack)
     used = output_source_ids(text)
     unsupported = sorted(used.difference(available))

@@ -1,4 +1,8 @@
-"""Append schema-versioned local-LLM events to the active integration session."""
+"""Append schema-versioned LLM events to the active integration session log.
+
+Events are written only when ``COMP8420_SESSION_LOG`` is set. Prompts and full
+paper text are excluded unless verbose session logging is enabled.
+"""
 from __future__ import annotations
 
 import json

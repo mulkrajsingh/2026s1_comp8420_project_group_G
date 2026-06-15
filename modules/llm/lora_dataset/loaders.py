@@ -1,4 +1,4 @@
-"""Helpers to load Hugging Face datasets for the open-data notebook."""
+"""Load Hugging Face datasets used by the open-data hybrid builder."""
 
 from __future__ import annotations
 

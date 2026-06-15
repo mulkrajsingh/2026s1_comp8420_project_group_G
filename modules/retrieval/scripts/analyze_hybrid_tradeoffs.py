@@ -1,14 +1,7 @@
-"""Trade-off analysis for hybrid ranker weight tuning (follow-up to
-tune_hybrid_weights.py).
+"""Analyse v1 versus v2 trade-offs in hybrid weight tuning.
 
-The naive "best by v2 nDCG@5" combo (tfidf=0.05, bm25=0.10, embedding=0.00,
-section_aware=0.75) regresses P@5/R@5/MAP on v2 AND every headline metric on
-v1 vs. the current _DEFAULT_WEIGHTS -- a sign of overfitting to v2's
-section_aware-heavy pooling provenance rather than a genuine improvement.
-
-This script re-evaluates the same 1330-combo grid against BOTH v1 and v2 and
-looks for "balanced" candidates that improve v2 without regressing v1, to
-separate genuine signal from v2-specific circularity.
+Re-scores the weight grid on both gold standards to find combos that improve
+v2 without regressing v1 metrics.
 
 Usage:
     python modules/retrieval/scripts/analyze_hybrid_tradeoffs.py
@@ -44,6 +37,7 @@ RESULTS_DIR = RETRIEVAL_DIR / "results/retrieval"
 
 
 def main() -> None:
+    """Score weight combos on v1 and v2 gold and print balanced candidates."""
     data = np.load(SCORES_NPZ)
     meta = json.loads(META_PATH.read_text())
     paper_ids = np.array(meta["paper_ids"])

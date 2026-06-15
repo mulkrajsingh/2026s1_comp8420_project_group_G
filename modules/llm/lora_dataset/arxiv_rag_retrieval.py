@@ -17,6 +17,7 @@ TOKEN_RE = re.compile(r"[a-z0-9]+")
 
 
 def tokenize(text: str) -> list[str]:
+    """Lowercase alphanumeric tokenization used by the BM25 index."""
     return TOKEN_RE.findall((text or "").lower())
 
 
@@ -121,6 +122,7 @@ def build_rag_evidence_pack(
     top_k: int = 5,
     retrieval_mode: str = "offline",
 ) -> dict[str, Any]:
+    """Build a validated ``RagEvidencePack`` from a query and paper corpus."""
     ranked = rank_papers(query, papers)[:top_k]
     if not ranked:
         raise ValueError(f"No retrieval hits for query: {query!r}")

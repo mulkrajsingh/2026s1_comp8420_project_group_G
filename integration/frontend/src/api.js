@@ -1,4 +1,5 @@
-// Calls to the canonical integration API (proxied by Vite in development).
+// Thin fetch wrappers for the local FastAPI integration API.
+// Vite proxies /api to port 8000 in development; production serves same-origin.
 
 function buildHeaders(isForm, requestId) {
   const headers = {};

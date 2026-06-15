@@ -1,4 +1,8 @@
-"""Write a focused TF-IDF vs hybrid_rrf comparison summary from eval CSVs."""
+"""Write a TF-IDF versus hybrid_rrf comparison summary from evaluation CSVs.
+
+Reads on-disk retrieval comparison tables and emits a short markdown report
+highlighting precision and nDCG gaps between the lexical and production rankers.
+"""
 
 from __future__ import annotations
 
@@ -68,6 +72,7 @@ def write_summary(out_dir: Path) -> Path:
 
 
 def main() -> None:
+    """Parse CLI arguments and write the TF-IDF versus hybrid summary."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--out",

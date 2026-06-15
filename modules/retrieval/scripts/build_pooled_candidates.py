@@ -1,14 +1,7 @@
-"""Build pooled candidate sets for gold-standard improvement (Step 1 of 2).
+"""Build pooled candidate sets for gold-standard expansion.
 
-For each EVAL_QUERY, run all 5 retrievers (TF-IDF, BM25, SPECTER2 embedding,
-section-aware, hybrid ensemble), take the top-15 results from each, and union
-that with the original 5 hand-labelled seed IDs to form a deduped candidate
-pool per query. This removes the "TF-IDF defines its own gold set" bias by
-giving every retrieval style a chance to nominate candidates.
-
-Step 2 (build_gold_standard_v2.py) then uses citation links to decide which
-of these pooled candidates should be promoted to "relevant" alongside the
-original seeds.
+Runs five retrievers per evaluation query, unions top results with hand-labelled
+seeds, and writes deduplicated candidate pools for citation-graph judging.
 
 Output: modules/retrieval/data/processed/pooled_candidates.json
 
@@ -38,6 +31,7 @@ OUT_PATH = RETRIEVAL_DIR / "data/processed/pooled_candidates.json"
 
 
 def main() -> None:
+    """Build pooled candidate JSON from multi-retriever top-k unions."""
     papers = load_papers(CORPUS)
     print(f"Loaded {len(papers)} papers")
 

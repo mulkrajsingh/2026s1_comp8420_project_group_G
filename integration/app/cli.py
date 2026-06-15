@@ -1,4 +1,6 @@
-"""CLI entry point for the Use Case 3 system.
+"""CLI entry point for the Use Case 3 research assistant.
+
+Typical invocations::
 
     python -m app.cli analyze-pdf ../tests/papers/drq_v2/2107.09645v1.pdf
     python -m app.cli search-topic "retrieval augmented generation for science"
@@ -6,7 +8,7 @@
     python -m app.cli peer-review ../tests/papers/siga/SIGA_....pdf
     python -m app.cli chat --paper-json ../tests/papers/artifacts/drq_v2_parsed.json "what is the main idea?"
 
-Production commands use live module providers (analyze-paper, recommend-topic, synthesize).
+Production commands wire live module providers for parsing, retrieval, and synthesis.
 """
 from __future__ import annotations
 
@@ -15,7 +17,7 @@ from pathlib import Path
 
 try:
     import typer
-except ImportError:  # clear setup message (Stage 01 requirement)
+except ImportError:  # guide users when typer is not installed
     raise SystemExit(
         "Missing dependency 'typer'. Install with:\n"
         "    pip install -r requirements.txt  # from the repository root\n"
@@ -307,7 +309,7 @@ def session_inspect(
         )
 
 
-# Stage 02: attach every member-owned command to this same entry point.
+# Member-owned commands register on this same Typer app.
 from . import commands_members  # noqa: E402
 commands_members.register(app)
 

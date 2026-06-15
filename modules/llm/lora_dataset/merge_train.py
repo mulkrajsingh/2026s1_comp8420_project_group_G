@@ -47,6 +47,7 @@ def _sha256(path: Path) -> str:
 
 
 def merge_train(*, include_seeds: bool = True, shuffle_seed: int = SEED) -> dict[str, int]:
+    """Merge dataset shards, shuffle, write train JSONL, zip, and manifest."""
     merged: list[dict[str, Any]] = []
     inputs: list[str] = []
 

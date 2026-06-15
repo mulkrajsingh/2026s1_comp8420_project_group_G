@@ -1,8 +1,7 @@
-"""Generate a flowchart of the retrieval/RAG pipeline's activation workflow.
+"""Generate a flowchart of the retrieval and RAG pipeline.
 
-Shows the offline (build-time) indexing steps and the query-time
-(per-request trigger) steps that run inside `recommend-topic`
-(`HybridRanker.rank()` -> `recommend()` -> `build_rag_evidence_pack()`).
+Draws offline indexing steps and per-query ranking paths used by
+``recommend-topic``, including hybrid fusion and RagEvidencePack export.
 
 Usage:
     python modules/retrieval/scripts/generate_workflow_diagram.py
@@ -39,7 +38,8 @@ def arrow(ax, p1, p2, rad=0.0, color="#555555", lw=1.4, ls="-"):
     ))
 
 
-def main():
+def main() -> None:
+    """Render and save the retrieval pipeline workflow diagram."""
     fig, ax = plt.subplots(figsize=(8.5, 11))
     ax.set_xlim(0, 10)
     ax.set_ylim(0, 14.3)

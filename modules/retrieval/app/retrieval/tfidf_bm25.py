@@ -1,7 +1,7 @@
-"""TF-IDF and BM25 retrieval baselines.
+"""TF-IDF and BM25 lexical retrieval baselines.
 
-These serve as interpretable lexical baselines (Week 1 / Week 2 techniques)
-that SPECTER2 and the hybrid ranker are compared against.
+Both retrievers tokenize title-plus-abstract text with a shared sklearn analyzer
+so lexical scores are directly comparable in evaluation tables.
 """
 
 from __future__ import annotations

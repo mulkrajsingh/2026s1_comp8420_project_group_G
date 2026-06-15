@@ -1,4 +1,8 @@
-"""Command-line entry points for paper summarization and RAG synthesis."""
+"""Command-line entry points for paper summarization, RAG synthesis, and evaluation.
+
+Dispatches ``python -m app.cli`` subcommands that call the local Ollama runtime,
+write integration artifacts, and run fixed-prompt comparisons.
+"""
 
 from __future__ import annotations
 
@@ -675,7 +679,7 @@ def build_parser() -> argparse.ArgumentParser:
     """Build the public LLM command-line interface."""
     parser = argparse.ArgumentParser(
         prog="python -m app.cli",
-        description="Mulkraj LLM, prompt, adapter, and evaluation stage commands.",
+        description="Mulkraj LLM CLI for synthesis, evaluation, and adapter workflows.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 

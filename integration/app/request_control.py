@@ -1,4 +1,9 @@
-"""Track in-flight web requests and cooperative cancellation."""
+"""Track in-flight web requests and cooperative cancellation.
+
+The FastAPI layer assigns each long-running chat or PDF request an id. Clients
+can abort via ``POST /api/requests/{id}/cancel``; providers poll ``is_cancelled``
+and terminate subprocesses when the flag is set.
+"""
 
 from __future__ import annotations
 

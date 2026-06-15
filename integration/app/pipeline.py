@@ -1,4 +1,10 @@
-"""Pure orchestration for topic, PDF, and conversational analysis."""
+"""Orchestration for topic search, PDF analysis, and chat.
+
+Coordinates retrieval, synthesis, and peer review through a request-scoped
+``Providers`` container. Query understanding runs before expensive subprocess
+calls so chat can skip retrieval for greetings and route recommendation intents
+separately.
+"""
 
 from __future__ import annotations
 
@@ -220,6 +226,7 @@ def analyze_parsed(
     pdf_path: str,
     **options,
 ) -> AnalysisResult:
+    """Run the full analysis path for an already-parsed paper."""
     return _analyze(
         providers,
         parsed,
@@ -240,6 +247,7 @@ def analyze_pdf(
     pdf_path: str,
     **options,
 ) -> AnalysisResult:
+    """Parse a PDF with the live parser, then run ``analyze_parsed``."""
     if providers.source_labels.get("parser") != "live":
         raise RuntimeError(PDF_PARSER_UNAVAILABLE)
     parser = providers.require("parser")
@@ -248,6 +256,7 @@ def analyze_pdf(
 
 
 def search_topic(providers: Providers, query: str, **options) -> AnalysisResult:
+    """Retrieve related work for a text query and synthesize an ``AnalysisResult``."""
     log(
         "topic search",
         f"source={providers.source('paper_source')} q={query!r}",
@@ -269,6 +278,7 @@ def recommend_for_parsed(
     parsed: ParsedPaper,
     retrieval_mode: str = "offline",
 ) -> Recommendation:
+    """Recommend related papers using the parsed paper title as the query."""
     recommender = providers.require("recommender")
     candidates = []
     if providers.source("recommender") != "live":
@@ -285,6 +295,7 @@ def peer_review(
     pdf_path: str,
     model_mode: str = "base",
 ) -> str:
+    """Parse a PDF and return synthesizer peer-review feedback."""
     if providers.source_labels.get("parser") != "live":
         raise RuntimeError(PDF_PARSER_UNAVAILABLE)
     parser = providers.require("parser")
@@ -303,6 +314,7 @@ def chat(
     retrieval_mode: str = "offline",
     query_analysis=None,
 ) -> str:
+    """Return only the answer string from ``chat_response``."""
     return chat_response(
         providers,
         question,
@@ -319,6 +331,7 @@ def chat_response(
     retrieval_mode: str = "offline",
     query_analysis=None,
 ) -> dict:
+    """Route one chat turn and return a structured response payload."""
     synthesizer = providers.require("synthesizer")
 
     if parsed is not None:

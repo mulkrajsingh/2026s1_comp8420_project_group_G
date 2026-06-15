@@ -1,11 +1,8 @@
-"""Section-aware abstract representation retrieval.
+"""Section-aware abstract retrieval with role-specific embeddings.
 
-Inspired by Xu et al. (2025) "Research Paper Recommender System by Considering
-Users' Information Seeking Behaviors." We classify abstract sentences into
-background / method / results roles and build separate embeddings for each role.
-
-Combined similarity score (configurable weights):
-  whole_abstract * 0.4 + method * 0.3 + results * 0.2 + background * 0.1
+Classifies abstract sentences into background, method, and results roles, then
+scores papers with a weighted blend of whole-abstract and role-specific vectors.
+Based on Xu et al. (2025) section-aware recommender ideas.
 """
 
 from __future__ import annotations
@@ -14,7 +11,7 @@ import re
 
 import numpy as np
 
-# Rule-based cue lists for sentence role classification (Week 1 rule-based technique)
+# Rule-based cue lists for sentence role classification.
 _METHOD_CUES = [
     "we propose", "we present", "our method", "we introduce", "we develop",
     "our approach", "this paper presents", "we describe", "in this paper, we",

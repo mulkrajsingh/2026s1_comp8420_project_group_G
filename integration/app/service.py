@@ -1,4 +1,9 @@
-"""Production service layer for CLI and FastAPI requests."""
+"""Production service layer shared by the CLI and FastAPI.
+
+Constructs request-scoped providers, manages session logging, and persists
+analysis artifacts under ``integration/outputs/``. Each public entry point
+mirrors one user-facing command (analyze PDF, topic search, chat, peer review).
+"""
 
 from __future__ import annotations
 
@@ -33,6 +38,14 @@ DEFAULT_CORPUS = (
 DEFAULT_QUERY = "retrieval augmented generation for scientific literature"
 DEFAULT_RETRIEVAL_STRATEGY = "hybrid_rrf"
 VALID_RETRIEVAL_STRATEGIES = frozenset({"hybrid_rrf", "tfidf"})
+
+
+def _outputs_dir() -> Path:
+    return _integration_root() / "outputs"
+
+
+def _output_artifact(name: str) -> str:
+    return str(_outputs_dir() / name)
 
 
 def production_provider_sources() -> dict[str, str]:
@@ -113,7 +126,7 @@ def _resolve_corpus(corpus: str | None) -> Path:
 def _parser_provider(session: SessionLogger) -> SubprocessPdfParser:
     return SubprocessPdfParser(
         session=session,
-        integration_outputs=_integration_root() / "outputs",
+        integration_outputs=_outputs_dir(),
     )
 
 
@@ -133,7 +146,7 @@ def _synthesizer_provider(
         query_analysis=query_analysis,
         prompt_strategy=prompt_strategy,
         session=session,
-        integration_outputs=_integration_root() / "outputs",
+        integration_outputs=_outputs_dir(),
     )
 
 
@@ -166,7 +179,7 @@ def _retrieval_providers(
             retrieval_strategy=retrieval_strategy,
             top_k=top_k,
             session=session,
-            integration_outputs=_integration_root() / "outputs",
+            integration_outputs=_outputs_dir(),
         ),
         "live",
     )
@@ -316,34 +329,22 @@ def chat_topic(
                 prompt_strategy=prompt_strategy,
             )
             artifacts = [
-                str(_integration_root() / "outputs" / "recommendations.json"),
-                str(_integration_root() / "outputs" / "rag_evidence_pack.json"),
+                _output_artifact("recommendations.json"),
+                _output_artifact("rag_evidence_pack.json"),
             ]
             if is_recommendation:
                 artifacts.extend(
                     [
-                        str(
-                            _integration_root()
-                            / "outputs"
-                            / "paper_recommendation_cards.json"
-                        ),
-                        str(
-                            _integration_root()
-                            / "outputs"
-                            / "paper_recommendation_generation.json"
-                        ),
+                        _output_artifact("paper_recommendation_cards.json"),
+                        _output_artifact("paper_recommendation_generation.json"),
                     ]
                 )
             else:
                 artifacts.extend(
                     [
-                        str(_integration_root() / "outputs" / "llm_analysis.md"),
-                        str(
-                            _integration_root()
-                            / "outputs"
-                            / "analysis_result_from_llm.json"
-                        ),
-                        str(_integration_root() / "outputs" / "llm_generation.json"),
+                        _output_artifact("llm_analysis.md"),
+                        _output_artifact("analysis_result_from_llm.json"),
+                        _output_artifact("llm_generation.json"),
                     ]
                 )
         else:
@@ -359,12 +360,8 @@ def chat_topic(
                 "live",
             )
             artifacts = [
-                str(_integration_root() / "outputs" / "llm_chat_answer.md"),
-                str(
-                    _integration_root()
-                    / "outputs"
-                    / "llm_chat_answer_generation.json"
-                ),
+                _output_artifact("llm_chat_answer.md"),
+                _output_artifact("llm_chat_answer_generation.json"),
             ]
 
         response = pipeline.chat_response(
@@ -447,11 +444,11 @@ def _pdf_providers(
 def _log_analysis_output(session: SessionLogger, result) -> None:
     session.log_outputs_recorded(
         artifact_paths=[
-            str(_integration_root() / "outputs" / "analysis_result.json"),
-            str(_integration_root() / "outputs" / "demo_report.md"),
-            str(_integration_root() / "outputs" / "demo_trace.json"),
-            str(_integration_root() / "outputs" / "basic_nlp.json"),
-            str(_integration_root() / "outputs" / "structural_review.json"),
+            _output_artifact("analysis_result.json"),
+            _output_artifact("demo_report.md"),
+            _output_artifact("demo_trace.json"),
+            _output_artifact("basic_nlp.json"),
+            _output_artifact("structural_review.json"),
         ],
         recommended_count=len(result.recommended_papers or []),
         citation_count=len(result.apa_citations or []),
@@ -581,6 +578,7 @@ def run_peer_review_pdf(
     model_mode: str = "base",
     prompt_strategy: str = "few_shot",
 ) -> dict:
+    """Parse a PDF and return peer-review feedback plus session metadata."""
     session = SessionLogger.create(root=_integration_root())
     set_active(session)
     try:
@@ -648,6 +646,7 @@ def run_pdf_chat(
     session_id: str | None = None,
     prompt_strategy: str = "zero_shot",
 ) -> str:
+    """Answer a question grounded in a previously parsed paper JSON file."""
     with open(paper_json, encoding="utf-8") as handle:
         parsed = ParsedPaper.from_dict(json.load(handle))
     session, persistent = _request_session(session_id=session_id)
@@ -775,9 +774,7 @@ def run_topic(
         session.log_meta(
             "run_complete",
             {
-                "analysis_result": str(
-                    _integration_root() / "outputs" / "analysis_result.json"
-                ),
+                "analysis_result": _output_artifact("analysis_result.json"),
                 "provider_sources": providers.sources(),
             },
         )

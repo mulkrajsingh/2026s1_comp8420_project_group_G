@@ -1,7 +1,7 @@
-"""Stages 08 & 09 — video demo script + submission packaging checklist.
+"""Generators for submission helper documents under ``outputs/``.
 
-Both are documents (no heavy code). Generated so they live in the repo and stay
-consistent with the rest of the workstream.
+These modules write markdown checklists and demo scripts that stay in the
+repository alongside generated analysis artifacts.
 """
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from .io_paths import write_text
 
 
 def write_video_script() -> str:
-    """Stage 08 artifact: outputs/video_demo_script.md (5-minute plan)."""
+    """Write ``outputs/video_demo_script.md`` with a five-minute demo plan."""
     md = """# Video demo script (max 5 minutes)
 
 Cached/offline run so nothing fails on network or model latency. All five members speak.
@@ -40,7 +40,7 @@ cached `outputs/analysis_result.json`.
 
 
 def write_packaging_checklist() -> str:
-    """Stage 09 artifact: outputs/submission_packaging_checklist.md."""
+    """Write ``outputs/submission_packaging_checklist.md`` for final packaging."""
     md = """# Submission packaging checklist
 
 ## Required ZIP structure (wrong structure = penalty)

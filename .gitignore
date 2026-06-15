@@ -10,7 +10,6 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
-.ruff_cache/
 .mypy_cache/
 .coverage
 htmlcov/
@@ -36,6 +35,8 @@ modules/retrieval/data/processed/retrieval_index/
 modules/llm/models/ollama/
 modules/llm/models/adapters/
 modules/llm/models/merged/
+modules/llm/results/lora_dataset_eda/.cache
+modules/llm/results/lora_dataset_eda/.matplotlib
 
 # Runtime session outputs
 integration/data/processed/

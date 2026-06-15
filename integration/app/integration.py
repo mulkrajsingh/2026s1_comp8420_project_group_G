@@ -1,4 +1,4 @@
-"""Report the availability of canonical workstream artifacts."""
+"""Report whether required member-module entry points are present on disk."""
 
 from pathlib import Path
 

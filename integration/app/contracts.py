@@ -1,14 +1,10 @@
-"""Shared integration contracts (Stage 01).
+"""Shared dataclasses exchanged between integration modules.
 
-These are the five objects passed between modules per the integration contract:
-    PaperRecord     <- dataset module   (arXiv-derived records)
-    ParsedPaper     <- PDF-NLP module   (structured PDF parser output)
-    RagEvidencePack <- retrieval module (retrieved grounding snippets)
-    Recommendation  <- retrieval module (recommended related papers)
-    AnalysisResult  -> returned  (the integrated result the CLI/API/UI render)
-
-Canonical ParsedPaper shape matches `team_plans/06_integration_contract.md` and
-`modules/llm/app/schemas.py::validate_parsed_paper`.
+The five contract types are ``PaperRecord`` (dataset), ``ParsedPaper`` (PDF-NLP),
+``RagEvidencePack`` and ``Recommendation`` (retrieval), and ``AnalysisResult``
+(the integrated output rendered by the CLI, API, and web UI). The canonical
+contract definitions live in this module; ``ParsedPaper`` validation is also
+implemented in ``modules/llm/app/schemas.py::validate_parsed_paper``.
 """
 from __future__ import annotations
 
@@ -64,6 +60,8 @@ def _empty_metadata(paper_id: str = "") -> dict[str, Any]:
 # --- Dataset module -------------------------------------------------------
 @dataclass
 class PaperRecord:
+    """One arXiv-derived paper record from the dataset module."""
+
     id: str
     title: str
     abstract: str
@@ -82,7 +80,7 @@ class PaperRecord:
 # --- PDF-NLP module -------------------------------------------------------
 @dataclass
 class ParsedPaper:
-    """Canonical ParsedPaper plus optional deterministic PDF-NLP analysis."""
+    """Standard ParsedPaper shape plus optional deterministic PDF-NLP analysis."""
 
     metadata: dict[str, Any] = field(default_factory=_empty_metadata)
     sections: dict[str, str] = field(default_factory=_empty_sections)
@@ -159,6 +157,8 @@ class ParsedPaper:
 # --- Retrieval module -----------------------------------------------------
 @dataclass
 class RagEvidencePack:
+    """Retrieved snippets that ground synthesis for a query."""
+
     query: str
     snippets: list[dict[str, Any]] = field(default_factory=list)
     retrieval_mode: str = "offline"
@@ -173,6 +173,8 @@ class RagEvidencePack:
 
 @dataclass
 class Recommendation:
+    """Ranked related papers for a query or parsed title."""
+
     query: str
     items: list[dict[str, Any]] = field(default_factory=list)
 
@@ -201,7 +203,7 @@ class AnalysisResult:
     evidence: list[dict[str, Any]] = field(default_factory=list)
     peer_review: str | None = None
     paper_analysis: dict[str, Any] = field(default_factory=dict)
-    # transparency / config flags (Stage 03 privacy, retrieval & model toggles)
+    # transparency flags: privacy disclosure, retrieval mode, model toggles
     flags: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self):

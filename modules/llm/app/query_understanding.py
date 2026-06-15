@@ -1,4 +1,10 @@
-"""Semantic user-query analysis with a transformer fallback."""
+"""Classify user queries before retrieval and synthesis run.
+
+Regex patterns handle paper recommendations and casual greetings first.
+Other queries go through MiniLM cosine similarity over label prototypes.
+Fields below the confidence cutoff are reranked with a small TinyBERT model.
+The result is a QueryAnalysis record used by the integration layer and CLI.
+"""
 
 from __future__ import annotations
 
@@ -61,14 +67,19 @@ _DIRECT_CHAT_PATTERNS = (
 )
 
 
+def _normalize_query(query: str) -> str:
+    """Collapse whitespace and normalise curly apostrophes in raw user text."""
+    return re.sub(r"\s+", " ", query.strip().replace("\u2019", "'"))
+
+
 def _normalize_topic(topic: str) -> str:
+    """Trim trailing punctuation from a topic span matched by regex."""
     cleaned = topic.strip().rstrip("?.!")
     return re.sub(r"\s+", " ", cleaned)
 
 
-def extract_recommendation_topic(query: str) -> str | None:
-    """Extract the retrieval topic from a high-confidence recommendation request."""
-    normalized = re.sub(r"\s+", " ", query.strip())
+def _extract_recommendation_topic_from_normalized(normalized: str) -> str | None:
+    """Match recommendation phrasing against text that is already normalized."""
     if not normalized:
         return None
     for pattern in _PAPER_RECOMMENDATION_PATTERNS:
@@ -81,16 +92,21 @@ def extract_recommendation_topic(query: str) -> str | None:
     return None
 
 
-def is_paper_recommendation_request(query: str) -> bool:
-    return extract_recommendation_topic(query) is not None
+def extract_recommendation_topic(query: str) -> str | None:
+    """Return the retrieval topic when the query asks for paper suggestions."""
+    return _extract_recommendation_topic_from_normalized(_normalize_query(query))
 
 
-def is_direct_chit_chat_request(query: str) -> bool:
-    """Recognize only unambiguous social or tool-capability messages."""
-    normalized = re.sub(r"\s+", " ", query.strip())
+def _match_chit_chat(normalized: str) -> bool:
+    """Return true when normalized text is only a greeting or capability question."""
     if not normalized:
         return False
     return any(pattern.fullmatch(normalized) for pattern in _DIRECT_CHAT_PATTERNS)
+
+
+def is_direct_chit_chat_request(query: str) -> bool:
+    """Recognize unambiguous social or tool-capability messages in raw user text."""
+    return _match_chit_chat(_normalize_query(query))
 
 
 _PROTOTYPES: dict[str, dict[str, tuple[str, ...]]] = {
@@ -184,7 +200,7 @@ _PROTOTYPES: dict[str, dict[str, tuple[str, ...]]] = {
         ),
         "detailed": (
             "Give a thorough step-by-step answer with substantial detail.",
-            "Provide a comprehensive explanation and show the full reasoning.",
+            "Give a long answer with full reasoning and plenty of detail.",
         ),
         "normal": (
             "What is retrieval augmented generation?",
@@ -224,6 +240,8 @@ class QueryModelError(RuntimeError):
 
 @dataclass(frozen=True)
 class QueryAnalysis:
+    """Structured routing fields inferred from a single user query."""
+
     intent: str
     emotion: str
     topic_expertise: str
@@ -287,10 +305,12 @@ class QueryAnalysis:
 
     @property
     def should_use_retrieval(self) -> bool:
+        """True when the query is not casual chat."""
         return self.intent != "chit_chat"
 
     @property
     def is_paper_recommendation(self) -> bool:
+        """True when the user asked for paper suggestions on a topic."""
         return self.intent == "paper_recommendation"
 
 
@@ -416,7 +436,7 @@ class TinyBertCrossEncoderClassifier:
 
 
 class SemanticQueryAnalyzer:
-    """Use embedding cosine similarity first, then TinyBERT below threshold."""
+    """Run regex shortcuts, then embedding similarity with optional reranking."""
 
     def __init__(
         self,
@@ -443,10 +463,6 @@ class SemanticQueryAnalyzer:
         )
         self.confidence_threshold = confidence_threshold
         self._prototype_vectors: dict[str, dict[str, np.ndarray]] | None = None
-
-    @staticmethod
-    def _normalize_query(query: str) -> str:
-        return re.sub(r"\s+", " ", query.strip().replace("\u2019", "'"))
 
     @staticmethod
     def _unit_rows(matrix: np.ndarray) -> np.ndarray:
@@ -509,14 +525,17 @@ class SemanticQueryAnalyzer:
         return predictions, confidences, all_scores
 
     def analyze(self, query: str, *, style_override: str = "auto") -> QueryAnalysis:
+        """Classify one query and apply an optional explicit style override."""
         if style_override not in VALID_STYLES:
             raise ValueError(f"Unsupported style: {style_override}")
 
-        normalized = self._normalize_query(query)
+        normalized = _normalize_query(query)
         if not normalized:
             raise ValueError("Query must not be empty")
 
-        recommendation_topic = extract_recommendation_topic(normalized)
+        recommendation_topic = _extract_recommendation_topic_from_normalized(
+            normalized
+        )
         if recommendation_topic:
             resolved_style = (
                 style_override if style_override != "auto" else "concise"
@@ -555,7 +574,7 @@ class SemanticQueryAnalyzer:
                 embedding_model=self.encoder.model_name,
             )
 
-        if is_direct_chit_chat_request(normalized):
+        if _match_chit_chat(normalized):
             resolved_style = (
                 style_override if style_override != "auto" else "concise"
             )
@@ -667,4 +686,5 @@ DEFAULT_QUERY_ANALYZER = SemanticQueryAnalyzer()
 
 
 def analyze_query(query: str, *, style_override: str = "auto") -> QueryAnalysis:
+    """Classify a query using the shared default analyzer instance."""
     return DEFAULT_QUERY_ANALYZER.analyze(query, style_override=style_override)

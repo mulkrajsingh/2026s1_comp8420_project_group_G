@@ -1,4 +1,5 @@
-// Render one tab-scoped analysis session backed by a shared JSONL event stream.
+// Research-assistant UI: one tab-scoped session, PDF or text input, cancellable requests.
+// Session ids persist in sessionStorage so a refresh restores the transcript.
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import './style.css';
@@ -164,6 +165,7 @@ function selectedModel() {
 }
 
 function syncEmbeddingControl() {
+  // TF-IDF ranking ignores dense embeddings; grey out the embedding picker.
   const tfidf = retrievalStrategyInput.value === 'tfidf';
   embeddingModelInput.disabled = tfidf;
   embeddingModelLabel.style.opacity = tfidf ? '0.55' : '1';
@@ -326,6 +328,7 @@ function recommendationHtml(response) {
 }
 
 function chatResponseHtml(response) {
+  // Backend sets kind; RAG turns may still carry recommended_papers without that flag.
   if (response.kind === 'paper_recommendations') return recommendationHtml(response);
   if ((response.recommended_papers || []).length || (response.apa_citations || []).length) {
     return ragMessageHtml(response);
@@ -531,6 +534,7 @@ const backendError =
   `selected backend, and model settings.</span>`;
 
 async function runRequest(callFactory, thinkingLabel, render) {
+  // Send button doubles as stop: abort fetch and POST /api/requests/{id}/cancel.
   if (isBusy) return;
   activeAbortController = new AbortController();
   activeRequestId = newRequestId();
@@ -653,6 +657,7 @@ newChatButton.onclick = async () => {
 };
 
 async function initializeSession() {
+  // Reuse the last active server session when the tab reloads mid-conversation.
   const stored = sessionStorage.getItem(SESSION_STORAGE_KEY);
   if (stored) {
     try {

@@ -1,4 +1,4 @@
-"""Resumable Hugging Face checkpoint helpers for Colab training."""
+"""Resumable Hugging Face checkpoint helpers for Colab LoRA training."""
 
 from __future__ import annotations
 
@@ -25,11 +25,13 @@ RNG_FILE_PATTERNS = ("rng_state.pth", "rng_state_*.pth")
 
 
 def checkpoint_step(path: Path) -> int | None:
+    """Return the optimizer step encoded in a ``checkpoint-<step>`` directory name."""
     match = CHECKPOINT_RE.fullmatch(path.name)
     return int(match.group(1)) if match else None
 
 
 def is_valid_checkpoint(path: Path) -> bool:
+    """Return whether a directory contains the files needed to resume training."""
     if not path.is_dir() or checkpoint_step(path) is None:
         return False
     if any(not (path / name).is_file() for name in REQUIRED_CHECKPOINT_FILES):
@@ -40,6 +42,7 @@ def is_valid_checkpoint(path: Path) -> bool:
 
 
 def valid_checkpoints(parent: Path) -> list[Path]:
+    """Return valid checkpoint directories under ``parent``, sorted by step."""
     if not parent.is_dir():
         return []
     checkpoints = [
@@ -50,6 +53,7 @@ def valid_checkpoints(parent: Path) -> list[Path]:
 
 
 def latest_valid_checkpoint(parent: Path) -> Path | None:
+    """Return the newest valid checkpoint under ``parent``, if any."""
     checkpoints = valid_checkpoints(parent)
     return checkpoints[-1] if checkpoints else None
 
@@ -68,6 +72,7 @@ def atomic_copytree(source: Path, destination: Path) -> Path:
 
 
 def prune_checkpoints(parent: Path, keep: int) -> list[Path]:
+    """Delete older valid checkpoints, retaining the newest ``keep`` directories."""
     if keep < 1:
         raise ValueError("keep must be at least 1")
     checkpoints = valid_checkpoints(parent)
@@ -131,6 +136,7 @@ def restore_latest_checkpoint(
     local_output_dir: Path,
     expected_metadata: dict[str, Any],
 ) -> Path | None:
+    """Restore the newest compatible Drive checkpoint into the local output directory."""
     latest = latest_valid_checkpoint(drive_run_dir)
     if latest is None:
         return None
@@ -149,6 +155,7 @@ def completion_matches(
     completion_path: Path,
     expected_metadata: dict[str, Any],
 ) -> bool:
+    """Return whether a completion marker matches the current run metadata."""
     if not completion_path.is_file():
         return False
     actual = load_json(completion_path)

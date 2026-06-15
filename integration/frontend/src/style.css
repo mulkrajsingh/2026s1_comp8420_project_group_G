@@ -1,4 +1,4 @@
-/* Canonical research-assistant layout and result sections. */
+/* Layout for the research-assistant sidebar, chat thread, and analysis panels. */
 :root {
   --bg: #ffffff;
   --sidebar: #f9f9f9;

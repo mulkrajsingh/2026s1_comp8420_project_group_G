@@ -1,4 +1,4 @@
-"""Structured, privacy-aware JSONL logging for runs and web conversations."""
+"""Structured JSONL logging for CLI runs and web chat sessions."""
 
 from __future__ import annotations
 

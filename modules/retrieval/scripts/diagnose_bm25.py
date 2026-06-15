@@ -1,6 +1,7 @@
-"""Diagnostic: why does TF-IDF beat BM25? Tests tokenization variants.
+"""Diagnose BM25 tokenization against the TF-IDF baseline.
 
-Run: /opt/miniconda3/bin/python modules/retrieval/scripts/diagnose_bm25.py
+Runs controlled tokenizer variants on the dev corpus and prints score deltas
+to explain when BM25 underperforms TF-IDF on keyword queries.
 """
 from __future__ import annotations
 
@@ -75,7 +76,8 @@ def punctuation_stats(papers):
           f"(e.g. {sorted(list(only_regex))[:8]})")
 
 
-def main():
+def main() -> None:
+    """Run BM25 tokenizer diagnostics against v1 and v2 gold queries."""
     papers = load_papers(CORPUS)
     print(f"Loaded {len(papers)} papers\n")
 

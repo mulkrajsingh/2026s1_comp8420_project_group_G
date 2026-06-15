@@ -1,7 +1,7 @@
-"""Shared contract validators copied from the team integration plan.
+"""Shared contract validators for integration JSON objects.
 
-The project plans define schemas in Markdown rather than code. These validators
-keep this workstream honest without adding a pydantic dependency.
+The project schemas are defined in Markdown rather than code. These validators
+enforce required keys without adding a pydantic dependency.
 """
 
 from __future__ import annotations
@@ -49,6 +49,7 @@ def _missing(record: dict[str, Any], required: set[str]) -> list[str]:
 
 
 def validate_paper_record(record: dict[str, Any]) -> None:
+    """Validate a ``PaperRecord`` object."""
     if not isinstance(record, dict):
         raise SchemaError("PaperRecord must be a JSON object")
     missing = _missing(record, PAPER_RECORD_KEYS)
@@ -61,6 +62,7 @@ def validate_paper_record(record: dict[str, Any]) -> None:
 
 
 def validate_parsed_paper(record: dict[str, Any]) -> None:
+    """Validate a ``ParsedPaper`` object."""
     if not isinstance(record, dict):
         raise SchemaError("ParsedPaper must be a JSON object")
     if "metadata" not in record or "sections" not in record:
@@ -85,6 +87,7 @@ def validate_parsed_paper(record: dict[str, Any]) -> None:
 
 
 def validate_recommendation(record: dict[str, Any]) -> None:
+    """Validate a ``Recommendation`` object."""
     missing = _missing(record, RECOMMENDATION_KEYS)
     if missing:
         raise SchemaError(f"Recommendation missing keys: {missing}")
@@ -94,6 +97,7 @@ def validate_recommendation(record: dict[str, Any]) -> None:
 
 
 def validate_rag_evidence_pack(record: dict[str, Any]) -> None:
+    """Validate a ``RagEvidencePack`` and recommendation evidence links."""
     missing = _missing(record, RAG_PACK_KEYS)
     if missing:
         raise SchemaError(f"RagEvidencePack missing keys: {missing}")
@@ -107,6 +111,7 @@ def validate_rag_evidence_pack(record: dict[str, Any]) -> None:
 
 
 def validate_analysis_result(record: dict[str, Any]) -> None:
+    """Validate an ``AnalysisResult`` object."""
     missing = _missing(record, ANALYSIS_RESULT_KEYS)
     if missing:
         raise SchemaError(f"AnalysisResult missing keys: {missing}")

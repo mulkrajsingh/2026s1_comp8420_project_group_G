@@ -1,4 +1,8 @@
-"""Same-model LLM self-verification for generated outputs."""
+"""Same-model LLM verification for generated outputs.
+
+Supports a second-pass verifier call and an inline same-call instruction path.
+Deterministic source-ID auditing supplements both modes.
+"""
 
 from __future__ import annotations
 
@@ -19,6 +23,7 @@ INLINE_VERIFICATION_INSTRUCTION = (
 
 
 def verification_enabled() -> bool:
+    """Return whether the second-pass verifier is enabled via environment."""
     value = os.getenv("COMP8420_LLM_VERIFY", "1")
     return value.strip().lower() not in {"0", "false", "no", "off"}
 

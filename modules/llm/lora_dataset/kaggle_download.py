@@ -1,4 +1,4 @@
-"""Download Cornell arXiv metadata from Kaggle."""
+"""Download Cornell arXiv metadata from Kaggle into ``data/raw``."""
 
 from __future__ import annotations
 

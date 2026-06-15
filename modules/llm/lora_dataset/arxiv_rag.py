@@ -1,4 +1,4 @@
-"""Build project arXiv RAG LoRA instructions from corpus + BM25 packs."""
+"""Build project arXiv RAG LoRA instructions from the sampled corpus and BM25 packs."""
 
 from __future__ import annotations
 
@@ -136,6 +136,7 @@ def build_rag_instructions(
     seed: int = SEED,
     save_packs: bool = True,
 ) -> int:
+    """Sample queries, build packs, and write project arXiv RAG instruction rows."""
     if not corpus_path.is_file():
         raise SystemExit(f"Corpus not found: {corpus_path}")
 

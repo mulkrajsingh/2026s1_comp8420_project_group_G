@@ -1,4 +1,8 @@
-"""Production providers for local PDF, retrieval, and LLM subprocesses."""
+"""Production providers that invoke member-module CLIs as subprocesses.
+
+Each provider runs a module CLI in its own working directory, validates required
+output files, and maps JSON results into the integration contract types.
+"""
 from __future__ import annotations
 
 import json
@@ -224,6 +228,7 @@ def write_corpus_slice(
 
 
 def raw_recommendations_to_contract(query: str, raw: list) -> Recommendation:
+    """Map retrieval-module recommendation JSON into a ``Recommendation``."""
     items = []
     for rec in raw:
         paper = rec.get("paper") or {}
@@ -250,6 +255,7 @@ def raw_recommendations_to_contract(query: str, raw: list) -> Recommendation:
 
 
 def evidence_pack_to_rag(pack: dict) -> RagEvidencePack:
+    """Convert a retrieval evidence pack dict into ``RagEvidencePack``."""
     snippets = []
     for s in pack.get("evidence_snippets") or []:
         snippets.append({
@@ -266,7 +272,7 @@ def evidence_pack_to_rag(pack: dict) -> RagEvidencePack:
 
 
 class SubprocessPdfParser:
-    """Run the canonical parse + production NLP enrichment CLI."""
+    """Run the PDF-NLP parse and enrichment CLI as a subprocess."""
 
     def __init__(
         self,

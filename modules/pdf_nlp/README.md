@@ -55,6 +55,7 @@ historical 769 MB checkpoint set are excluded.
 
 ## Commands
 
+Download test PDFs first — see [`tests/README.md`](../../tests/README.md).
 Run from `modules/pdf_nlp/`:
 
 ```bash

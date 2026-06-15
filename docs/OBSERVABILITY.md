@@ -1,4 +1,8 @@
-# Structured Logging And Demonstration Workflow
+# Structured Logging and Demonstration Workflow
+
+This document describes the session logging schema used by the integration
+layer for evaluation, debugging, and demonstration. Logs are designed to
+support reproducibility claims without storing full paper text or prompts.
 
 ## Session Layout
 
@@ -98,7 +102,7 @@ hidden reasoning, full prompts, paper bodies, and temporary upload paths.
 1. Use a real repository PDF or a real topic query.
 2. Run with `qwen3:8b` for model-quality evidence.
 3. Confirm the session has no failures and expected source labels.
-4. Copy only the redacted JSONL/summary and selected output into `results/`.
+4. Copy only the redacted JSONL/summary and selected output into `integration/results/traces/`.
 5. Show the compact UI status, then inspect the matching session timeline and cite
    the same run ID in the report.
 

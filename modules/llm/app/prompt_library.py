@@ -1,4 +1,8 @@
-"""Prompt templates and fixed evaluation prompts for the LLM module."""
+"""Prompt templates and fixed evaluation prompts for the LLM module.
+
+Defines guardrails, task instructions, few-shot examples, and the six-prompt
+evaluation set used by ``compare-prompts`` and ``compare-models``.
+"""
 
 from __future__ import annotations
 
@@ -172,6 +176,7 @@ FEW_SHOT_EXAMPLES: dict[str, list[dict[str, str]]] = {
 
 
 def build_prompt(task: str, style: str = "technical", few_shot: bool = False) -> str:
+    """Assemble guardrails, task text, and optional few-shot examples."""
     template = PROMPT_TEMPLATES[task]
     lines = [SYSTEM_GUARDRAILS, f"Style: {style}.", template]
     if few_shot and task in FEW_SHOT_EXAMPLES:
@@ -225,6 +230,7 @@ def paper_summary_prompt_record(
     user_query: str = "Summarize the supplied paper.",
     query_analysis: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    """Build a paper-only summary prompt from a ``ParsedPaper``."""
     intent = str((query_analysis or {}).get("intent") or "")
     summary_cues = (
         "summarize",
@@ -535,6 +541,7 @@ def _load_test_artifacts() -> tuple[dict[str, Any], dict[str, Any]]:
 
 
 def fixed_prompt_records() -> list[dict[str, Any]]:
+    """Return the six fixed evaluation prompts backed by real test artifacts."""
     parsed_paper, evidence_pack = _load_test_artifacts()
     tasks = [
         ("P01", "uploaded_paper_summary", "technical"),
@@ -592,6 +599,7 @@ def fixed_prompt_records() -> list[dict[str, Any]]:
 
 
 def react_tool_call_examples() -> list[dict[str, Any]]:
+    """Return static ReAct planner examples for evaluation documentation."""
     return [
         {
             "user_query": "Find recent papers extending retrieval augmented generation for scientific literature.",

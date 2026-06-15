@@ -1,4 +1,9 @@
-"""Evaluate a deterministic TF-IDF + logistic-regression paper classifier."""
+"""Evaluate TF-IDF baselines for arXiv category classification.
+
+Trains logistic regression and linear SVM on title-plus-abstract text, scores
+a stratified held-out split, and writes confusion matrices plus comparison
+metrics. Labels come from the first matching target category on each record.
+"""
 
 from __future__ import annotations
 
@@ -332,6 +337,7 @@ def evaluate_domain_classifier(
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Return the CLI argument parser for classifier evaluation."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--corpus", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
@@ -342,6 +348,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
+    """Parse CLI arguments and write evaluation artifacts."""
     args = build_parser().parse_args()
     result = evaluate_domain_classifier(
         args.corpus,

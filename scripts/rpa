@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Research Paper Assistant — repo-root entry to integration CLI.
+# Repo root launcher for the integration CLI. Resolves relative PDF and JSON paths
+# from the caller directory, then runs python -m app.cli from integration/.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CALLER_PWD="$PWD"

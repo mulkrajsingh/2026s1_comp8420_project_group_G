@@ -1,18 +1,7 @@
-"""Fetch reference/citation links for pooled candidates (Step 2 of 3).
+"""Fetch Semantic Scholar citation links for pooled gold candidates.
 
-Reads modules/retrieval/data/processed/pooled_candidates.json (built by
-build_pooled_candidates.py), collects the union of all candidate arXiv IDs
-across all queries, and fetches `references.externalIds.ArXiv` and
-`citations.externalIds.ArXiv` for each from the Semantic Scholar Graph API
-**batch** endpoint (up to 500 paper IDs per request, vs. 1/request for the
-single-paper endpoint — far less prone to per-request rate limiting). These
-links are used by build_gold_standard_v2.py to check whether a pooled
-candidate has a direct citation link to one of the original seed gold papers.
-
-Authenticates with S2_API_KEY, read at runtime from the canonical dataset
-module's local .env file (the raw key is never logged or printed). Responses are cached to
-modules/retrieval/data/cache/s2_citations/{arxiv_id}.json — a new,
-Bank-owned cache directory, separate from the dataset enrichment cache.
+Reads pooled candidate IDs, queries the S2 batch API for reference and citation
+arXiv IDs, and caches responses for citation-graph gold expansion.
 
 Usage:
     python modules/retrieval/scripts/fetch_citation_links.py
@@ -79,6 +68,7 @@ def fetch_batch(arxiv_ids: list[str], headers: dict, retries: int = 6) -> list[d
 
 
 def main() -> None:
+    """Fetch and cache S2 citation links for all pooled candidates."""
     if not POOLED_PATH.exists():
         sys.exit(f"Missing {POOLED_PATH} — run build_pooled_candidates.py first")
 

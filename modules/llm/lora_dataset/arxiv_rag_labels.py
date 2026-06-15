@@ -1,4 +1,7 @@
-"""Template assistant targets for project arXiv RAG (faithfulness-safe, no teacher model)."""
+"""Template assistant targets for project arXiv RAG training rows.
+
+Produces faithfulness-safe labels from retrieval packs without calling a teacher model.
+"""
 
 from __future__ import annotations
 
@@ -126,6 +129,7 @@ TASK_BUILDERS = {
 
 
 def build_assistant_label(pack: dict[str, Any], task: str) -> str | None:
+    """Return the template assistant target for a RAG task, if supported."""
     builder = TASK_BUILDERS.get(task)
     if builder is None:
         return None

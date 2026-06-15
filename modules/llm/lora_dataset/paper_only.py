@@ -1,4 +1,4 @@
-"""Build project-specific paper-only LoRA rows from cached open data."""
+"""Build project-specific paper-only LoRA rows from cached open academic data."""
 
 from __future__ import annotations
 
@@ -218,6 +218,7 @@ def build_paper_only_instructions(
     per_task: int = PAPER_ONLY_PER_TASK,
     seed: int = SEED,
 ) -> dict[str, int]:
+    """Write summary, QA, and peer-review instruction rows derived from hybrid data."""
     del seed  # Stable prompt-id ordering is deterministic without random sampling.
     rows = read_jsonl(input_path)
     examples = [

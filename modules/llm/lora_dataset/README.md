@@ -13,7 +13,7 @@ pip install kaggle datasets huggingface_hub
 ### Kaggle credentials (required for download)
 
 1. Create a token at [Kaggle settings](https://www.kaggle.com/settings) (API → Generate New Token).
-2. Copy `.env.example` to `.env` at the **repo root** (parent of this workstream).ii
+2. Copy `.env.example` to `.env` at the **repository root**.
 3. Add:
 
 ```env

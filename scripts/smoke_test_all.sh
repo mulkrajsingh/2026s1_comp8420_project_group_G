@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Post-restructure smoke test — integration + modules. Exits non-zero on first failure.
+# Quick compile and CLI smoke checks across integration and member modules.
+# Exits non-zero on the first failing step.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

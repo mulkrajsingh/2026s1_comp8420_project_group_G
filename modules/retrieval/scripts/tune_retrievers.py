@@ -1,7 +1,7 @@
 """Iterative tuning for SPECTER, section-aware, and hybrid retrievers.
 
-Tests query-format variants, section weights, hybrid weight grids, and RRF fusion
-against the frozen v2 gold standard. Does NOT rebuild the gold standard.
+Runs query-format variants, section weight grids, hybrid ensembles, and RRF
+fusion against the frozen v2 gold standard. Does not rebuild gold labels.
 
 Usage:
     /opt/miniconda3/bin/python modules/retrieval/scripts/tune_retrievers.py
@@ -139,7 +139,8 @@ def build_base_retrievers(papers):
     return tfidf, bm25, emb, section
 
 
-def main():
+def main() -> None:
+    """Grid-search retriever variants against the frozen v2 gold standard."""
     papers = load_papers(CORPUS)
     queries = load_queries_v2()
     print(f"Loaded {len(papers)} papers, {len(queries)} v2 queries\n")

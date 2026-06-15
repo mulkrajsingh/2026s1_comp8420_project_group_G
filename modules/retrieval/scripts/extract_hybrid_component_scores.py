@@ -1,24 +1,11 @@
-"""Extract per-query, per-paper normalised component scores for the Hybrid
-Ensemble Ranker (Step 1 of weight tuning).
+"""Cache normalised hybrid ranker component scores per query and paper.
 
-For each of the 5 EVAL_QUERIES, computes the same normalised component
-scores that HybridRanker.rank() would compute (tfidf, bm25, embedding,
-section_aware -- min-max normalised across all 5000 papers; recency and
-category -- already in [0,1]) and caches them to disk.
-
-This decouples the expensive part (fitting TF-IDF/BM25/SPECTER2/section-aware
-once, ~8-12 min) from the cheap part (grid-searching ensemble weights), so
-tune_hybrid_weights.py can be re-run instantly with different weight grids
-or gold standards without re-fitting anything.
+Fits TF-IDF, BM25, SPECTER2, and section-aware retrievers once, then stores
+min-max normalised score vectors so weight tuning scripts can rerun quickly.
 
 Output:
     modules/retrieval/data/processed/hybrid_component_scores.npz
-        arrays "<component>_<query_idx>" for component in
-        {tfidf, bm25, embedding, section_aware, recency, category}
-        and query_idx in 0..4, each shape (5000,)
     modules/retrieval/data/processed/hybrid_component_meta.json
-        {"paper_ids": [...5000 ids, same order as the arrays...],
-         "queries": [...5 query strings, in array-index order...]}
 
 Usage:
     python modules/retrieval/scripts/extract_hybrid_component_scores.py
@@ -51,6 +38,7 @@ RAW_KEYS = ("recency", "category")
 
 
 def main() -> None:
+    """Extract and save hybrid component score arrays."""
     papers = load_papers(CORPUS)
     print(f"Loaded {len(papers)} papers")
 

@@ -1,20 +1,8 @@
-"""Re-run retrieval evaluation against both the original (v1) and the
-pooling + citation-graph expanded (v2) gold standards, side by side.
+"""Compare retrieval metrics on v1 and v2 gold label sets.
 
-v1 gold standard: EVAL_QUERIES[i]["relevant_ids"]        (5 hand-picked seeds/query)
-v2 gold standard: eval_queries_v2.json[i]["relevant_ids_v2"]
-                   (v1 seeds + citation-validated additions from pooling)
-
-This does NOT change the retrievers, the ranking pipeline, or fixtures.py —
-it only re-scores the same 5 fitted retrievers against the expanded labels,
-so the v1 numbers reproduce results/retrieval/retrieval_comparison.csv exactly
-and the v2 numbers show the effect of the larger gold standard.
-
-Outputs (all under results/retrieval/):
-    retrieval_comparison_v2.csv          - mean metrics per retriever, v2 gold
-    detail_v2_<retriever>.csv            - per-query metrics, v2 gold
-    retrieval_comparison_v1_vs_v2.csv    - side-by-side v1/v2 means + deltas
-    gold_v1_vs_v2_chart.png              - grouped bar chart (P@5, nDCG@5, MAP)
+Scores the same fitted retrievers against hand-picked seed labels and the
+expanded pooling plus citation-graph labels. Writes side-by-side CSV tables and
+a grouped bar chart under results/retrieval/.
 
 Usage:
     python modules/retrieval/scripts/evaluate_gold_v2.py
@@ -49,6 +37,7 @@ V2_PATH = RETRIEVAL_DIR / "data/processed/eval_queries_v2.json"
 
 
 def main() -> None:
+    """Evaluate retrievers on v1 and v2 gold and write comparison tables."""
     papers = load_papers(CORPUS)
     print(f"Loaded {len(papers)} papers")
 

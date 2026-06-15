@@ -1,6 +1,6 @@
-# Prompt Library Documentation
+# Prompt Library
 
-## Input Contracts
+## Input contracts
 
 Paper-only summaries and RAG synthesis are intentionally separate:
 
@@ -10,15 +10,16 @@ Paper-only summaries and RAG synthesis are intentionally separate:
   source IDs and never fabricates recommendation metadata.
 
 All prompts prohibit invented authors, venues, DOIs, citations, scores, methods,
-results, or findings. Renderers add an AI disclosure and backend metadata.
+results, or findings. Renderers add a generation disclosure and backend metadata.
 
-## Query Adaptation
+## Query adaptation
 
 `QueryAnalyzer` produces intent, emotion, topic-specific expertise, verbosity,
 style, confidence, style source, and local cosine scores. `--style auto` is the
 default. MiniLM embeddings are compared with labeled examples using cosine
 similarity. Fields below `0.70` are reranked in one batched pass by a local
 TinyBERT semantic cross-encoder. Any explicit CLI style wins for the style field.
+
 The runtime converts the structured analysis into prompt instructions:
 
 - confused beginner requests receive supportive explanations
@@ -27,20 +28,20 @@ The runtime converts the structured analysis into prompt instructions:
 - concise requests remain short
 - conversational text is routed to direct local-LLM generation without retrieval
 
-## Prompt Families
+## Prompt families
 
-| Prompt | Purpose | Stage |
-| --- | --- | --- |
-| direct text chat | answer conversational text without claiming retrieved evidence | 11 |
-| uploaded paper summary | summarize only a supplied parsed PDF | 01, 02 |
-| topic search synthesis | synthesize retrieved papers for a topic query | 01, 02 |
-| research gap identification | list evidence-supported and assumed gaps separately | 01, 03 |
-| citation recommendation | recommend papers with APA strings from metadata only | 01, 03, 05 |
-| peer-review critique | produce strengths, weaknesses, missing evidence, improvements | 01, 03 |
-| beginner explanation | explain a paper plainly while keeping source IDs | 01 |
-| follow-up Q&A | answer from current evidence and state uncertainty | 02 |
+| Prompt | Purpose |
+| --- | --- |
+| direct text chat | Answer conversational text without claiming retrieved evidence |
+| uploaded paper summary | Summarize only a supplied parsed PDF |
+| topic search synthesis | Synthesize retrieved papers for a topic query |
+| research gap identification | List evidence-supported and assumed gaps separately |
+| citation recommendation | Recommend papers with APA strings from metadata only |
+| peer-review critique | Produce strengths, weaknesses, missing evidence, improvements |
+| beginner explanation | Explain a paper plainly while keeping source IDs |
+| follow-up Q&A | Answer from current evidence and state uncertainty |
 
-## Few-Shot Use
+## Few-shot use
 
 Few-shot examples are limited to tasks where formatting drift is common:
 
@@ -49,10 +50,9 @@ Few-shot examples are limited to tasks where formatting drift is common:
 - research gap identification
 
 The comparison command writes `results/prompt_comparison/few_shot_vs_zero_shot.csv`
-so the report can show whether few-shot prompting improved structure compliance and
-reduced format errors.
+for measured zero-shot versus few-shot comparison.
 
-## ReAct Tool Calls
+## ReAct tool calls
 
 The tool-call prompt asks the model to output JSON-like calls such as:
 
@@ -63,8 +63,10 @@ The tool-call prompt asks the model to output JSON-like calls such as:
 The backend executes these calls. The model never directly accesses the network or
 mutates files.
 
-## Self-Verification
+## Self-verification
 
 The verification pass checks that recommendation claims cite source IDs and that APA
 strings come from metadata. Unsupported claims are removed or described as assumptions.
-Paper-only summaries instead disclose that no external evidence or retrieval was used.
+Paper-only summaries disclose that no external evidence or retrieval was used.
+
+Implementation: `app/verification.py`, `app/faithfulness.py`.

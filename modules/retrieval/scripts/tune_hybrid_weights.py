@@ -1,23 +1,7 @@
-"""Grid-search the Hybrid Ensemble Ranker's component weights (Step 2 of
-weight tuning).
+"""Grid-search hybrid ensemble weights on cached component scores.
 
-Loads the per-query, per-paper normalised component scores cached by
-extract_hybrid_component_scores.py and grid-searches over
-(tfidf, bm25, embedding, section_aware) weights -- multiples of STEP that
-sum to TUNED_SUM=0.9 -- with recency=0.05 and category=0.05 held fixed
-(per user decision). Each combination is scored against the v2
-(pooled + citation-graph) gold standard, eval_queries_v2.json, with v1
-(app.fixtures.EVAL_QUERIES) reported for the best combo for context.
-
-This is purely arithmetic over cached arrays -- no retrievers are re-fit,
-so the full grid (1330 combinations at STEP=0.05) runs in seconds.
-
-Outputs (under results/retrieval/):
-    hybrid_weight_tuning_top50.csv   - top 50 combos by nDCG@5 (v2), all metrics
-    hybrid_weight_sensitivity.png    - per-component weight vs. mean nDCG@5 (v2)
-
-Does NOT modify app/retrieval/hybrid_ranker.py -- this script only reports
-candidate weights for the user to review.
+Loads precomputed score arrays and searches weight combinations against the v2
+gold standard while reporting v1 metrics for the best combos.
 
 Usage:
     python modules/retrieval/scripts/tune_hybrid_weights.py
@@ -95,6 +79,7 @@ def evaluate_weights(weights: dict, per_query: list[dict], paper_ids: np.ndarray
 
 
 def main() -> None:
+    """Run the hybrid weight grid search and write tuning artifacts."""
     if not SCORES_NPZ.exists():
         sys.exit(f"Missing {SCORES_NPZ} -- run extract_hybrid_component_scores.py first")
 

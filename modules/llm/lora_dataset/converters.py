@@ -1,4 +1,4 @@
-"""Convert Hugging Face and local exports to adapter instruction JSONL."""
+"""Convert Hugging Face and local exports into chat-format adapter instruction JSONL."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from lora_dataset.io import chat_record, truncate
 
 
 def sample_records(records: list[dict[str, Any]], limit: int, seed: int) -> list[dict[str, Any]]:
+    """Return up to ``limit`` records chosen with a deterministic shuffle."""
     if len(records) <= limit:
         return list(records)
     rng = random.Random(seed)
@@ -19,6 +20,7 @@ def sample_records(records: list[dict[str, Any]], limit: int, seed: int) -> list
 
 
 def shuffle_records(records: list[dict[str, Any]], seed: int) -> list[dict[str, Any]]:
+    """Return a shuffled copy of ``records``."""
     shuffled = list(records)
     random.Random(seed).shuffle(shuffled)
     return shuffled

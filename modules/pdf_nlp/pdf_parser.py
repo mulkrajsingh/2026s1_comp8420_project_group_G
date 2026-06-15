@@ -1,7 +1,8 @@
 """PDF text extraction and canonical ``ParsedPaper`` assembly.
 
-This module owns deterministic PDF parsing only. Higher-level POS, NER,
-keyphrase, summary, and structural analysis lives in ``paper_analysis.py``.
+Extracts page text, splits sections and references, and fills metadata fields
+from the first page. POS, NER, keyphrases, summaries, and structural checks
+are handled separately in ``paper_analysis.py``.
 """
 
 from __future__ import annotations
@@ -119,6 +120,7 @@ def extract_page_texts(pdf_path: Path) -> tuple[list[str], list[str]]:
 
 
 def join_page_text(page_texts: list[str]) -> str:
+    """Concatenate per-page strings with newline separators."""
     return "\n".join(page_texts)
 
 

@@ -1,87 +1,87 @@
 # COMP8420 Major Project — Research Paper Assistant (Use Case 3)
 
-A local-first research paper assistant that parses PDFs, enriches them with
-NLP analysis, retrieves related papers from a curated corpus, and synthesises
-answers with Ollama.
+This repository implements a local research paper assistant for COMP8420. It
+parses PDF uploads, enriches them with NLP features, retrieves related papers
+from a curated arXiv corpus, and answers questions with a local Ollama model.
 
-**Evidence index:** [`outputs/report_presentation_evidence_index.md`](outputs/report_presentation_evidence_index.md)
+Evidence paths and reproduction commands are documented in
+[`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md). The full documentation
+index is in [`docs/README.md`](docs/README.md).
 
-**Reproducibility map:** [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) — module-by-module
-evidence paths and reproduction commands.
+## How to run
 
-## Prerequisites
+You need Python 3.11 or newer, Node.js 18 or newer, pnpm, Ollama installed and
+running, and about 15 GB of free disk space for models and the base LLM. The
+optional raw arXiv snapshot requires additional space.
 
-- Python 3.11+
-- [Ollama](https://ollama.ai/download) installed and running
-- ~15 GB free disk space (models + base LLM; more if downloading optional raw corpus)
-
-## Setup
+Install dependencies:
 
 ```bash
-# 1. Install Python packages
 pip install -r requirements.txt
+```
 
-# 2. Download required assets from Google Drive (~1.4 GB total)
+Download runtime assets from Google Drive. Fill in the file IDs at the top of
+`setup_assets.py` before the first run. About 1.4 GB is required for the core
+bundles.
+
+```bash
 python setup_assets.py
+python setup_assets.py --check
+```
 
-# 3. Optional: raw arXiv snapshot + E2E test logs (~4.9 GB extra)
+Optional bundles include the raw arXiv snapshot and end-to-end test logs:
+
+```bash
 python setup_assets.py --optional
+```
 
-# 4. Pull the base LLM (~5 GB, one-time)
+Pull the base language model once (about 5 GB):
+
+```bash
 ollama pull qwen3:8b
+```
 
-# 5. Build the fine-tuned LoRA model for Ollama (optional — improves research answers)
+The fine-tuned LoRA adapter can be built from training data delivered by
+`setup_assets.py`:
+
+```bash
 python modules/llm/scripts/build_ollama_research_lora_model.py
+```
 
-# 6. Validate PDF-NLP runtime models
+Check that PDF-NLP models are present:
+
+```bash
 cd modules/pdf_nlp && python -m app.cli model-assets && cd ../..
 ```
 
-Fill in the Google Drive file IDs in `setup_assets.py` before running step 2.
-See `python setup_assets.py --check` to verify what is installed.
-
-### Google Drive bundles
-
-| Bundle | Size | Required |
-|---|---|---|
-| `pdf_nlp_models.zip` | ~1.2 GB | Yes |
-| `retrieval_index.zip` | ~16 MB | Yes |
-| `qwen3_gguf.zip` | ~29 MB | Yes |
-| `lora_training_data.zip` | ~31 MB | Yes |
-| `arxiv_raw_snapshot.zip` | ~4.9 GB | Optional (`--optional`) |
-| `e2e_test_logs.zip` | ~29 MB | Optional (`--optional`) |
-
-Eval results, notebooks, and test fixtures are already in the repo. Training
-inputs and runtime models are downloaded via `setup_assets.py`.
-
-## Run
+Install Node.js and pnpm before building the web UI. Vite 5 needs Node 18 or
+newer:
 
 ```bash
-# Web application (recommended)
-scripts/rpa web
-# → open http://127.0.0.1:8000
-
-# CLI — analyse a PDF
-scripts/rpa analyze-pdf tests/papers/drq_v2/2107.09645v1.pdf
-
-# CLI — topic search
-scripts/rpa run --query "transformer attention mechanisms"
+corepack enable
+corepack prepare pnpm@latest --activate
+cd integration/frontend
+pnpm install && pnpm run build
 ```
 
-See [`integration/README.md`](integration/README.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+Start the web app from the repository root and open http://127.0.0.1:8000 when
+the server is ready. The launcher builds the frontend automatically when
+`dist/` is missing or stale.
 
-The production PDF path uses the PDF-NLP parser, retrieval for related papers
-(unless `--no-related-papers` is supplied), and Ollama paper-aware synthesis.
+```bash
+scripts/rpa web
+```
 
-The web launcher installs/builds the Vite frontend when needed and serves the UI
-and `/api/*` from the same FastAPI process.
+CLI examples use the same entry point. Download test PDFs first (see
+[`tests/README.md`](tests/README.md)) or use any local research PDF:
 
-The active trained adapter is
-`modules/llm/models/releases/research_lora_adapter_20260609_114209.zip`.
-The canonical enriched corpus is
-`modules/dataset/data/processed/dev_5k_enriched.jsonl`.
+```bash
+scripts/rpa analyze-pdf tests/papers/drq_v2/2107.09645v1.pdf
+scripts/rpa run --query "transformer attention mechanisms"
+scripts/rpa search-topic "retrieval augmented generation"
+```
 
-## Run tests
+Run the test suite from the repository root:
 
 ```bash
 pytest modules/dataset/tests modules/pdf_nlp/tests \
@@ -89,21 +89,73 @@ pytest modules/dataset/tests modules/pdf_nlp/tests \
        integration/tests tests/
 ```
 
-## Rebuild the frontend (if needed)
+The enriched corpus used for retrieval is
+`modules/dataset/data/processed/dev_5k_enriched.jsonl`. The LoRA adapter archive
+is delivered via `setup_assets.py` to
+`modules/llm/models/releases/` (not present in a fresh clone until setup runs).
 
-```bash
-cd integration/frontend
-pnpm install && pnpm run build
-```
+Google Drive bundles include `pdf_nlp_models.zip` (~1.2 GB, required),
+`retrieval_index.zip` (~16 MB, required), `qwen3_gguf.zip` (~29 MB, required),
+`lora_training_data.zip` (~31 MB, required), `arxiv_raw_snapshot.zip`
+(~4.9 GB, optional), and `e2e_test_logs.zip` (~29 MB, optional). Evaluation
+tables, notebooks, and small fixtures are committed. Large runtime models and
+training inputs are downloaded via `setup_assets.py`.
 
-## Modules
+Web routing, session logging, and API details are in
+[`integration/README.md`](integration/README.md). System layout is in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-| Module | Path |
-| --- | --- |
-| Dataset | [`modules/dataset/`](modules/dataset/) |
-| PDF-NLP | [`modules/pdf_nlp/`](modules/pdf_nlp/) |
-| Retrieval | [`modules/retrieval/`](modules/retrieval/) |
-| LLM | [`modules/llm/`](modules/llm/) |
-| Integration | [`integration/`](integration/) |
+## What each part does
 
-[`docs/CONTRIBUTIONS.md`](docs/CONTRIBUTIONS.md) · [`docs/WORKSTREAM_PATH_MAP.md`](docs/WORKSTREAM_PATH_MAP.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+### Dataset (`modules/dataset/`)
+
+The dataset module builds the arXiv paper records that retrieval and training
+consume. Notebook `modules/dataset/01_data_preprocessing_2.ipynb` filters the
+Kaggle arXiv metadata dump into `PaperRecord` JSONL files. Notebook
+`modules/dataset/03_eda_1.ipynb` explores category balance, abstract length, and
+vocabulary. Script `modules/dataset/scripts/build_balanced_corpus.py` creates a
+balanced subset for production retrieval. Script
+`modules/dataset/scripts/evaluate_domain_classifier.py` trains a TF-IDF plus
+logistic regression baseline. The enriched file
+`modules/dataset/data/processed/dev_5k_enriched.jsonl` adds Semantic Scholar
+fields and is the default corpus path for retrieval.
+
+### PDF-NLP (`modules/pdf_nlp/`)
+
+The PDF-NLP module turns an uploaded file into a structured `ParsedPaper`.
+`modules/pdf_nlp/pdf_parser.py` extracts sections and metadata with
+deterministic rules. `modules/pdf_nlp/paper_analysis.py` adds spaCy POS tags,
+SciNER entities, KeyBERT keyphrases, and an extractive summary. The CLI under
+`modules/pdf_nlp/app/cli.py` supports parse, enrich, evaluate, and model
+asset checks. Runtime models are installed through `setup_assets.py`.
+
+### Retrieval (`modules/retrieval/`)
+
+The retrieval module ranks papers from the enriched corpus and builds evidence
+packs for the LLM. `modules/retrieval/app/retrieval/tfidf_bm25.py` implements
+sparse baselines. `embeddings.py` and `section_aware.py` add dense and
+section-aware options. `hybrid_ranker.py` combines sparse and dense scores with
+reciprocal rank fusion. `rag_pack.py` formats top passages for synthesis.
+Notebook `modules/retrieval/notebooks/03_rag_recommendation_evaluation.ipynb`
+holds the full retrieval evaluation workflow.
+
+### LLM (`modules/llm/`)
+
+The LLM module classifies queries, calls Ollama, and optionally uses a
+fine-tuned adapter. `modules/llm/app/query_understanding.py` routes chat, paper
+recommendations, and research questions. `runtime.py` and `ollama_transport.py`
+send generation requests to Ollama. `synthesis.py` and `react_loop.py` ground
+answers in retrieved evidence. `verification.py` and `faithfulness.py` check
+citations against source IDs. LoRA training is documented in
+[`modules/llm/docs/ADAPTER.md`](modules/llm/docs/ADAPTER.md).
+
+### Integration (`integration/`)
+
+The integration layer wires the modules into one CLI, HTTP API, and web UI.
+`integration/app/pipeline.py` routes PDF, topic, chat, and recommendation
+flows. `service.py` and `providers/live_providers.py` call PDF-NLP, retrieval,
+and LLM subprocesses. `session_log.py` writes structured JSONL session files.
+Notebook `integration/05_end_to_end_demo.ipynb` loads committed production
+artifacts without rerunning models.
+
+[`docs/CONTRIBUTIONS.md`](docs/CONTRIBUTIONS.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/README.md`](docs/README.md)

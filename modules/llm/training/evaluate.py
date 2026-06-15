@@ -1,6 +1,7 @@
-"""Run prompt/model comparison from the training namespace.
+"""Run prompt and model comparison from the training namespace.
 
-Examples:
+Examples::
+
     python training/evaluate.py
     python training/evaluate.py --models base=qwen3:8b,lora=qwen3-research-lora:latest
 """
@@ -25,6 +26,7 @@ from app.runtime import (  # noqa: E402
 
 
 def main() -> None:
+    """Run fixed-prompt comparisons for prompts and model variants."""
     parser = argparse.ArgumentParser(description="Evaluate Mulkraj prompt/model configurations.")
     parser.add_argument("--test-set", default="data/eval/fixed_prompts.jsonl")
     parser.add_argument("--prompt-out", default="results/prompt_comparison")

@@ -398,6 +398,7 @@ def _run_check_only(
 
 
 def main() -> int:
+    """Merge or convert the research LoRA adapter and register an Ollama model tag."""
     root = _workstream_root()
     parser = argparse.ArgumentParser(
         description="Deploy Qwen3 research LoRA to Ollama."

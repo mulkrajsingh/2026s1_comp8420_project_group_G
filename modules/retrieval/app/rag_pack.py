@@ -1,11 +1,15 @@
-"""Build and export RagEvidencePack for the LLM synthesis module."""
+"""Build RagEvidencePack JSON for the LLM synthesis module.
+
+Maps ranked recommendations to bounded abstract snippets, attaches prompt
+template strings for schema compatibility, and validates the export shape.
+"""
 
 from __future__ import annotations
 
 from .schemas import validate_rag_evidence_pack
 
-# Prompt templates are retained for schema compatibility; the LLM module owns
-# live zero/few-shot prompts in modules/llm/app/prompt_library.py.
+# Prompt templates are kept for schema compatibility. Live prompts live in
+# modules/llm/app/prompt_library.py.
 PROMPT_TEMPLATES = {
     "zero_shot": (
         "You are a research assistant. Using ONLY the evidence snippets below, "
@@ -56,10 +60,10 @@ def build_rag_evidence_pack(
     max_snippets: int = 10,
     prompt_strategy: str = "chain_of_thought",
 ) -> dict:
-    """Construct a validated RagEvidencePack from a ranked recommendation list.
+    """Build a validated RagEvidencePack from ranked recommendations.
 
-    Includes engineered prompt templates (zero-shot, few-shot, chain-of-thought)
-    so the LLM module can select the appropriate prompting strategy.
+    Truncates abstracts to ``SNIPPET_MAX_CHARS`` and renders zero-shot,
+    few-shot, and chain-of-thought prompt strings for downstream selection.
     """
     snippets = []
     for rec in recommendations[:max_snippets]:

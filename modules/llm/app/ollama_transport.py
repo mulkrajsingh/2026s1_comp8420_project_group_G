@@ -1,4 +1,4 @@
-"""HTTP transport for local Ollama generation."""
+"""HTTP transport for local Ollama ``/api/generate`` requests."""
 
 from __future__ import annotations
 

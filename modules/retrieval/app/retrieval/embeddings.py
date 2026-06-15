@@ -1,10 +1,7 @@
-"""Sentence-transformer embedding retrieval.
+"""Sentence-transformer dense retrieval for scientific papers.
 
-Preferred model: allenai/specter2_base (SOTA for scientific paper similarity).
-Fallback:        all-MiniLM-L6-v2   (fast general-purpose model).
-
-SPECTER2 is trained on scientific paper citation relationships and outperforms
-general-purpose embeddings on paper retrieval tasks (Cohan et al., 2020).
+Tries SPECTER2 first, then SPECTER v1, then MiniLM. Saved indexes are matched
+to a corpus file via SHA-256 metadata before reuse.
 """
 
 from __future__ import annotations
@@ -27,6 +24,7 @@ _CANDIDATE_MODELS = [
 
 
 def file_sha256(path: str | Path) -> str:
+    """Return the SHA-256 digest of a file on disk."""
     digest = hashlib.sha256()
     with Path(path).open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):

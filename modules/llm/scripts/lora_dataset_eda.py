@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Generate EDA artifacts for the LoRA training JSONL."""
+"""Generate exploratory data analysis artifacts for the LoRA training JSONL.
+
+Writes CSV summaries, plots, and a short Markdown readout under ``results/lora_dataset_eda``.
+"""
 
 from __future__ import annotations
 
@@ -290,14 +293,15 @@ Generated from `data/processed/final_dataset/research_lora_train.jsonl`.
 - Rows with explicit evidence-passage blocks: {stats["rows_with_evidence_passages"]:,} ({stats["rows_with_evidence_passages"] / total:.1%}).
 - Project-aligned rows: {project_aligned:,} (`project_arxiv_rag` plus `local_fixed_prompt`).
 
-## PPT Readout
+## Summary for reporting
 
-The dataset combines broad academic supervision with project-specific RAG behavior. This supports a careful claim that the adapter training data is intentionally mixed for research-assistant structure, evidence grounding, citation behavior, and scientific summarization. It does not by itself prove adapter quality; model-quality claims still require real training and evaluation logs.
+The dataset combines broad academic supervision with project-specific RAG behavior. That mix supports claims that adapter training data was intentionally chosen for research-assistant structure, evidence grounding, citation behavior, and scientific summarization. It does not by itself prove adapter quality; those claims still require training and evaluation logs from real runs.
 """
     (OUT / "lora_dataset_eda_summary.md").write_text(summary, encoding="utf-8")
 
 
 def main() -> None:
+    """Load the merged train JSONL and write EDA outputs."""
     OUT.mkdir(parents=True, exist_ok=True)
     FIG.mkdir(parents=True, exist_ok=True)
     rows = load_rows(DATASET)

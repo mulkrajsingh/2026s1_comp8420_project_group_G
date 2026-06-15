@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Download and install large assets from Google Drive.
 
-Run once after cloning and after `pip install -r requirements.txt`.
+Run once after cloning and after pip install. The script fetches zipped model
+bundles, extracts them into module paths, and can report what is already present.
 
-    python setup_assets.py              # required runtime + training assets
-    python setup_assets.py --optional   # also download raw arXiv + E2E logs
+    python setup_assets.py              # required runtime and training assets
+    python setup_assets.py --optional   # also download raw arXiv and E2E logs
     python setup_assets.py --force      # re-download even if present
     python setup_assets.py --check      # report what is installed
 """
@@ -115,10 +116,21 @@ def download_and_extract(asset: dict, force: bool = False) -> bool:
         print(f"  [ERROR] Download failed: {exc}")
         return False
 
-    dest.mkdir(parents=True, exist_ok=True)
-    print(f"  Extracting to {dest.relative_to(REPO_ROOT)} ...")
-    with zipfile.ZipFile(zip_path) as zf:
-        zf.extractall(dest)
+    if asset["zip_name"] == "pdf_nlp_models.zip":
+        print(f"  Installing to {dest.relative_to(REPO_ROOT)} ...")
+        sys.path.insert(0, str(REPO_ROOT / "modules" / "pdf_nlp"))
+        try:
+            from model_assets import install_model_archive
+
+            install_model_archive(zip_path)
+        except Exception as exc:
+            print(f"  [ERROR] PDF-NLP model install failed: {exc}")
+            return False
+    else:
+        dest.mkdir(parents=True, exist_ok=True)
+        print(f"  Extracting to {dest.relative_to(REPO_ROOT)} ...")
+        with zipfile.ZipFile(zip_path) as zf:
+            zf.extractall(dest)
     zip_path.unlink(missing_ok=True)
     print(f"  [DONE] {asset['name']}")
     return True

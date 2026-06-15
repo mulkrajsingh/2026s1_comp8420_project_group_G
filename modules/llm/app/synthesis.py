@@ -1,4 +1,9 @@
-"""Evidence-grounded synthesis for the LLM module CLI."""
+"""Markdown renderers and structured parsers for LLM generation output.
+
+Turns Ollama ``GenerationResult`` values into synthesis reports, paper-only summaries
+and reviews, topic-synthesis JSON, recommendation cards, and the integration handoff
+template written next to ``synthesize`` runs.
+"""
 
 from __future__ import annotations
 
@@ -13,6 +18,16 @@ from .schemas import validate_analysis_result, validate_parsed_paper, validate_r
 
 def _source_lookup(pack: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {snippet["source_id"]: snippet for snippet in pack["evidence_snippets"]}
+
+
+def _backend_metadata_lines(result: GenerationResult) -> list[str]:
+    """Format generation backend metadata as Markdown lines."""
+    return [
+        f"**Generation backend:** {result.backend}  ",
+        f"**Model:** {result.model}  ",
+        f"**Latency:** {result.latency_seconds}s  ",
+        f"**Generation error:** {result.error or 'none'}",
+    ]
 
 
 def _generated_text(result: GenerationResult) -> str:
@@ -73,13 +88,6 @@ def synthesize_markdown(
     source_list = ", ".join(sorted(snippets))
     recommendations = pack["candidates"]
     generated_text = _strip_outer_markdown_fence(_generated_text(result))
-    backend_line = (
-        f"**Generation backend:** {result.backend}  \n"
-        f"**Model:** {result.model}  \n"
-        f"**Latency:** {result.latency_seconds}s  \n"
-        f"**Generation error:** {result.error or 'none'}"
-    )
-
     lines = [
         "# LLM Synthesis",
         "",
@@ -91,7 +99,7 @@ def synthesize_markdown(
         f"**Retrieval mode:** {pack['retrieval_mode']}",
         f"**Style:** {style}",
     ]
-    lines.extend(["", backend_line])
+    lines.extend(["", "\n".join(_backend_metadata_lines(result))])
     lines.extend(
         [
             "",
@@ -142,13 +150,6 @@ def summarize_paper_markdown(
     metadata = paper["metadata"]
     sections = paper["sections"]
     generated_text = _strip_outer_markdown_fence(_generated_text(result))
-    backend_lines = [
-        f"**Generation backend:** {result.backend}  ",
-        f"**Model:** {result.model}  ",
-        f"**Latency:** {result.latency_seconds}s  ",
-        f"**Generation error:** {result.error or 'none'}",
-    ]
-
     lines = [
         "# Paper Summary",
         "",
@@ -160,7 +161,7 @@ def summarize_paper_markdown(
         f"**Paper:** {metadata['title']}",
         f"**Style:** {style}",
     ]
-    lines.extend(["", *backend_lines])
+    lines.extend(["", *_backend_metadata_lines(result)])
     lines.extend(["", "## Generated Summary", "", generated_text, ""])
     lines.extend(_verification_lines(verification_audit))
     if not sections.get("abstract") and not metadata.get("abstract"):
@@ -195,10 +196,7 @@ def review_paper_markdown(
         f"**Paper:** {paper['metadata']['title']}",
         f"**Style:** {style}",
         "",
-        f"**Generation backend:** {result.backend}  ",
-        f"**Model:** {result.model}  ",
-        f"**Latency:** {result.latency_seconds}s  ",
-        f"**Generation error:** {result.error or 'none'}",
+        *_backend_metadata_lines(result),
         "",
         "## Generated Review",
         "",
@@ -275,11 +273,6 @@ def _markdown_heading(line: str) -> tuple[str, int] | None:
         title = re.sub(r"[*_`]", "", bold.group(1)).strip().rstrip(":").lower()
         return title, 2
     return None
-
-
-def _markdown_heading_title(line: str) -> str | None:
-    heading = _markdown_heading(line)
-    return heading[0] if heading else None
 
 
 def _section_text(text: str, heading_keywords: tuple[str, ...]) -> str:
@@ -378,9 +371,7 @@ def _fields_from_markdown_fallback(text: str) -> dict[str, Any] | None:
     stripped = text.strip()
     if len(stripped) < 80:
         return None
-    has_heading = any(
-        _markdown_heading_title(line) is not None for line in stripped.splitlines()
-    )
+    has_heading = any(_markdown_heading(line) is not None for line in stripped.splitlines())
     if not has_heading and "\n-" not in stripped:
         if stripped.startswith(("{", "[")):
             return None
@@ -409,7 +400,7 @@ def _fields_from_markdown_fallback(text: str) -> dict[str, Any] | None:
     if not summary:
         leading_lines: list[str] = []
         for line in stripped.splitlines():
-            if _markdown_heading_title(line) is not None:
+            if _markdown_heading(line) is not None:
                 break
             if line.strip().startswith(("-", "*")):
                 break
@@ -470,7 +461,11 @@ def parse_topic_synthesis(result: GenerationResult | None) -> dict[str, Any]:
     return fields
 
 
-def analysis_result_from_pack(pack: dict[str, Any], result: GenerationResult | None = None) -> dict[str, Any]:
+def analysis_result_from_pack(
+    pack: dict[str, Any],
+    result: GenerationResult | None = None,
+) -> dict[str, Any]:
+    """Build a validated ``AnalysisResult`` dict from a retrieval pack and synthesis."""
     validate_rag_evidence_pack(pack)
     synthesis = parse_topic_synthesis(result)
     result_obj = {
@@ -603,9 +598,10 @@ def build_recommended_paper_cards(
 
 
 def handoff_markdown() -> str:
+    """Return the Markdown integration handoff written beside synthesis artifacts."""
     return """# LLM module handoff
 
-## What This Module Produces
+## Outputs
 
 - `outputs/llm_analysis.md`: evidence-grounded synthesis from a `RagEvidencePack`.
 - `outputs/analysis_result_from_llm.json`: `AnalysisResult`-compatible JSON for integration CLI/API.
@@ -614,16 +610,15 @@ def handoff_markdown() -> str:
 - `results/prompt_comparison/`: Ollama-backed prompt strategy evidence from `compare-prompts`.
 - `results/model_comparison/`: model, adapter, quantization, and comparison evidence.
 
-## How Integration Should Consume It
+## Integration steps
 
 1. `modules/retrieval` writes `outputs/rag_evidence_pack.json`.
 2. Run `python -m app.cli synthesize --evidence outputs/rag_evidence_pack.json --style technical --out outputs/llm_analysis.md`.
-3. For final model evidence, pass `--model <tag>` when comparing adapters.
+3. For model comparison evidence, pass `--model <tag>` when running `compare-models` or `compare-prompts`.
 4. Render `outputs/llm_analysis.md` in CLI/UI, or consume `outputs/analysis_result_from_llm.json`.
 
-## Current Limitation
+## Limitations
 
-Proxy mode is only a deterministic smoke-test path. Report claims about output quality,
-latency, quantization, or adapter improvement must use Ollama/model-comparison artifacts
-created from real local model tags.
+Report claims about output quality, latency, quantization, or adapter improvement
+must use Ollama/model-comparison artifacts created from real local model tags.
 """

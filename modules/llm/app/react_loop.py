@@ -1,4 +1,8 @@
-"""Bounded ReAct planning for topic RAG (search_offline tool only)."""
+"""Bounded ReAct planning for topic RAG with the ``search_offline`` tool.
+
+Asks the local model for a structured retrieval plan, parses the tool call, and
+falls back to the user query when the response is invalid.
+"""
 
 from __future__ import annotations
 
@@ -23,6 +27,7 @@ REACT_TOOL_SCHEMA = {
 
 
 def build_react_plan_prompt(user_query: str) -> str:
+    """Build the zero-shot planner prompt for offline retrieval."""
     return (
         "You are a research assistant with access to one tool.\n"
         "Decide whether offline paper retrieval is needed, then respond with "
@@ -37,6 +42,7 @@ def build_react_plan_prompt(user_query: str) -> str:
 
 
 def parse_tool_call(text: str) -> dict[str, Any] | None:
+    """Parse a ``search_offline`` tool-call JSON object from model text."""
     stripped = (text or "").strip()
     fence = re.search(
         r"```(?:json)?\s*\n(?P<body>.*?)\n```",
@@ -73,6 +79,8 @@ def parse_tool_call(text: str) -> dict[str, Any] | None:
 
 @dataclass(frozen=True)
 class ReactTopicRagResult:
+    """Outcome of the ReAct retrieval planning step."""
+
     tool_call: dict[str, Any] | None
     retrieval_query: str
     top_k: int

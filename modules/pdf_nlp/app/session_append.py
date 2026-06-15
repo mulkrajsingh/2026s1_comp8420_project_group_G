@@ -1,4 +1,8 @@
-"""Append privacy-aware structured JSONL events for the PDF-NLP subprocess."""
+"""Append structured JSONL events for the PDF-NLP subprocess.
+
+When ``COMP8420_SESSION_LOG`` is set, writes schema-versioned events with
+optional redaction of configured secret substrings.
+"""
 from __future__ import annotations
 
 import json

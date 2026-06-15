@@ -1,4 +1,8 @@
-"""Shared contract validators aligned with team_plans/06_integration_contract.md."""
+"""Validators for PaperRecord, Recommendation, and RagEvidencePack shapes.
+
+Field names and allowed values follow the integration contracts in
+``integration/app/contracts.py``.
+"""
 
 from __future__ import annotations
 
@@ -15,7 +19,7 @@ VALID_MODES = {"offline", "cached_live", "live", "hybrid"}
 
 
 class SchemaError(ValueError):
-    pass
+    """Raised when a record fails contract validation."""
 
 
 def _missing(record: dict[str, Any], required: set[str]) -> list[str]:
@@ -23,6 +27,7 @@ def _missing(record: dict[str, Any], required: set[str]) -> list[str]:
 
 
 def validate_paper_record(record: dict[str, Any]) -> None:
+    """Check required PaperRecord keys and list field types."""
     missing = _missing(record, PAPER_RECORD_KEYS)
     if missing:
         raise SchemaError(f"PaperRecord missing keys: {missing}")
@@ -33,6 +38,7 @@ def validate_paper_record(record: dict[str, Any]) -> None:
 
 
 def validate_recommendation(record: dict[str, Any]) -> None:
+    """Check Recommendation fields and nested PaperRecord shape."""
     missing = _missing(record, RECOMMENDATION_KEYS)
     if missing:
         raise SchemaError(f"Recommendation missing keys: {missing}")
@@ -44,6 +50,7 @@ def validate_recommendation(record: dict[str, Any]) -> None:
 
 
 def validate_rag_evidence_pack(record: dict[str, Any]) -> None:
+    """Check RagEvidencePack fields and evidence source linkage."""
     missing = _missing(record, RAG_PACK_KEYS)
     if missing:
         raise SchemaError(f"RagEvidencePack missing keys: {missing}")

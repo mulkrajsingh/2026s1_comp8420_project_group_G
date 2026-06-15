@@ -1,10 +1,7 @@
-"""CLI entry point for the retrieval module.
+"""CLI for retrieval indexing, topic recommendations, and evaluation.
 
-Commands
---------
-build-retrieval-index   Build and save TF-IDF/BM25/embedding indexes.
-recommend-topic         Retrieve + rank recommendations for a topic query.
-evaluate-retrieval      Run Precision@K, Recall@K, MRR, nDCG comparison table.
+Exposes ``build-retrieval-index``, ``recommend-topic``, and ``evaluate-retrieval``
+commands used by the integration frontend and offline benchmarking scripts.
 """
 
 from __future__ import annotations
@@ -36,6 +33,7 @@ DEFAULT_INDEX_DIR = (
 # ---------------------------------------------------------------------------
 
 def cmd_build_retrieval_index(args: argparse.Namespace) -> None:
+    """Build TF-IDF, BM25, and optional embedding indexes for one corpus."""
     papers_path = Path(args.papers)
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -148,6 +146,7 @@ def _hybrid_rrf_recommendations(
 
 
 def cmd_recommend_topic(args: argparse.Namespace) -> None:
+    """Rank papers for a query and write recommendations plus a RAG pack."""
     papers_path = Path(args.papers)
     out_path = Path(args.out)
     query = args.query
@@ -290,6 +289,7 @@ def _run_eval_suite(
 
 
 def cmd_evaluate_retrieval(args: argparse.Namespace) -> None:
+    """Compare retrievers on keyword, user-like, or combined query sets."""
     papers_path = Path(args.papers)
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -365,6 +365,7 @@ def _format_top_rows(frame, metric: str) -> str:
 # ---------------------------------------------------------------------------
 
 def build_parser() -> argparse.ArgumentParser:
+    """Return the retrieval module CLI argument parser."""
     parser = argparse.ArgumentParser(
         prog="python -m app.cli",
         description="Retrieval module: RAG, recommendation, and evaluation commands.",
@@ -416,6 +417,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
+    """Parse CLI arguments and dispatch to the selected subcommand."""
     parser = build_parser()
     args = parser.parse_args()
     args.func(args)

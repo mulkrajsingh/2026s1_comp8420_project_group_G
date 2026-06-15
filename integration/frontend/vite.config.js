@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 
-// Lightweight dev server. Proxies /api/* to the local FastAPI backend so the
-// browser talks to the UI origin only (no CORS setup needed).
+// Dev server on :5173; proxy /api to the FastAPI backend so the browser stays same-origin.
 export default defineConfig({
   server: {
     port: 5173,

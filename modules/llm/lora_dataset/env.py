@@ -1,4 +1,4 @@
-"""Load .env and validate Kaggle API credentials."""
+"""Load ``.env`` files and validate Kaggle API credentials for corpus download."""
 
 from __future__ import annotations
 
@@ -36,6 +36,7 @@ def load_dotenv() -> Path | None:
 
 
 def has_kaggle_credentials() -> bool:
+    """Return whether Kaggle credentials are available in env or standard paths."""
     if os.environ.get("KAGGLE_API_TOKEN"):
         return True
     if ACCESS_TOKEN_FILE.is_file():
@@ -58,6 +59,7 @@ def sync_kaggle_access_token() -> None:
 
 
 def require_kaggle_credentials() -> None:
+    """Exit with setup instructions when Kaggle credentials are missing."""
     load_dotenv()
     if has_kaggle_credentials():
         sync_kaggle_access_token()

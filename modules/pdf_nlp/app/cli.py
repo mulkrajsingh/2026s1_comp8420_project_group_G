@@ -1,4 +1,8 @@
-"""CLI for production PDF parsing, NLP enrichment, evaluation, and model setup."""
+"""CLI for PDF parsing, NLP enrichment, evaluation, and model setup.
+
+Commands cover single-PDF parsing, ParsedPaper NLP enrichment, structural checks,
+model archive installation, and the five-PDF evaluation harness.
+"""
 
 from __future__ import annotations
 
@@ -14,6 +18,7 @@ if str(_MODULE_ROOT) not in sys.path:
 from model_assets import (  # noqa: E402
     ModelAssetError,
     install_model_archive,
+    repair_nested_runtime,
     validate_model_assets,
 )
 from paper_analysis import (  # noqa: E402
@@ -287,11 +292,11 @@ def cmd_analyze_paper(args: argparse.Namespace) -> None:
 def cmd_model_assets(args: argparse.Namespace) -> None:
     """Install a supplied model archive or verify the current runtime assets."""
     try:
-        result = (
-            install_model_archive(Path(args.archive))
-            if args.archive
-            else validate_model_assets()
-        )
+        if args.archive:
+            result = install_model_archive(Path(args.archive))
+        else:
+            repair_nested_runtime()
+            result = validate_model_assets()
     except ModelAssetError as exc:
         raise SystemExit(str(exc)) from exc
     print(json.dumps(result, indent=2, ensure_ascii=True))

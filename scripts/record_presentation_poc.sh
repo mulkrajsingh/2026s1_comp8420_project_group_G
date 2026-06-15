@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Record presentation POC artifacts (topic mode, real data, session JSONL).
-# Prerequisites: Ollama running, `ollama pull qwen3:8b`, Bank + Mulkraj deps installed.
+# Run a topic query through the integration CLI and write presentation POC artifacts.
+# Needs Ollama running with qwen3:8b pulled and project dependencies installed.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

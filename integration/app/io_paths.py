@@ -1,7 +1,9 @@
-"""Controlled output paths + a tiny progress logger.
+"""Controlled output paths and a lightweight progress logger.
 
-All generated artifacts go under `outputs/`; nothing is written next to uploaded
-user documents. This is the seam Stage 03 (privacy / no-retention) builds on.
+Generated artifacts are written only under ``outputs/`` so user uploads never sit
+beside caches or reports. The logger records stderr progress lines and, when a
+session is active, forwards each step to the structured session log. An in-memory
+trace captures step names and elapsed milliseconds for demo reports.
 """
 from __future__ import annotations
 
@@ -13,22 +15,24 @@ from dataclasses import asdict, is_dataclass
 
 OUTPUTS = "outputs"
 
-# Stage 06: in-memory trace of pipeline steps (step, detail, elapsed ms).
 _TRACE: list = []
 _T0 = None
 
 
 def reset_trace():
+    """Clear the in-memory pipeline trace and restart the elapsed timer."""
     global _TRACE, _T0
     _TRACE = []
     _T0 = time.time()
 
 
 def get_trace() -> list:
+    """Return a copy of the current pipeline trace entries."""
     return list(_TRACE)
 
 
 def ensure_outputs():
+    """Create the outputs directory when it is missing."""
     os.makedirs(OUTPUTS, exist_ok=True)
 
 
@@ -38,6 +42,7 @@ def out_path(name: str) -> str:
 
 
 def write_json(name: str, obj) -> str:
+    """Serialize a dataclass or mapping to ``outputs/<name>`` and return the path."""
     if is_dataclass(obj):
         obj = asdict(obj)
     elif hasattr(obj, "to_dict"):
@@ -49,6 +54,7 @@ def write_json(name: str, obj) -> str:
 
 
 def write_text(name: str, text: str) -> str:
+    """Write UTF-8 text to ``outputs/<name>`` and return the path."""
     path = out_path(name)
     with open(path, "w") as f:
         f.write(text)
@@ -56,7 +62,7 @@ def write_text(name: str, text: str) -> str:
 
 
 def log(step: str, detail: str = ""):
-    """Progress message for long-running local work (Stage 06 expands this)."""
+    """Emit a stderr progress line and append to the active trace when enabled."""
     msg = f"[cli] {step}" + (f" :: {detail}" if detail else "")
     print(msg, file=sys.stderr, flush=True)
     if _T0 is not None:

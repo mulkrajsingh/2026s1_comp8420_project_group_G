@@ -1,4 +1,4 @@
-"""Build open academic + ResearchQA hybrid LoRA JSONL."""
+"""Build open academic and ResearchQA hybrid LoRA JSONL for adapter training."""
 
 from __future__ import annotations
 

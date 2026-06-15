@@ -1,12 +1,11 @@
-"""Stage 04 — FastAPI local endpoints.
+"""FastAPI HTTP layer for the local research assistant.
 
-Thin HTTP wrapper over the SAME pipeline functions the CLI uses (no duplicated
-logic). Local only; no auth, no deployment. Run with:
+Exposes thin endpoints that delegate to the same service functions used by the
+CLI. The app is intended for local use only (no auth, no deployment). Start it
+with ``scripts/rpa web`` and open ``http://127.0.0.1:8000``.
 
-    scripts/rpa web      # then open http://127.0.0.1:8000
-
-Endpoints mirror the CLI: analyze-pdf, search-topic, recommend, peer-review,
-chat, chat-pdf, health.
+Endpoints cover topic search, PDF analysis, recommendations, peer review, chat,
+session management, and background jobs.
 """
 from __future__ import annotations
 
@@ -290,6 +289,10 @@ def search_topic(req: TopicReq):
     return out["result"].to_dict()
 
 
+def _optional_session_kwargs(session_id: str | None) -> dict:
+    return {"session_id": session_id} if session_id is not None else {}
+
+
 @api.post("/api/analyze-pdf")
 async def analyze_pdf(
     file: UploadFile = File(...),
@@ -455,11 +458,6 @@ def chat(req: ChatReq, _request_id: str = Depends(request_scope)):
 
     try:
         with _model_request(req.llm_model):
-            session_kwargs = (
-                {"session_id": req.session_id}
-                if req.session_id is not None
-                else {}
-            )
             answer = service.chat_topic(
                 req.question,
                 llm_model=req.llm_model,
@@ -468,7 +466,7 @@ def chat(req: ChatReq, _request_id: str = Depends(request_scope)):
                 retrieval_embedding_model=req.retrieval_embedding_model,
                 retrieval_top_k=req.retrieval_top_k,
                 retrieval_strategy=req.retrieval_strategy,
-                **session_kwargs,
+                **_optional_session_kwargs(req.session_id),
                 prompt_strategy=req.prompt_strategy,
             )
     except RequestCancelledError as exc:
@@ -488,11 +486,7 @@ def chat_pdf(req: PdfChatReq):
 
     if not req.paper_json_path:
         raise ValueError("paper_json_path is required for PDF-grounded chat")
-    session_kwargs = (
-        {"session_id": req.session_id}
-        if req.session_id is not None
-        else {}
-    )
+    session_kwargs = _optional_session_kwargs(req.session_id)
     try:
         with _model_request(req.llm_model):
             answer = service.run_pdf_chat(
@@ -513,7 +507,7 @@ def chat_pdf(req: PdfChatReq):
 
 
 def write_api_contract() -> str:
-    """Generate outputs/api_contract.md (Stage 04 artifact)."""
+    """Write ``outputs/api_contract.md`` summarising the local HTTP surface."""
     from .io_paths import write_text
 
     rows = [
@@ -596,7 +590,7 @@ def write_api_contract() -> str:
         ),
     ]
     md = [
-        "# Local API contract (Stage 04)",
+        "# Local API contract",
         "",
         "Run: `scripts/rpa web` then open `/docs`.",
         "",

@@ -1,7 +1,7 @@
-"""Retrieval evaluation metrics: Precision@K, Recall@K, F1@K, MRR, MAP, nDCG.
+"""Information-retrieval metrics for retrieval evaluation.
 
-Gold labels are provided as sets of relevant paper_ids per query.
-All metrics follow standard IR definitions.
+Computes precision, recall, F1, MRR, MAP, and nDCG at configurable cutoffs
+from query-level gold label sets of relevant paper IDs.
 """
 
 from __future__ import annotations
@@ -12,11 +12,13 @@ import pandas as pd
 
 
 def precision_at_k(retrieved: list[str], relevant: set[str], k: int) -> float:
+    """Return the fraction of the top-k list that is relevant."""
     top_k = retrieved[:k]
     return sum(1 for pid in top_k if pid in relevant) / k if k > 0 else 0.0
 
 
 def recall_at_k(retrieved: list[str], relevant: set[str], k: int) -> float:
+    """Return the fraction of relevant IDs found in the top-k list."""
     if not relevant:
         return 0.0
     top_k = retrieved[:k]
@@ -25,12 +27,14 @@ def recall_at_k(retrieved: list[str], relevant: set[str], k: int) -> float:
 
 
 def f1_at_k(retrieved: list[str], relevant: set[str], k: int) -> float:
+    """Return the harmonic mean of precision and recall at k."""
     p = precision_at_k(retrieved, relevant, k)
     r = recall_at_k(retrieved, relevant, k)
     return 2 * p * r / (p + r) if (p + r) > 0 else 0.0
 
 
 def reciprocal_rank(retrieved: list[str], relevant: set[str]) -> float:
+    """Return reciprocal rank of the first relevant hit, or zero."""
     for i, pid in enumerate(retrieved, start=1):
         if pid in relevant:
             return 1.0 / i
@@ -38,6 +42,7 @@ def reciprocal_rank(retrieved: list[str], relevant: set[str]) -> float:
 
 
 def average_precision(retrieved: list[str], relevant: set[str]) -> float:
+    """Return mean precision at each relevant rank in the ranked list."""
     if not relevant:
         return 0.0
     hits, total_ap = 0, 0.0

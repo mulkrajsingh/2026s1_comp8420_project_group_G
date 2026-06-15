@@ -87,6 +87,20 @@ def validate_model_assets(
     }
 
 
+def repair_nested_runtime(root: Path = MODEL_ROOT) -> bool:
+    """Promote assets from root/runtime/ after a naive ZIP extract."""
+    nested = root / "runtime"
+    if not nested.is_dir() or not validate_model_assets(root=nested)["valid"]:
+        return False
+    for child in nested.iterdir():
+        destination = root / child.name
+        if destination.exists():
+            shutil.rmtree(destination) if destination.is_dir() else destination.unlink()
+        shutil.move(str(child), str(destination))
+    nested.rmdir()
+    return True
+
+
 def require_model_assets(root: Path = MODEL_ROOT) -> dict[str, Any]:
     """Return validated asset metadata or raise a setup-focused error."""
     result = validate_model_assets(root=root)

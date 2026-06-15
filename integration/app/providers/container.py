@@ -1,4 +1,4 @@
-"""Request-scoped provider collection used by the integration pipeline."""
+"""Request-scoped provider registry for one integration pipeline run."""
 
 from dataclasses import dataclass, field
 

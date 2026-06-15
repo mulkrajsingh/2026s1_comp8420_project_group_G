@@ -1,4 +1,8 @@
-"""Build filtered Kaggle arXiv PaperRecord JSONL for project arXiv RAG retrieval."""
+"""Build a filtered Kaggle arXiv PaperRecord JSONL for project RAG retrieval.
+
+Reservoir-samples metadata into a deterministic 3k-paper corpus and normalizes
+published dates to ISO ``YYYY-MM-DD`` when possible.
+"""
 
 from __future__ import annotations
 
@@ -239,6 +243,7 @@ def build_subset(
     seed: int,
     reservoir: bool = True,
 ) -> list[dict[str, Any]]:
+    """Sample up to ``limit`` validated PaperRecords from a Kaggle metadata file."""
     return build_subset_from_records(
         _iter_arxiv_records(input_path),
         limit=limit,

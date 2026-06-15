@@ -1,7 +1,7 @@
-"""Render an AnalysisResult into a human-readable markdown report.
+"""Render an ``AnalysisResult`` as markdown for reports and the CLI.
 
-Used by analyze-pdf and topic search to produce `outputs/demo_report.md` — the
-readable artifact for the video/report. Mirrors the frontend results panel.
+Produces ``outputs/demo_report.md`` after analyze-pdf and topic search. Section
+order matches the web results panel so terminal, file, and UI output stay aligned.
 """
 from __future__ import annotations
 
@@ -256,7 +256,7 @@ def format_run_output(
 
     lines += [
         "",
-        "Artifacts",
+        "Output files",
         "  outputs/analysis_result.json",
         "  outputs/demo_report.md",
         "  outputs/demo_trace.json",

@@ -1,13 +1,12 @@
-"""Stage 03 — outputs, privacy, and no-retention behavior.
+"""Upload handling, output placement, and no-retention policy.
 
-Policy enforced here:
-  * Uploaded PDFs are processed from a temp copy that is DELETED after processing
-    unless the user passes save=True.
-  * Generated files go only under outputs/ (never next to the user's document).
-  * AI-generated sections are disclosed in the AnalysisResult (`flags`).
+Uploaded PDFs are copied to a temporary working path and removed after processing
+unless the caller opts in to ``save=True``. Generated files are written only under
+``outputs/``. AI-generated sections are disclosed through ``AnalysisResult.flags``.
 
-`process_upload` is a context manager used by analyze-pdf / peer-review so the
-temp file is always cleaned up. `write_privacy_check` produces the stage artifact.
+The ``process_upload`` context manager is used by analyze-pdf and peer-review so
+temp files are always cleaned up. ``write_privacy_check`` writes a short runtime
+verification report to ``outputs/privacy_check.md``.
 """
 from __future__ import annotations
 
@@ -15,10 +14,18 @@ import os
 import shutil
 import tempfile
 from contextlib import contextmanager
+from pathlib import Path
 
 from .io_paths import write_text, log
 
 _TMP_DIR = os.path.join("outputs", ".uploads_tmp")
+_SAMPLE_PDF = (
+    Path(__file__).resolve().parents[2]
+    / "tests"
+    / "papers"
+    / "drq_v2"
+    / "2107.09645v1.pdf"
+)
 
 
 @contextmanager
@@ -39,17 +46,9 @@ def process_upload(pdf_path: str, save: bool = False):
 
 
 def write_privacy_check() -> str:
-    """Run a quick demonstration + write outputs/privacy_check.md (Stage 03)."""
-    # Privacy verification fixture: demonstrate deletion on a real test PDF copy.
+    """Demonstrate temp-upload deletion and write ``outputs/privacy_check.md``."""
     deleted = False
-    sample_pdf = str(
-        __import__("pathlib").Path(__file__).resolve().parents[2]
-        / "tests"
-        / "papers"
-        / "drq_v2"
-        / "2107.09645v1.pdf"
-    )
-    with process_upload(sample_pdf, save=False) as tmp:
+    with process_upload(str(_SAMPLE_PDF), save=False) as tmp:
         existed = os.path.exists(tmp)
     deleted = existed and not os.path.exists(tmp)
 
@@ -68,9 +67,6 @@ def write_privacy_check() -> str:
         f"- Temp upload created and then deleted after processing: "
         f"**{'PASS' if deleted else 'CHECK'}**",
         f"- Output directory: `outputs/`",
-        "",
-        "Maps to the assignment's privacy/ethics advanced technique and the "
-        "System Integration rubric.",
         "",
     ]
     return write_text("privacy_check.md", "\n".join(md))

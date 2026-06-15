@@ -1,2 +1,2 @@
-"""Mulkraj LLM workstream implementation for COMP8420 major project."""
+"""Mulkraj LLM workstream: local generation, evaluation, and adapter training."""
 

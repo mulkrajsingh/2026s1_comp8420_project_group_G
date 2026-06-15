@@ -32,8 +32,8 @@ are local, ignored inputs under:
 - `data/raw/arxiv-metadata-oai-snapshot.json`
 - `data/cache/s2/`
 
-Do not recreate the removed `modules/Assignment_3/` or root `yash/` copies.
-The production retrieval corpus is rebuilt locally from the same raw snapshot:
+Do not recreate obsolete duplicate copies of this module elsewhere in the repository.
+The production retrieval corpus is rebuilt locally from the raw snapshot:
 
 ```bash
 python scripts/build_balanced_corpus.py \

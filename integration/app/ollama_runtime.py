@@ -1,4 +1,8 @@
-"""Ollama model residency helpers for the combined web application."""
+"""Ollama model residency for the combined web application.
+
+Keeps one local generation model loaded during a web session, switches between
+the project base and LoRA adapter tags per request, and unloads on shutdown.
+"""
 
 from __future__ import annotations
 

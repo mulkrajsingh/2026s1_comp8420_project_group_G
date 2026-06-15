@@ -1,8 +1,9 @@
 """
-Create the full research LoRA training dataset.
+Build the full research LoRA training dataset.
 
-Run from modules/llm/:
-  python -m lora_dataset.create_dataset
+Run from ``modules/llm``::
+
+    python -m lora_dataset.create_dataset
 """
 
 from __future__ import annotations
@@ -38,6 +39,7 @@ def _reject_synthetic_corpus() -> None:
 
 
 def main() -> None:
+    """Run the end-to-end dataset build pipeline."""
     parser = argparse.ArgumentParser(description="Build the full research LoRA training dataset.")
     parser.add_argument("--skip-hybrid", action="store_true", help="Skip HF open + ResearchQA step.")
     parser.add_argument("--skip-download", action="store_true", help="Require existing Kaggle raw file.")

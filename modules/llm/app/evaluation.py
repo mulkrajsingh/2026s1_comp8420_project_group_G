@@ -1,4 +1,8 @@
-"""Prompt and model comparison artifact generation."""
+"""Prompt and model comparison artifact generation for local Ollama runs.
+
+Writes CSV tables, sample outputs, and summary Markdown under ``results/`` so prompt
+strategies and model variants can be compared on a fixed evaluation set.
+"""
 
 from __future__ import annotations
 
@@ -23,13 +27,10 @@ from .runtime import (
 
 
 def ensure_fixed_prompts(path: Path) -> list[dict[str, Any]]:
+    """Create the fixed prompt JSONL when missing and return its records."""
     if not path.exists():
         write_jsonl(path, fixed_prompt_records())
     return read_jsonl(path)
-
-
-def _contains_source_id(text: str) -> bool:
-    return any(source_id in text for source_id in ("S1", "S2", "S3"))
 
 
 def _score_output(
@@ -96,6 +97,7 @@ def compare_prompts(
     ollama_host: str = "http://127.0.0.1:11434",
     config: GenerationConfig | None = None,
 ) -> None:
+    """Run zero-shot and few-shot strategies on the fixed prompt set."""
     records = ensure_fixed_prompts(test_set)
     out_dir.mkdir(parents=True, exist_ok=True)
     outputs_dir = out_dir / "prompt_outputs"
@@ -141,6 +143,7 @@ def compare_models(
     ollama_host: str = "http://127.0.0.1:11434",
     config: GenerationConfig | None = None,
 ) -> None:
+    """Run the fixed prompt set across configured model variants."""
     records = ensure_fixed_prompts(test_set)
     out_dir.mkdir(parents=True, exist_ok=True)
     outputs_dir = out_dir / "model_outputs"
@@ -188,6 +191,7 @@ def compare_models(
 
 
 def default_model_specs() -> list[dict[str, str]]:
+    """Return the default base-model and LoRA adapter comparison rows."""
     return [
         {
             "name": "qwen3_8b",
@@ -207,6 +211,7 @@ def default_model_specs() -> list[dict[str, str]]:
 
 
 def parse_model_specs(raw: str | None) -> list[dict[str, str]]:
+    """Parse ``name=tag`` CSV entries into model comparison spec dicts."""
     if not raw:
         return default_model_specs()
     specs: list[dict[str, str]] = []

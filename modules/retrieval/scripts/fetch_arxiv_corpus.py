@@ -1,8 +1,8 @@
-"""
-Fetch real arXiv papers from the arXiv API and save as PaperRecord JSONL.
+"""Fetch arXiv papers from the public API into PaperRecord JSONL.
 
-Targets: cs.CL, cs.AI, cs.LG, stat.ML
-Output:  data/processed/dev_2k.jsonl  (~500 papers per category)
+Queries cs.CL, cs.AI, cs.LG, and stat.ML and writes roughly equal samples per
+category. Intended for small bootstrap corpora when the full Kaggle dump is not
+available locally.
 
 Usage:
     python scripts/fetch_arxiv_corpus.py
@@ -127,7 +127,8 @@ def fetch_category(category: str, target: int) -> list[dict]:
     return all_records[:target]
 
 
-def main():
+def main() -> None:
+    """Fetch papers from arXiv and write a PaperRecord JSONL corpus."""
     parser = argparse.ArgumentParser(description="Fetch arXiv corpus for COMP8420 project.")
     parser.add_argument("--per-cat", type=int, default=500,
                         help="Papers to fetch per category (default 500 = 2000 total).")

@@ -1,9 +1,8 @@
-"""Deterministic and local NLP enrichment for canonical ``ParsedPaper`` data.
+"""Local NLP enrichment for canonical ``ParsedPaper`` records.
 
-The production path combines a fine-tuned SciER DistilBERT model and
-KeyBERT approach with spaCy syntax, rule-based entity completion, TextRank
-extractive summarisation, and structural checks. Models are loaded lazily from
-the ignored, checksum-validated runtime directory.
+Runs spaCy POS tagging, fine-tuned SciER NER, KeyBERT keyphrases, TextRank
+summaries, and rule-based structural checks. Models load lazily from the
+checksum-validated runtime directory under ``modules/pdf_nlp/models``.
 """
 
 from __future__ import annotations

@@ -1,7 +1,8 @@
-"""Five-real-paper evaluation for the production PDF-NLP pipeline.
+"""Evaluate the PDF-NLP pipeline on five real research PDFs.
 
-Annotations are loaded only by this evaluation module. They are provisional
-agent-reviewed labels and never influence production parsing or NLP inference.
+Loads a fixed manifest and provisional annotation file, runs production parsing
+and NLP, and writes per-paper metrics plus aggregate comparison tables.
+Annotations are for evaluation only and do not affect inference code paths.
 """
 
 from __future__ import annotations
@@ -333,7 +334,7 @@ def evaluate_real_papers(
                 "",
                 "**Corpus:** five real research-paper PDFs; no mock paper data.",
                 "",
-                "**Annotations:** provisional agent-reviewed labels, not human-validated ground truth.",
+                "**Annotations:** provisional review labels, not validated ground truth.",
                 "",
                 "Results apply only to this local five-paper corpus and must not be generalised.",
                 "",

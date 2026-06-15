@@ -51,8 +51,8 @@ python -m app.cli evaluate-retrieval \
 | `results/retrieval/retrieval_comparison_keyword.csv` | Keyword-style query benchmark |
 | `results/retrieval/retrieval_comparison_user.csv` | User-like natural-language benchmark |
 | `results/retrieval/retrieval_eval_summary.md` | Dual-benchmark narrative |
-| `results/retrieval/*.png` | Visualisation charts (PCA, heatmap, bar charts) |
-| `data/processed/retrieval_index/` | Saved index artifacts |
+| `results/retrieval/*.png` | Visualisation charts (generated; run `scripts/regenerate_eval_charts.py`) |
+| `data/processed/retrieval_index/` | Saved index artifacts (after `setup_assets.py`) |
 
 ## Handoff to LLM module
 

@@ -1,4 +1,4 @@
-"""Six train-only anchor rows that are disjoint from the evaluation prompts."""
+"""Six train-only anchor rows disjoint from the fixed evaluation prompts."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ SYSTEM = (
 
 
 def build_seed_rows() -> list[dict]:
+    """Return local format-anchor rows excluded from evaluation prompts."""
     examples = [
         (
             "TRAIN_SEED_SUMMARY",

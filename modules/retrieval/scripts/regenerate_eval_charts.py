@@ -1,17 +1,8 @@
-"""
-Regenerate retrieval_comparison_chart.png and ndcg_heatmap.png from the
-on-disk evaluation CSVs (results/retrieval/retrieval_comparison.csv and
-results/retrieval/detail_v2_<retriever>.csv), without re-running the full
-evaluation notebook.
+"""Regenerate retrieval evaluation charts from saved CSV metrics.
 
-Mirrors the plotting code in
-modules/retrieval/notebooks/03_rag_recommendation_evaluation.ipynb
-(cells 28-29), so the output style matches the existing charts. Both
-retrieval_comparison.csv and detail_v2_<retriever>.csv reflect the v2
-(pooled + citation-graph) gold standard -- see eval_queries_v2.json and
-results/retrieval/retrieval_comparison_v1_vs_v2.csv. Picks up whatever
-retrievers/rows are currently in retrieval_comparison.csv (e.g. 4 or 5
-methods) automatically.
+Rebuilds comparison bar charts and nDCG heatmaps from on-disk evaluation CSVs
+without rerunning the full retrieval notebook. Output style matches the notebook
+plots in modules/retrieval/notebooks/03_rag_recommendation_evaluation.ipynb.
 
 Usage:
     python modules/retrieval/scripts/regenerate_eval_charts.py
@@ -88,7 +79,8 @@ def plot_ndcg_heatmap(comparison: pd.DataFrame, eval_queries_v2: list[dict]) -> 
     print(f"Saved {out_path}")
 
 
-def main():
+def main() -> None:
+    """Regenerate comparison charts from saved evaluation CSVs."""
     comparison = pd.read_csv(RESULTS_DIR / "retrieval_comparison.csv", index_col=0)
     eval_queries_v2 = json.loads(V2_PATH.read_text())
     print(f"Retrievers: {comparison.index.tolist()}")

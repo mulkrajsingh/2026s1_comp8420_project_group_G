@@ -1,7 +1,7 @@
 """APA-style citation formatting for PaperRecord objects.
 
-APA 7th edition format:
-  Author, A. A., & Author, B. B. (Year). Title of article. Journal Name. https://doi.org/...
+Formats author lists, year, title, venue, and DOI or arXiv URL following
+APA 7th edition conventions used in recommendation exports.
 """
 
 from __future__ import annotations

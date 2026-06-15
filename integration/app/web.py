@@ -1,4 +1,4 @@
-"""Build and serve the canonical Vite frontend with the local FastAPI app."""
+"""Build and serve the Vite frontend together with the local FastAPI API."""
 
 from __future__ import annotations
 

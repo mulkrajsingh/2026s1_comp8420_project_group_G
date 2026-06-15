@@ -1,4 +1,4 @@
-"""Audit generated outputs for source-id and citation-grounding safety."""
+"""Audit generated outputs for source-ID and citation-grounding safety."""
 
 from __future__ import annotations
 
@@ -24,6 +24,7 @@ def _prompt_pack_by_id(test_set: Path) -> dict[str, dict[str, Any]]:
 
 
 def main() -> None:
+    """Write per-output faithfulness CSV and summary JSON for model generations."""
     parser = argparse.ArgumentParser(description="Evaluate evidence grounding for generated outputs.")
     parser.add_argument("--generations", default="results/model_comparison/model_generations.jsonl")
     parser.add_argument("--test-set", default="data/eval/fixed_prompts.jsonl")

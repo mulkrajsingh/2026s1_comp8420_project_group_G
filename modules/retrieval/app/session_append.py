@@ -1,4 +1,8 @@
-"""Append schema-versioned retrieval events to the active integration session."""
+"""Append retrieval events to the active integration session log.
+
+When ``COMP8420_SESSION_LOG`` is set, writes schema-versioned JSONL events
+with optional redaction of configured secret substrings.
+"""
 from __future__ import annotations
 
 import json

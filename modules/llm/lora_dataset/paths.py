@@ -1,4 +1,7 @@
-"""Paths for LoRA dataset artifacts (relative to modules/llm root)."""
+"""Canonical paths and sampling limits for LoRA dataset artifacts.
+
+All paths are relative to the ``modules/llm`` workstream root.
+"""
 
 from __future__ import annotations
 

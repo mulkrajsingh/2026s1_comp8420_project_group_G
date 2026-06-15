@@ -1,4 +1,8 @@
-"""PaperRecord corpus loader and evaluation queries."""
+"""PaperRecord corpus paths and evaluation query fixtures.
+
+Loads the shared dev corpus, keyword-style benchmark queries, and optional
+user-like queries with hand-labelled relevant paper IDs.
+"""
 
 from __future__ import annotations
 

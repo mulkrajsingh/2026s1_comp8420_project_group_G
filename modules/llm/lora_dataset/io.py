@@ -1,4 +1,4 @@
-"""Shared helpers for adapter instruction JSONL (chat format for SFT)."""
+"""Shared helpers for adapter instruction JSONL in chat format for SFT."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from app.runtime import prompt_text_for_record
 
 
 def write_jsonl(path: Path, records: Iterable[dict[str, Any]]) -> None:
+    """Write chat-format instruction rows to JSONL."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         for record in records:
@@ -19,6 +20,7 @@ def write_jsonl(path: Path, records: Iterable[dict[str, Any]]) -> None:
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
+    """Read chat-format instruction rows from JSONL."""
     records: list[dict[str, Any]] = []
     with path.open("r", encoding="utf-8") as handle:
         for line in handle:
@@ -29,6 +31,7 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
 
 
 def validate_messages_record(record: dict[str, Any]) -> None:
+    """Raise when a chat row is missing required message roles."""
     messages = record.get("messages")
     if not isinstance(messages, list) or len(messages) < 2:
         raise ValueError("Record must include messages with at least system/user/assistant turns.")
@@ -47,6 +50,7 @@ def chat_record(
     license_note: str,
     system_content: str = SYSTEM_GUARDRAILS,
 ) -> dict[str, Any]:
+    """Build one validated chat-format SFT row."""
     record = {
         "messages": [
             {"role": "system", "content": system_content},
@@ -71,6 +75,7 @@ def prompt_record_to_chat(
     license_note: str,
     strategy: str = "few_shot",
 ) -> dict[str, Any]:
+    """Convert a runtime prompt record into a chat-format SFT row."""
     user_content = prompt_text_for_record(prompt_record, strategy)
     return chat_record(
         user_content=user_content,
@@ -84,6 +89,7 @@ def prompt_record_to_chat(
 
 
 def load_messages_jsonl_dir(directory: Path, source_label: str) -> list[dict[str, Any]]:
+    """Load and validate every JSONL file in a directory."""
     records: list[dict[str, Any]] = []
     if not directory.exists():
         return records
@@ -99,6 +105,7 @@ def load_messages_jsonl_dir(directory: Path, source_label: str) -> list[dict[str
 
 
 def truncate(text: str, max_chars: int) -> str:
+    """Collapse whitespace and truncate long text with an ellipsis."""
     cleaned = re.sub(r"\s+", " ", text or "").strip()
     if len(cleaned) <= max_chars:
         return cleaned

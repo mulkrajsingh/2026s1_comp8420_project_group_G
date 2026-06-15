@@ -1,4 +1,9 @@
-"""Load LLM module helpers without importing the other `app` package."""
+"""Load LLM module helpers without colliding with the integration ``app`` package.
+
+The repository contains two ``app`` trees (integration and modules/llm). These
+loaders import the LLM runtime and ReAct loop by file location so integration
+code never shadows the member module package.
+"""
 
 from __future__ import annotations
 
@@ -45,8 +50,10 @@ def _runtime_module():
 
 
 def build_llm_runtime(ollama_host: str):
+    """Return a configured Ollama runtime from the LLM module."""
     return _runtime_module().build_runtime(ollama_host)
 
 
 def run_react_topic_rag(*args, **kwargs):
+    """Run the LLM module ReAct topic-RAG loop with the supplied callbacks."""
     return _react_loop_module().run_react_topic_rag(*args, **kwargs)

@@ -1,7 +1,7 @@
-"""Member module command wiring for the shared integration CLI.
+"""Member-module commands registered on the shared integration CLI.
 
-Each command delegates to the owning module CLI or dataset script so markers
-can run one entry point from `integration/`.
+Each Typer command shells out to the owning module CLI or dataset script so
+reviewers can exercise member work from one entry point under ``integration/``.
 """
 from __future__ import annotations
 

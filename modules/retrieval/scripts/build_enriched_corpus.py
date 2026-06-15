@@ -1,16 +1,12 @@
-"""
-Consolidate Yash's Semantic Scholar cache into a full dev_5k_enriched.jsonl.
+"""Merge Semantic Scholar cache entries into dev_5k_enriched.jsonl.
 
-Replicates the enrich_record() / _extract_reference_ids() logic from
-modules/dataset/01_data_preprocessing_2.ipynb (Stage 02b), but reads S2 results
-from the on-disk cache instead of calling the API. Resumable: records that are
-already s2_enriched=True are passed through unchanged, and records with no cache
-entry yet are left unenriched (s2_enriched=False) so a later re-run (once Yash's
-cache reaches 5000/5000) picks them up automatically.
+Replicates enrich_record logic from modules/dataset/01_data_preprocessing_2.ipynb,
+but reads cached S2 JSON instead of calling the API. Already-enriched records
+pass through unchanged. Missing cache entries stay unenriched for later runs.
 
-Reads (Yash's canonical module / data — not modified):
-    modules/dataset/data/processed/dev_5k.jsonl   (5000 PaperRecords)
-    modules/dataset/data/cache/s2/<arxiv_id>.json (local per-paper S2 cache)
+Reads:
+    modules/dataset/data/processed/dev_5k.jsonl
+    modules/dataset/data/cache/s2/<arxiv_id>.json
 
 Writes:
     modules/dataset/data/processed/dev_5k_enriched.jsonl
@@ -27,6 +23,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def cache_path(cache_dir: Path, arxiv_id: str) -> Path:
+    """Return the on-disk path for one arXiv ID in the S2 cache."""
     return cache_dir / (arxiv_id.replace("/", "_") + ".json")
 
 
@@ -52,6 +49,7 @@ def enrich_record(record: dict, s2_data: dict) -> dict:
 
 
 def build(input_jsonl: Path, cache_dir: Path, outputs: list[Path]) -> None:
+    """Merge cached S2 fields into each PaperRecord and write output JSONL files."""
     records = [json.loads(l) for l in input_jsonl.read_text().splitlines() if l.strip()]
 
     already = newly_enriched = cached_miss = no_cache = 0
@@ -87,7 +85,8 @@ def build(input_jsonl: Path, cache_dir: Path, outputs: list[Path]) -> None:
     print(f"  s2_enriched=True:   {total_enriched} ({total_enriched / len(records):.1%})")
 
 
-def main():
+def main() -> None:
+    """Parse CLI arguments and run corpus enrichment."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--input",
