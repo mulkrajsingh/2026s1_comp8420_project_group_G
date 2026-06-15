@@ -89,8 +89,10 @@ pytest modules/dataset/tests modules/pdf_nlp/tests \
        integration/tests tests/
 ```
 
-The enriched corpus used for retrieval is
-`modules/dataset/data/processed/dev_5k_enriched.jsonl`. The LoRA adapter archive
+The balanced corpus used for production retrieval is
+`modules/dataset/data/processed/dev_5k_balanced.jsonl` (the enriched variant
+`dev_5k_enriched.jsonl` adds Semantic Scholar fields used during dataset
+analysis). The LoRA adapter archive
 is delivered via `setup_assets.py` to
 `modules/llm/models/releases/` (not present in a fresh clone until setup runs).
 
@@ -116,16 +118,17 @@ Kaggle arXiv metadata dump into `PaperRecord` JSONL files. Notebook
 vocabulary. Script `modules/dataset/scripts/build_balanced_corpus.py` creates a
 balanced subset for production retrieval. Script
 `modules/dataset/scripts/evaluate_domain_classifier.py` trains a TF-IDF plus
-logistic regression baseline. The enriched file
-`modules/dataset/data/processed/dev_5k_enriched.jsonl` adds Semantic Scholar
-fields and is the default corpus path for retrieval.
+logistic regression baseline. The balanced file
+`modules/dataset/data/processed/dev_5k_balanced.jsonl` is the default corpus
+path for production retrieval; the enriched variant
+`dev_5k_enriched.jsonl` adds Semantic Scholar fields used during analysis.
 
 ### PDF-NLP (`modules/pdf_nlp/`)
 
 The PDF-NLP module turns an uploaded file into a structured `ParsedPaper`.
 `modules/pdf_nlp/pdf_parser.py` extracts sections and metadata with
 deterministic rules. `modules/pdf_nlp/paper_analysis.py` adds spaCy POS tags,
-SciNER entities, KeyBERT keyphrases, and an extractive summary. The CLI under
+SciER entities, KeyBERT keyphrases, and an extractive summary. The CLI under
 `modules/pdf_nlp/app/cli.py` supports parse, enrich, evaluate, and model
 asset checks. Runtime models are installed through `setup_assets.py`.
 

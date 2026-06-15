@@ -64,7 +64,7 @@ class PaperAnalysisTests(unittest.TestCase):
                 "text": "transformer model",
                 "score": 0.8,
                 "section": "abstract",
-                "source": "nadiyah_keybert_minilm",
+                "source": "keybert_minilm",
             }
         ]
         summary = {

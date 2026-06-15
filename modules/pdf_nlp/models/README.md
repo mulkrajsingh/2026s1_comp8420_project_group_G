@@ -10,5 +10,7 @@ Run the command without `--archive` to validate the current installation.
 [`manifest.json`](manifest.json) defines the accepted layout, compatibility
 versions, attribution, file sizes, and SHA-256 hashes.
 
-The Google Drive URL is intentionally not hard-coded until the project owner
-provides the final archive location.
+For a fresh clone, the runtime archive is delivered by the repository-root
+`setup_assets.py` workflow (`pdf_nlp_models.zip`); see the root `readme.md` for
+the one-time download and verification steps. Installing a user-supplied archive
+with `--archive` remains supported for module owners.

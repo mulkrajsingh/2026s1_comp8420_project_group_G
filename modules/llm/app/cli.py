@@ -679,7 +679,7 @@ def build_parser() -> argparse.ArgumentParser:
     """Build the public LLM command-line interface."""
     parser = argparse.ArgumentParser(
         prog="python -m app.cli",
-        description="Mulkraj LLM CLI for synthesis, evaluation, and adapter workflows.",
+        description="LLM CLI for synthesis, evaluation, and adapter workflows.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 

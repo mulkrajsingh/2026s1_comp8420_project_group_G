@@ -25,7 +25,7 @@ class PaperRecommendationRoutingTests(unittest.TestCase):
         self.assertEqual(analysis.style, "concise")
         self.assertTrue(analysis.should_use_retrieval)
 
-    def test_extracted_topic_is_used_for_bank_query(self) -> None:
+    def test_extracted_topic_is_used_for_retrieval_query(self) -> None:
         recommendation = Recommendation(
             "artificial intelligence",
             [

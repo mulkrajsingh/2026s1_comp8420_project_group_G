@@ -12,8 +12,8 @@ categories in that set.
 ## This run
 | Metric | Value |
 | --- | --- |
-| Input file | `data\raw\arxiv-metadata-oai-snapshot.json` |
-| Output file | `data\processed\dev_5k.jsonl` |
+| Input file | `data/raw/arxiv-metadata-oai-snapshot.json` |
+| Output file | `data/processed/dev_5k.jsonl` |
 | Limit | 5,000 |
 | Records scanned | 344,821 |
 | Records written | 5,000 |

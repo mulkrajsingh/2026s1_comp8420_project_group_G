@@ -19,8 +19,8 @@ Cached/offline run so nothing fails on network or model latency. All five member
 | 0:00-0:30 | Problem + architecture | Slide 2 architecture diagram | Sidharth |
 | 0:30-1:10 | Dataset + EDA | Yash's charts, classifier table | Yash |
 | 1:10-1:50 | PDF parsing + NER/POS | `parse-pdf` output, NER table | Nadiyah |
-| 1:50-2:40 | Retrieval comparison | TF-IDF/BM25/SPECTER2 table, PCA | Bank |
-| 2:40-3:30 | Prompting + LoRA | prompt comparison, base vs LoRA | Mulkraj |
+| 1:50-2:40 | Retrieval comparison | TF-IDF/BM25/SPECTER2 table, PCA | Retrieval member |
+| 2:40-3:30 | Prompting + LoRA | prompt comparison, base vs LoRA | LLM member |
 | 3:30-4:30 | Live system demo | `python -m app.cli run` -> analysis_result.json + report | Sidharth |
 | 4:30-5:00 | Findings + limitations | key results, future work | Anyone |
 
@@ -52,7 +52,7 @@ GroupID_Assignment3/
     01_data_preprocessing.ipynb                 (Yash)
     02_pdf_basic_nlp.ipynb                       (Nadiyah)
     03_rag_recommendation_evaluation.ipynb       (Bank)
-    04_model_comparison.ipynb                    (Mulkraj)
+    04_model_comparison.ipynb                    (LLM module)
     05_end_to_end_demo.ipynb                     (Sidharth)
     app/  tests/  outputs/  results/  README.md
   Individual_contribution_form/

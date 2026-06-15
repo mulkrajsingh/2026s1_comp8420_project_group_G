@@ -27,7 +27,7 @@ from app.runtime import (  # noqa: E402
 
 def main() -> None:
     """Run fixed-prompt comparisons for prompts and model variants."""
-    parser = argparse.ArgumentParser(description="Evaluate Mulkraj prompt/model configurations.")
+    parser = argparse.ArgumentParser(description="Evaluate LLM prompt and model configurations.")
     parser.add_argument("--test-set", default="data/eval/fixed_prompts.jsonl")
     parser.add_argument("--prompt-out", default="results/prompt_comparison")
     parser.add_argument("--model-out", default="results/model_comparison")

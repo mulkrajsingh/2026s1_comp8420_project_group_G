@@ -155,7 +155,7 @@ class ProductionProviderTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             providers.require("synthesizer")
 
-    def test_topic_pipeline_uses_bank_ranking_and_apa(self) -> None:
+    def test_topic_pipeline_uses_retrieval_ranking_and_apa(self) -> None:
         providers = Providers()
         providers.add("paper_source", StaticSource(), "file-backed")
         providers.add("recommender", LiveRecommender(), "live")
@@ -180,7 +180,7 @@ class ProductionProviderTests(unittest.TestCase):
             with self.assertRaisesRegex(FileNotFoundError, "Dataset production corpus missing"):
                 service._resolve_corpus(str(missing))
 
-    def test_bank_cli_is_invoked_and_current_artifacts_are_required(self) -> None:
+    def test_retrieval_cli_is_invoked_and_current_artifacts_are_required(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             corpus = root / "dev_5k.jsonl"
@@ -236,7 +236,7 @@ class ProductionProviderTests(unittest.TestCase):
             self.assertNotIn("--tfidf-only", command)
             self.assertEqual(recommendation.items[0]["apa_citation"], "Bank APA")
 
-    def test_bank_cli_passes_tfidf_retrieval_strategy(self) -> None:
+    def test_retrieval_cli_passes_tfidf_retrieval_strategy(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             corpus = root / "dev_5k.jsonl"
@@ -270,7 +270,7 @@ class ProductionProviderTests(unittest.TestCase):
             )
             self.assertNotIn("--embedding-model", command)
 
-    def test_mulkraj_cli_is_invoked_for_synthesis_and_topic_answer(self) -> None:
+    def test_llm_cli_is_invoked_for_synthesis_and_topic_answer(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             outputs = Path(temp_dir)
             evidence = outputs / "rag_evidence_pack.json"
@@ -443,7 +443,7 @@ class ProductionProviderTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "live PDF parser unavailable"):
                 operation()
 
-    def test_nadiyah_cli_is_invoked_for_live_pdf_parse(self) -> None:
+    def test_pdf_nlp_cli_is_invoked_for_live_pdf_parse(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             pdf = root / "sample.pdf"
@@ -543,7 +543,7 @@ class ProductionProviderTests(unittest.TestCase):
 
         self.assertEqual(result.query, "topic")
 
-    def test_topic_chat_orchestration_uses_live_bank_and_mulkraj(self) -> None:
+    def test_topic_chat_orchestration_uses_live_bank_and_llm(self) -> None:
         session = Mock()
         registered: dict[str, str] = {}
 

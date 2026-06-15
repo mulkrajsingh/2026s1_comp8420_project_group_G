@@ -1,7 +1,7 @@
-# Mulkraj LoRA Train — Hybrid + arXiv RAG Manifest
+# LoRA Training Dataset — Hybrid + arXiv RAG Manifest
 
 Total training rows: 16998
-Output: `data/processed/mulkraj_lora_train_hybrid_plus_arxiv_rag.jsonl`
+Output: `data/processed/lora_train_hybrid_arxiv_rag.jsonl`
 Shuffle seed: 42
 SHA-256: `cf8642c4b61cf2fa5e75d86621be21daab34e13fc1e81612c3637d05e667d6ee`
 
@@ -30,4 +30,4 @@ Input checksums:
 - `scicite`: 3000
 - `scitldr`: 1992
 
-Train: python training/train_lora_qlora.py --qlora
+Train with the QLoRA notebook: `modules/llm/notebooks/train_lora_adapter.ipynb`.

@@ -12,8 +12,8 @@ categories in that set.
 ## This run
 | Metric | Value |
 | --- | --- |
-| Input file | `data\raw\sample_arxiv.json` |
-| Output file | `data\processed\dev_sample.jsonl` |
+| Input file | `data/raw/sample_arxiv.json` |
+| Output file | `data/processed/dev_sample.jsonl` |
 | Limit | 5,000 |
 | Records scanned | 5 |
 | Records written | 4 |

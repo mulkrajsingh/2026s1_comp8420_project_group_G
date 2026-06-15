@@ -1,2 +1,2 @@
-"""Mulkraj LLM workstream: local generation, evaluation, and adapter training."""
+"""LLM module: local generation, evaluation, and adapter training."""
 

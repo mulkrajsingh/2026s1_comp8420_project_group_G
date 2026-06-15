@@ -83,12 +83,12 @@ print('rows', sum(1 for _ in p.open()))
 "
 ```
 
-Expected total: **16998** rows (13992 hybrid + 3000 project_arxiv_rag + 6 seeds). See `final_dataset/research_lora_train_manifest.md` for per-source counts. Upload `final_dataset/research_lora_train.zip` to Colab via Google Drive.
+Expected total: **16998** rows (13992 hybrid + 3000 project_arxiv_rag + 6 seeds). The merge step (step 5) writes a `research_lora_train_manifest.md` next to the JSONL with per-source counts; committed per-source manifests are under `data/processed/*_manifest.md`. Upload `final_dataset/research_lora_train.zip` to Colab via Google Drive.
 
 ## Troubleshooting
 
 - **HF download errors:** set `HF_TOKEN` in `.env` if a gated dataset fails; retry with stable network.
-- `**kaggle` not found:** `pip install kaggle` or use `python -m kaggle`.
+- **`kaggle` not found:** `pip install kaggle` or use `python -m kaggle`.
 - **Synthetic corpus refused:** delete `project_arxiv_rag_corpus_3k.jsonl` if it contains `sample_`* IDs and rebuild with Kaggle raw present.
 - **Missing hybrid with `--skip-hybrid`:** run once without `--skip-hybrid` (downloads from Hugging Face).
 

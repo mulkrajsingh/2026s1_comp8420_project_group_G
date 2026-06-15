@@ -131,7 +131,7 @@ def main() -> None:
     arrow(ax, (5, 3.05), (5, 2.4))
 
     box(ax, 5, 1.85, 9.0, 1.1,
-        "Hand-off to Mulkraj's LLM/RAG synthesis module\n"
+        "Hand-off to LLM/RAG synthesis module\n"
         "-> LLM generates final answer using the evidence\n"
         "   snippets + chosen prompt template, citing each\n"
         "   source_id -> returned to user with APA references",

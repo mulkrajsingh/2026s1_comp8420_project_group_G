@@ -66,5 +66,5 @@ classification, or a SPECTER2 classification result.
 Run from [`integration/`](../../integration/):
 
 ```bash
-cd integration && python -m app.cli run --corpus ../modules/dataset/data/processed/dev_5k.jsonl
+cd integration && python -m app.cli run --corpus ../modules/dataset/data/processed/dev_5k_balanced.jsonl
 ```

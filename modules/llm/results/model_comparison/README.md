@@ -10,8 +10,7 @@ Two dated result sets are retained:
 
 The intermediate corrected, hardened, sanitized, and pre-enforcement citation
 runs were removed after their decisions were captured in
-`ollama_20260614/human_review.md` and
-`outputs/system_quality_iteration_log_2026-06-14.md`.
+`ollama_20260614/human_review.md`.
 
 Top-level training metrics and run notes describe adapter-training evidence.
 Prior proxy `prompt_comparison/` and top-level proxy comparison outputs were

@@ -269,7 +269,7 @@ def entity_analysis(paper: dict[str, Any]) -> list[dict[str, Any]]:
                         "text": str(prediction.get("word") or "").strip(),
                         "type": label,
                         "score": round(score, 6),
-                        "source": "nadiyah_scier_distilbert",
+                        "source": "scier_distilbert",
                         "section": sentence["section"],
                         "start": sentence["start"] + int(prediction.get("start") or 0),
                         "end": sentence["start"] + int(prediction.get("end") or 0),
@@ -360,7 +360,7 @@ def keyphrase_analysis(
                 "text": phrase,
                 "score": round(float(score), 6),
                 "section": section,
-                "source": "nadiyah_keybert_minilm",
+                "source": "keybert_minilm",
             }
             for phrase, score in rows
         )

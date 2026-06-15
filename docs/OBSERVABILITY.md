@@ -70,7 +70,7 @@ python -m app.cli session-inspect <run-id> --status failed
 CLI bookkeeping and duplicate diagnostic rows). Use the JSONL file for
 filtering or video timelines.
 
-## API And Frontend
+## API and Frontend
 
 The canonical frontend creates one timestamped conversation with
 `POST /api/sessions`. Each synchronous text or PDF request includes that

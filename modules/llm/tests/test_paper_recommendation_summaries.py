@@ -123,7 +123,7 @@ class PaperRecommendationSummaryTests(unittest.TestCase):
         self.assertEqual(cards[0]["summary"], "Alpha snippet.")
         self.assertEqual(cards[1]["summary"], "Beta snippet.")
 
-    def test_metadata_comes_from_bank_not_llm(self) -> None:
+    def test_metadata_comes_from_retrieval_not_llm(self) -> None:
         pack = _pack()
         result = GenerationResult(
             text='{"paper_summaries": [{"source_id": "p2", "summary": "Only p2 summarized."}]}',

@@ -85,7 +85,7 @@ def _entity_metrics(
 ) -> dict[str, Any]:
     if track == "scier":
         selected = [
-            row for row in mentions if row["source"] == "nadiyah_scier_distilbert"
+            row for row in mentions if row["source"] == "scier_distilbert"
         ]
     elif track == "baseline":
         selected = [

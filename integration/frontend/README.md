@@ -1,6 +1,6 @@
 # Canonical Research Assistant UI
 
-A ChatGPT-style web UI for the Research Paper Analysis system.
+A conversational web UI for the Research Paper Analysis system.
 Built with **Vite** (vanilla JS, lightweight) and **pnpm**. Talks to the local
 FastAPI backend.
 
@@ -16,6 +16,7 @@ This installs frontend dependencies when needed, builds stale or missing assets,
 and serves the UI and API at http://127.0.0.1:8000.
 
 ## Run (development)
+
 1. Start the backend from the repository root:
    ```bash
    scripts/rpa web --reload
@@ -29,6 +30,7 @@ and serves the UI and API at http://127.0.0.1:8000.
 The dev server proxies `/api/*` to `http://127.0.0.1:8000`, so no CORS setup is needed.
 
 ## Build for submission
+
 ```bash
 scripts/rpa web --rebuild
 ```
@@ -69,6 +71,7 @@ are covered by API/integration tests using repository PDFs. Optional queued job
 endpoints remain available for compatibility and observability tooling.
 
 ## If pnpm pauses on install
+
 pnpm may say `Ignored build scripts: esbuild`. Run this once and select esbuild:
 ```bash
 pnpm approve-builds

@@ -36,7 +36,7 @@ fixtures, and production session evidence.
 | LLM-05 | Citation guard | Irrelevant candidates | Candidate is not promoted as a direct citation | `modules/llm/tests/test_ollama_runtime.py` |
 | LLM-06 | Empty response | Thinking consumes output budget | Runtime retries once without thinking and records fallback metadata | `test_empty_thinking_response_retries_without_thinking` |
 | LLM-07 | Base vs LoRA | Fixed prompts, Ollama | Same prompt strategy and input boundaries; negative result remains reportable | `modules/llm/tests/test_model_comparison_fairness.py` |
-| INT-01 | Topic pipeline | Topic query, Ollama | Yash corpus -> Bank retrieval -> Mulkraj synthesis -> `AnalysisResult` | `tests/e2e/test_integration_cli.py` |
+| INT-01 | Topic pipeline | Topic query, Ollama | Dataset module -> Retrieval module -> LLM synthesis -> `AnalysisResult` | `tests/e2e/test_integration_cli.py` |
 | INT-02 | PDF with related papers | DrQ-v2, Ollama | Parse first; title, then abstract fallback, becomes Bank query | `test_run_analyze_pdf_registers_retrieval_with_parsed_title` |
 | INT-03 | PDF paper-only | DrQ-v2, Ollama | Parser and synthesizer run; retrieval is not registered or executed | `test_run_analyze_pdf_no_related_papers_skips_retrieval` |
 | INT-04 | PDF question | Parsed DrQ-v2, Ollama | Answer is grounded in the uploaded paper and skips external retrieval | `test_chat_with_parsed_paper` |
@@ -90,18 +90,26 @@ session row has `status=failed` or a non-empty `error`.
 
 Accepted sessions:
 
-| Case | Session |
-| --- | --- |
-| Direct greeting | `20260614-175236-509719` |
-| Topic RAG answer | `20260614-175249-269180` |
-| Five-paper recommendation | `20260614-180410-800955` |
-| Paper-only analysis | `20260614-180804-765352` |
-| Analysis with related papers | `20260614-182556-476951` |
-| Peer review | `20260614-182925-287725` |
-| PDF-grounded question | `20260614-183533-906294` |
+The sanitized live traces below are committed under
+`integration/data/sessions/` and serve as the rubric evidence for each
+acceptance case. Where a committed live trace is not retained, the case is
+covered by the automated end-to-end test listed instead.
 
-All seven traces have zero failed events, zero mock-provider markers, zero
-absolute temporary paths, and no retained PDF uploads.
+| Case | Committed session or test |
+| --- | --- |
+| Direct greeting | `20260614-040608-044342` |
+| Topic RAG answer | `20260615-200528-379540` (turn 2, `retrieval_augmented_chat`) |
+| Five-paper recommendation | `20260614-044236-784050` |
+| Paper-only analysis | `20260615-222652-753877` |
+| Analysis with related papers | `20260614-042831-590300` |
+| Peer review | `tests/e2e/test_llm.py::test_peer_review_style_summarize` |
+| PDF-grounded question | `20260614-050431-210855` |
+
+Every committed acceptance trace above has zero failed events, zero
+mock-provider markers, zero absolute temporary paths, and no retained PDF
+uploads. The session `20260615-221959-652335` is retained deliberately as a
+negative regression trace (a paper-only analysis that failed) and is excluded
+from the acceptance set.
 
 ## Browser Acceptance Status
 

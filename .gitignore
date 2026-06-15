@@ -54,3 +54,9 @@ modules/llm/data/processed/final_dataset/
 modules/dataset/data/raw/
 modules/dataset/data/cache/
 modules/retrieval/data/cache/
+
+# Report artefacts — kept local, not committed to GitHub
+Report/
+
+# Generated figure cache (intermediate output of generate_report_figures.py)
+modules/llm/results/report_figures/

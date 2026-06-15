@@ -15,7 +15,7 @@
 | --- | --- |
 | Base model | `Qwen/Qwen3-8B` |
 | Method | QLoRA with PEFT 0.19.1 and TRL |
-| Dataset | 17,298 chat-format rows |
+| Dataset | 17,298 chat-format rows (rendered from the 16,998-row `research_lora_train.jsonl`; see `lora_dataset_eda_summary.md`) |
 | Split | 80/10/10, seed 42 |
 | Epochs | 1 |
 | LoRA rank / alpha / dropout | 16 / 32 / 0.05 |
