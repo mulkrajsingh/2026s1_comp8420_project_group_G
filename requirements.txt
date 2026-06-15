@@ -1,0 +1,54 @@
+# COMP8420 Use Case 3 - canonical project dependencies
+# Install from the repository root with: pip install -r requirements.txt
+
+# Integration CLI, API, and local web backend
+typer>=0.12
+fastapi>=0.110
+uvicorn>=0.29
+python-multipart>=0.0.9
+pydantic>=2.0
+httpx
+
+# Data processing and enrichment
+numpy==2.3.4
+pandas>=2.0
+nltk>=3.8
+requests>=2.31
+tqdm>=4.66
+python-dotenv>=1.0
+
+# Production PDF-NLP runtime
+pypdf
+regex
+keybert==0.9.0
+networkx==3.5
+scikit-learn==1.7.2
+sentence-transformers==5.2.0
+spacy==3.8.11
+torch==2.9.1
+torchvision==0.24.1
+transformers==4.57.1
+
+# Retrieval, evaluation, and visualisation
+rank-bm25>=0.2.2
+faiss-cpu>=1.7
+chromadb>=0.4
+matplotlib>=3.7
+seaborn>=0.13
+wordcloud>=1.9
+
+# Local model preparation and LoRA/QLoRA training
+datasets
+huggingface-hub
+peft>=0.10
+trl
+accelerate>=0.30
+sentencepiece
+gdown
+bitsandbytes>=0.43; platform_system == "Linux"
+
+# Project notebooks
+IPython
+nbformat>=5.9
+ipykernel>=6.0
+jupyter>=1.0

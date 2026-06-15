@@ -1,0 +1,9 @@
+{
+  "corpus_file": "data\\processed\\dev_5k.jsonl",
+  "total_records": 5000,
+  "valid_records": 5000,
+  "invalid_records": 0,
+  "missing_doi": 3902,
+  "missing_venue": 3292,
+  "problems_by_line": {}
+}

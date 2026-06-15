@@ -1,0 +1,98 @@
+{
+  "method": "SHA-256 over each raw pipeline output after excluding runtime, process-memory, timing, full extracted-text, and the non-functional PyMuPDF4LLM markdown character-count diagnostic",
+  "primary": "/Users/kyojin/work/uni/nlp_comp8420/major proj/comp8420_NLP_project/modules/nadiyah_changed/results/comparison",
+  "repeat": "/Users/kyojin/work/uni/nlp_comp8420/major proj/comp8420_NLP_project/modules/nadiyah_changed/results/comparison_offline_repeat",
+  "comparison_count": 10,
+  "matching_count": 10,
+  "all_match": true,
+  "comparisons": [
+    {
+      "paper_id": "bert",
+      "track": "nadiyah_repaired",
+      "primary_hash": "1082e90f8b95d0c6c157d0371b3ba18a6f5cc2495e2f0542b447ba12559f569b",
+      "repeat_hash": "1082e90f8b95d0c6c157d0371b3ba18a6f5cc2495e2f0542b447ba12559f569b",
+      "match": true
+    },
+    {
+      "paper_id": "bert",
+      "track": "reference",
+      "primary_hash": "de4cc0e3b61adc7e12025528b9785cc7c8a11a78d362e7cb8feb38a7e21fa759",
+      "repeat_hash": "de4cc0e3b61adc7e12025528b9785cc7c8a11a78d362e7cb8feb38a7e21fa759",
+      "match": true
+    },
+    {
+      "paper_id": "drq_v2",
+      "track": "nadiyah_repaired",
+      "primary_hash": "7337762023d4020234ca4ad262ff8eb4beb45951a764927e0a902460898498cf",
+      "repeat_hash": "7337762023d4020234ca4ad262ff8eb4beb45951a764927e0a902460898498cf",
+      "match": true
+    },
+    {
+      "paper_id": "drq_v2",
+      "track": "reference",
+      "primary_hash": "d75602d2a9cc89643d8c27d1a72ac916b4ea251eda151c90aebe5209aa8fac77",
+      "repeat_hash": "d75602d2a9cc89643d8c27d1a72ac916b4ea251eda151c90aebe5209aa8fac77",
+      "match": true
+    },
+    {
+      "paper_id": "rag",
+      "track": "nadiyah_repaired",
+      "primary_hash": "916f4955f7fe9d23bb0f575217737a04b7cf1186cee4c890afb53cad28c9b620",
+      "repeat_hash": "916f4955f7fe9d23bb0f575217737a04b7cf1186cee4c890afb53cad28c9b620",
+      "match": true
+    },
+    {
+      "paper_id": "rag",
+      "track": "reference",
+      "primary_hash": "f47f91bc5585d942202b2ec285734c5fb0818df259788a60090a42d89627efb2",
+      "repeat_hash": "f47f91bc5585d942202b2ec285734c5fb0818df259788a60090a42d89627efb2",
+      "match": true
+    },
+    {
+      "paper_id": "siga",
+      "track": "nadiyah_repaired",
+      "primary_hash": "f9434f54611ff7c35dd9eccc614382a51c6c9f32afeecba75e4cdd1d3335621e",
+      "repeat_hash": "f9434f54611ff7c35dd9eccc614382a51c6c9f32afeecba75e4cdd1d3335621e",
+      "match": true
+    },
+    {
+      "paper_id": "siga",
+      "track": "reference",
+      "primary_hash": "81064d744bd6602fdf46f89dd5a9ca180d87627f04554c10e91456ff69bafec7",
+      "repeat_hash": "81064d744bd6602fdf46f89dd5a9ca180d87627f04554c10e91456ff69bafec7",
+      "match": true
+    },
+    {
+      "paper_id": "transformer",
+      "track": "nadiyah_repaired",
+      "primary_hash": "ac99e3983be4fbd865912ac12b238d6fdbe9c71e0a931dfe88ecd2cc7ef84b40",
+      "repeat_hash": "ac99e3983be4fbd865912ac12b238d6fdbe9c71e0a931dfe88ecd2cc7ef84b40",
+      "match": true
+    },
+    {
+      "paper_id": "transformer",
+      "track": "reference",
+      "primary_hash": "045626ca56459c7bc21c5d358c2e1d89b0cef82f6e0e2ab624db72584ad822b8",
+      "repeat_hash": "045626ca56459c7bc21c5d358c2e1d89b0cef82f6e0e2ab624db72584ad822b8",
+      "match": true
+    }
+  ],
+  "diagnostic_differences": [
+    {
+      "paper_id": "bert",
+      "track": "nadiyah_repaired",
+      "field": "parser.markdown_characters",
+      "primary": 66226,
+      "repeat": 66230,
+      "functional_effect": "None observed; retained parser sections and all scored NLP outputs match."
+    },
+    {
+      "paper_id": "drq_v2",
+      "track": "nadiyah_repaired",
+      "field": "parser.markdown_characters",
+      "primary": 55004,
+      "repeat": 55006,
+      "functional_effect": "None observed; retained parser sections and all scored NLP outputs match."
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "input_contract": "parsed_paper_only",
+  "paper_path": "/Users/kyojin/work/uni/nlp_comp8420/major proj/comp8420_NLP_project/tests/papers/artifacts/drq_v2_parsed.json",
+  "retrieval_used": false,
+  "external_evidence_used": false,
+  "requested_style": "technical",
+  "resolved_style": "technical",
+  "query_analysis": {
+    "intent": "request_explanation",
+    "emotion": "neutral",
+    "topic_expertise": "advanced",
+    "verbosity": "detailed",
+    "style": "technical",
+    "confidence": 0.4926,
+    "cosine_confidence": 0.2964,
+    "style_source": "explicit_override",
+    "style_scores": {
+      "concise": 0.3811,
+      "beginner": 0.2378,
+      "reviewer": 0.3826,
+      "technical": 0.3512
+    },
+    "field_confidences": {
+      "intent": 0.6637,
+      "emotion": 0.6193,
+      "topic_expertise": 0.4926,
+      "verbosity": 0.6043,
+      "style": 1.0
+    },
+    "field_sources": {
+      "intent": "tinybert_fallback",
+      "emotion": "tinybert_fallback",
+      "topic_expertise": "tinybert_fallback",
+      "verbosity": "tinybert_fallback",
+      "style": "explicit_override"
+    },
+    "similarity_scores": {
+      "intent": {
+        "paper_recommendation": 0.2115,
+        "chit_chat": 0.1779,
+        "debugging": 0.0793,
+        "critique": 0.4392,
+        "request_explanation": 0.4346,
+        "question": 0.3702
+      },
+      "emotion": {
+        "frustrated": 0.1051,
+        "confused": 0.2497,
+        "positive": 0.2521,
+        "neutral": 0.2964
+      },
+      "topic_expertise": {
+        "advanced": 0.2345,
+        "beginner": 0.3132,
+        "intermediate": 0.3442
+      },
+      "verbosity": {
+        "concise": 0.3717,
+        "detailed": 0.3118,
+        "normal": 0.3464
+      },
+      "style": {
+        "concise": 0.3811,
+        "beginner": 0.2378,
+        "reviewer": 0.3826,
+        "technical": 0.3512
+      }
+    },
+    "fallback_used": true,
+    "fallback_fields": [
+      "intent",
+      "emotion",
+      "topic_expertise",
+      "verbosity"
+    ],
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "fallback_model": "cross-encoder/stsb-TinyBERT-L4"
+  },
+  "text": "# Scope\n\nDrQ-v2 is a model-free reinforcement learning (RL) algorithm designed for visual continuous control tasks. It is specifically aimed at solving complex tasks that involve high-dimensional visual inputs, such as humanoid locomotion, which were previously challenging for model-free RL methods. The algorithm is built upon the foundation of DrQ and is evaluated on the DeepMind Control Suite (DMC), a benchmark for continuous control tasks. The scope includes improving sample efficiency, reducing computational costs, and enabling direct learning from raw pixel observations without the need for additional state representations.\n\n# Core Contribution\n\nThe core contribution of DrQ-v2 is the development of a model-free RL algorithm that achieves state-of-the-art performance on visual continuous control tasks, particularly in complex humanoid locomotion scenarios. It is the first model-free method to solve such tasks directly from pixel observations, which was previously unattained by model-free approaches. DrQ-v2 introduces several algorithmic improvements that significantly enhance sample efficiency and computational efficiency, allowing most tasks to be trained in just 8 hours on a single GPU. This makes it a computationally efficient and accessible baseline for future research in visual reinforcement learning.\n\n# Method\n\nDrQ-v2 is based on the DDPG (Deep Deterministic Policy Gradient) algorithm, which is an actor-critic method for continuous control. The method incorporates several key improvements:\n\n1. **Data Augmentation**: Random shifts are applied to pixel observations to increase the diversity of the input data. Bilinear interpolation is also used to enhance the quality of the augmented images.\n\n2. **Image Encoder**: The augmented images are encoded into a low-dimensional latent space using a convolutional encoder. This encoder is shared between the actor and critic networks.\n\n3. **n-Step Returns**: The algorithm uses n-step returns to estimate the temporal difference (TD) error, which accelerates reward propagation and improves learning efficiency.\n\n4. **Clipped Double Q-Learning**: This technique is used to reduce overestimation bias in the target value, improving the stability and performance of the algorithm.\n\n5. **Exploration Schedule**: A scheduled exploration noise is introduced to balance exploration and exploitation during training.\n\n6. **Replay Buffer Optimization**: The replay buffer is managed more efficiently to improve data utilization and reduce computational bottlenecks.\n\nThe training process involves sampling transitions from the replay buffer, applying data augmentation, and updating the actor and critic networks using the computed losses.\n\n# Results\n\nDrQ-v2 achieves state-of-the-art results on the DeepMind Control Suite, particularly in complex tasks such as humanoid locomotion. It outperforms previous model-free and model-based methods in terms of sample efficiency and wall-clock training time. For example, it solves the humanoid walk and run tasks in significantly fewer training steps and hours compared to prior methods. The algorithm's efficiency allows for extensive exploration of different strategies, leading to the discovery of effective control policies.\n\n# Limitations\n\nDespite its significant improvements, DrQ-v2 has certain limitations. It is primarily designed for visual continuous control tasks and may not generalize well to other types of reinforcement learning problems. While it is computationally efficient, it still requires a substantial amount of computational resources for training on complex tasks. Additionally, the algorithm's performance is highly dependent on the quality and diversity of the data augmentation techniques used, which may limit its applicability in scenarios where such augmentations are not feasible.",
+  "backend": "ollama",
+  "model": "qwen3:8b",
+  "prompt_id": "paper_only_summary",
+  "task": "uploaded_paper_summary",
+  "strategy": "zero_shot",
+  "latency_seconds": 81.0962,
+  "error": null,
+  "evidence_ids_used": [],
+  "run_metadata": {
+    "host": "http://127.0.0.1:11434",
+    "keep_alive": "5m",
+    "temperature": 0.2,
+    "top_p": 0.9,
+    "thinking_fallback_used": false,
+    "thinking_enabled": false,
+    "thinking_policy_reason": "long_context_direct:uploaded_paper_summary",
+    "context_window": 24576,
+    "max_new_tokens": 3072,
+    "timeout_seconds": 600,
+    "ollama_load_duration_ms": 4213.2488,
+    "ollama_prompt_eval_count": 6107,
+    "ollama_prompt_eval_duration_ms": 36736.793,
+    "ollama_eval_count": 683,
+    "ollama_eval_duration_ms": 40070.093
+  }
+}

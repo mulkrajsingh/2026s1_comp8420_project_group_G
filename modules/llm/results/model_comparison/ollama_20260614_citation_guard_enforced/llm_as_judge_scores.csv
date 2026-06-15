@@ -1,0 +1,3 @@
+prompt_id,task,model_variant,correctness,structure,citation_safety,usefulness,judge,caveat
+P04,citation_recommendation,base,1.0,0.81,1.0,0.91,heuristic_local_judge,Use as consistency signal only; add human spot checks.
+P04,citation_recommendation,lora,1.0,0.81,1.0,0.91,heuristic_local_judge,Use as consistency signal only; add human spot checks.

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Repo root launcher for the integration CLI. Resolves relative PDF and JSON paths
+# from the caller directory, then runs python -m app.cli from integration/.
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+CALLER_PWD="$PWD"
+ARGS=("$@")
+case "${ARGS[0]:-}" in
+  analyze-pdf|peer-review)
+    if [[ -n "${ARGS[1]:-}" && "${ARGS[1]}" != /* && -e "$CALLER_PWD/${ARGS[1]}" ]]; then
+      ARGS[1]="$CALLER_PWD/${ARGS[1]}"
+    fi
+    ;;
+esac
+for ((i = 0; i < ${#ARGS[@]}; i++)); do
+  case "${ARGS[$i]}" in
+    --paper-json|--corpus)
+      next=$((i + 1))
+      if [[ -n "${ARGS[$next]:-}" && "${ARGS[$next]}" != /* && -e "$CALLER_PWD/${ARGS[$next]}" ]]; then
+        ARGS[$next]="$CALLER_PWD/${ARGS[$next]}"
+      fi
+      ;;
+  esac
+done
+cd "$ROOT/integration"
+exec python -m app.cli "${ARGS[@]}"

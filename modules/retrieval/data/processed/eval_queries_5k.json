@@ -1,0 +1,67 @@
+[
+  {
+    "query": "natural language processing text classification",
+    "relevant_ids": [
+      "1004.3183",
+      "1108.3848",
+      "1106.0411",
+      "1105.4318",
+      "1203.2498",
+      "1107.1322",
+      "0707.3559",
+      "1103.0398"
+    ]
+  },
+  {
+    "query": "reinforcement learning policy reward agent",
+    "relevant_ids": [
+      "1104.5687",
+      "1107.0048",
+      "1009.2566",
+      "1012.1552",
+      "1205.4839",
+      "1202.1558",
+      "1106.0221",
+      "1106.3651"
+    ]
+  },
+  {
+    "query": "support vector machine kernel classification",
+    "relevant_ids": [
+      "1101.2987",
+      "0804.0188",
+      "0912.0874",
+      "0906.4391",
+      "1010.0535",
+      "0812.3145",
+      "1202.6504",
+      "0903.4817"
+    ]
+  },
+  {
+    "query": "neural network deep learning representation",
+    "relevant_ids": [
+      "1202.2770",
+      "1111.4930",
+      "0804.3269",
+      "1105.0972",
+      "0912.1007",
+      "1110.2626",
+      "1110.0214",
+      "0712.0932"
+    ]
+  },
+  {
+    "query": "bayesian probabilistic graphical model",
+    "relevant_ids": [
+      "1111.6925",
+      "0706.2040",
+      "1106.1799",
+      "1011.0935",
+      "1004.2304",
+      "1201.4058",
+      "1107.1270",
+      "1110.6497"
+    ]
+  }
+]

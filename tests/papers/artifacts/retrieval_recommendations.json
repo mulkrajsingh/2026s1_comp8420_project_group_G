@@ -1,0 +1,130 @@
+[
+  {
+    "paper": {
+      "paper_id": "2102.00002",
+      "title": "Reinforcement Learning for Robotics",
+      "abstract": "An RL method for robotic control is introduced and evaluated.",
+      "authors": [
+        "Alan Turing"
+      ],
+      "categories": [
+        "cs.LG",
+        "cs.RO"
+      ],
+      "published_date": "2021-02-02",
+      "venue": null,
+      "doi": "10.1234/xyz",
+      "arxiv_id": "2102.00002",
+      "url": "https://arxiv.org/abs/2102.00002",
+      "source": "kaggle_arxiv",
+      "citation_count": 0,
+      "influential_citation_count": 0,
+      "references": [],
+      "tldr": "",
+      "s2_enriched": false
+    },
+    "score": 0.66,
+    "reason": "Recommended due to high keyword overlap with query terms. Title: \"Reinforcement Learning for Robotics\".",
+    "evidence": [
+      "2102.00002"
+    ],
+    "apa_citation": "Turing, A. (2021). Reinforcement Learning for Robotics. *arXiv*. https://doi.org/10.1234/xyz",
+    "relation": "similar"
+  },
+  {
+    "paper": {
+      "paper_id": "2103.00003",
+      "title": "Bayesian Methods in Statistical Machine Learning",
+      "abstract": "We study Bayesian inference techniques for ML models.",
+      "authors": [
+        "Ada Lovelace"
+      ],
+      "categories": [
+        "stat.ML",
+        "stat.TH"
+      ],
+      "published_date": "2021-03-03",
+      "venue": null,
+      "doi": null,
+      "arxiv_id": "2103.00003",
+      "url": "https://arxiv.org/abs/2103.00003",
+      "source": "kaggle_arxiv",
+      "citation_count": 0,
+      "influential_citation_count": 0,
+      "references": [],
+      "tldr": "",
+      "s2_enriched": false
+    },
+    "score": 0.3715,
+    "reason": "Recommended due to high semantic similarity between query and abstract. Title: \"Bayesian Methods in Statistical Machine Learning\".",
+    "evidence": [
+      "2103.00003"
+    ],
+    "apa_citation": "Lovelace, A. (2021). Bayesian Methods in Statistical Machine Learning. *arXiv*. https://arxiv.org/abs/2103.00003",
+    "relation": "similar"
+  },
+  {
+    "paper": {
+      "paper_id": "2101.00001",
+      "title": "A Transformer Approach to Neural Machine Translation",
+      "abstract": "We propose a new transformer model that outperforms prior work on WMT.",
+      "authors": [
+        "Jane Doe",
+        "John Smith"
+      ],
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published_date": "2021-01-01",
+      "venue": null,
+      "doi": null,
+      "arxiv_id": "2101.00001",
+      "url": "https://arxiv.org/abs/2101.00001",
+      "source": "kaggle_arxiv",
+      "citation_count": 0,
+      "influential_citation_count": 0,
+      "references": [],
+      "tldr": "",
+      "s2_enriched": false
+    },
+    "score": 0.31,
+    "reason": "Recommended due to high semantic similarity between query and abstract. Title: \"A Transformer Approach to Neural Machine Translation\".",
+    "evidence": [
+      "2101.00001"
+    ],
+    "apa_citation": "Doe, J., & Smith, J. (2021). A Transformer Approach to Neural Machine Translation. *arXiv*. https://arxiv.org/abs/2101.00001",
+    "relation": "similar"
+  },
+  {
+    "paper": {
+      "paper_id": "2104.00004",
+      "title": "A General Theory of Artificial Intelligence",
+      "abstract": "A unifying framework for AI reasoning systems is proposed.",
+      "authors": [
+        "Geoffrey H"
+      ],
+      "categories": [
+        "cs.AI"
+      ],
+      "published_date": "2021-04-04",
+      "venue": null,
+      "doi": null,
+      "arxiv_id": "2104.00004",
+      "url": "https://arxiv.org/abs/2104.00004",
+      "source": "kaggle_arxiv",
+      "citation_count": 0,
+      "influential_citation_count": 0,
+      "references": [],
+      "tldr": "",
+      "s2_enriched": false
+    },
+    "score": 0.31,
+    "reason": "Recommended due to high semantic similarity between query and abstract. Title: \"A General Theory of Artificial Intelligence\".",
+    "evidence": [
+      "2104.00004"
+    ],
+    "apa_citation": "H, G. (2021). A General Theory of Artificial Intelligence. *arXiv*. https://arxiv.org/abs/2104.00004",
+    "relation": "similar"
+  }
+]

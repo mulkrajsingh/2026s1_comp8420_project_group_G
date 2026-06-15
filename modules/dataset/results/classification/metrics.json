@@ -1,0 +1,200 @@
+{
+  "technique": "TF-IDF (1-2 grams) + logistic regression / Linear SVM",
+  "corpus": "data/processed/dev_5k_balanced.jsonl",
+  "corpus_sha256": "49ac070da831b9173114ae67527e660b7a1a10c037938160219b7ccdd0f80436",
+  "seed": 8420,
+  "test_size": 0.2,
+  "records": 5000,
+  "train_records": 4000,
+  "test_records": 1000,
+  "label_counts": {
+    "cs.AI": 1250,
+    "cs.CL": 1250,
+    "cs.LG": 1250,
+    "stat.ML": 1250
+  },
+  "train_label_counts": {
+    "cs.AI": 1000,
+    "cs.CL": 1000,
+    "cs.LG": 1000,
+    "stat.ML": 1000
+  },
+  "test_label_counts": {
+    "cs.AI": 250,
+    "cs.CL": 250,
+    "cs.LG": 250,
+    "stat.ML": 250
+  },
+  "accuracy": 0.654,
+  "macro_f1": 0.6510678736552098,
+  "weighted_f1": 0.6510678736552097,
+  "majority_baseline_accuracy": 0.25,
+  "model_comparison": {
+    "logistic_regression": {
+      "accuracy": 0.654,
+      "macro_f1": 0.6510678736552098,
+      "weighted_f1": 0.6510678736552097,
+      "per_class": {
+        "cs.AI": {
+          "precision": 0.576036866359447,
+          "recall": 0.5,
+          "f1-score": 0.5353319057815846,
+          "support": 250.0
+        },
+        "cs.CL": {
+          "precision": 0.79296875,
+          "recall": 0.812,
+          "f1-score": 0.8023715415019763,
+          "support": 250.0
+        },
+        "cs.LG": {
+          "precision": 0.5019455252918288,
+          "recall": 0.516,
+          "f1-score": 0.5088757396449705,
+          "support": 250.0
+        },
+        "stat.ML": {
+          "precision": 0.7296296296296296,
+          "recall": 0.788,
+          "f1-score": 0.7576923076923077,
+          "support": 250.0
+        }
+      }
+    },
+    "linear_svm": {
+      "accuracy": 0.641,
+      "macro_f1": 0.6363253139993378,
+      "weighted_f1": 0.6363253139993378,
+      "per_class": {
+        "cs.AI": {
+          "precision": 0.5674418604651162,
+          "recall": 0.488,
+          "f1-score": 0.524731182795699,
+          "support": 250.0
+        },
+        "cs.CL": {
+          "precision": 0.7756653992395437,
+          "recall": 0.816,
+          "f1-score": 0.7953216374269005,
+          "support": 250.0
+        },
+        "cs.LG": {
+          "precision": 0.5040983606557377,
+          "recall": 0.492,
+          "f1-score": 0.4979757085020243,
+          "support": 250.0
+        },
+        "stat.ML": {
+          "precision": 0.6906474820143885,
+          "recall": 0.768,
+          "f1-score": 0.7272727272727273,
+          "support": 250.0
+        }
+      }
+    }
+  },
+  "selected_by_macro_f1": "logistic_regression",
+  "per_class": {
+    "cs.AI": {
+      "precision": 0.576036866359447,
+      "recall": 0.5,
+      "f1-score": 0.5353319057815846,
+      "support": 250.0
+    },
+    "cs.CL": {
+      "precision": 0.79296875,
+      "recall": 0.812,
+      "f1-score": 0.8023715415019763,
+      "support": 250.0
+    },
+    "cs.LG": {
+      "precision": 0.5019455252918288,
+      "recall": 0.516,
+      "f1-score": 0.5088757396449705,
+      "support": 250.0
+    },
+    "stat.ML": {
+      "precision": 0.7296296296296296,
+      "recall": 0.788,
+      "f1-score": 0.7576923076923077,
+      "support": 250.0
+    }
+  },
+  "vocabulary_size": 30000,
+  "top_weighted_terms": {
+    "cs.AI": [
+      "ai",
+      "agent",
+      "intelligence",
+      "reinforcement",
+      "reinforcement learning",
+      "environment",
+      "artificial",
+      "logic",
+      "planning",
+      "artificial intelligence",
+      "reasoning",
+      "action"
+    ],
+    "cs.CL": [
+      "language",
+      "text",
+      "word",
+      "speech",
+      "language models",
+      "translation",
+      "words",
+      "corpus",
+      "languages",
+      "sentence",
+      "task",
+      "dialogue"
+    ],
+    "cs.LG": [
+      "learning",
+      "machine learning",
+      "networks",
+      "neural networks",
+      "deep",
+      "federated",
+      "algorithm",
+      "neural",
+      "applications",
+      "optimization",
+      "data",
+      "generative"
+    ],
+    "stat.ML": [
+      "statistical",
+      "regression",
+      "estimation",
+      "numerical",
+      "simulation",
+      "estimator",
+      "simulations",
+      "bayesian",
+      "multivariate",
+      "asymptotic",
+      "data",
+      "stochastic"
+    ]
+  },
+  "data_checks": {
+    "duplicate_paper_ids_removed": 0
+  },
+  "artifacts": {
+    "confusion_matrix_csv": "results/classification/confusion_matrix.csv",
+    "confusion_matrix_png": "results/classification/confusion_matrix.png",
+    "linear_svm_confusion_matrix_csv": "results/classification/linear_svm_confusion_matrix.csv",
+    "linear_svm_confusion_matrix_png": "results/classification/linear_svm_confusion_matrix.png",
+    "model_comparison_csv": "results/classification/model_comparison.csv"
+  },
+  "runtime": {
+    "scikit_learn": "1.7.2"
+  },
+  "limitations": [
+    "Labels are derived from the first matching target arXiv category.",
+    "Metrics use one deterministic internal held-out split, not an external test set.",
+    "Multi-label category prediction and SPECTER2 classification are outside this comparison."
+  ]
+}

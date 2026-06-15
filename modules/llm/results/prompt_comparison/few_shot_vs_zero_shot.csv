@@ -1,0 +1,13 @@
+prompt_id,task,strategy,backend,model,structure_compliance,evidence_faithfulness,evidence_check_applicable,citation_safety,format_error_rate,source_ids_used,unsupported_source_ids,latency_seconds,error,output_path,notes
+P01,uploaded_paper_summary,zero_shot,ollama,qwen3:8b,0.55,1.0,False,1.0,1,,,71.1794,,results/prompt_comparison/prompt_outputs/P01_zero_shot_qwen3_8b.md,Measured Ollama output.
+P01,uploaded_paper_summary,few_shot,ollama,qwen3:8b,0.63,1.0,False,1.0,0,,,30.6741,,results/prompt_comparison/prompt_outputs/P01_few_shot_qwen3_8b.md,Measured Ollama output.
+P02,topic_search_synthesis,zero_shot,ollama,qwen3:8b,0.73,1.0,True,1.0,0,"2101.00001,2102.00002,2103.00003,2104.00004",,28.9914,,results/prompt_comparison/prompt_outputs/P02_zero_shot_qwen3_8b.md,Measured Ollama output.
+P02,topic_search_synthesis,few_shot,ollama,qwen3:8b,0.9,1.0,True,1.0,0,"2101.00001,2102.00002,2103.00003,2104.00004",,11.1062,,results/prompt_comparison/prompt_outputs/P02_few_shot_qwen3_8b.md,Measured Ollama output.
+P03,research_gap_identification,zero_shot,ollama,qwen3:8b,0.73,0.5,True,1.0,1,,,96.4603,,results/prompt_comparison/prompt_outputs/P03_zero_shot_qwen3_8b.md,Measured Ollama output.
+P03,research_gap_identification,few_shot,ollama,qwen3:8b,0.81,0.5,True,1.0,0,,,95.0302,,results/prompt_comparison/prompt_outputs/P03_few_shot_qwen3_8b.md,Measured Ollama output.
+P04,citation_recommendation,zero_shot,ollama,qwen3:8b,0.73,1.0,True,1.0,0,2102.00002,,67.7123,,results/prompt_comparison/prompt_outputs/P04_zero_shot_qwen3_8b.md,Measured Ollama output.
+P04,citation_recommendation,few_shot,ollama,qwen3:8b,0.81,1.0,True,1.0,0,2102.00002,,80.0409,,results/prompt_comparison/prompt_outputs/P04_few_shot_qwen3_8b.md,Measured Ollama output.
+P05,peer_review_critique,zero_shot,ollama,qwen3:8b,0.82,0.5,True,1.0,1,,,64.7012,,results/prompt_comparison/prompt_outputs/P05_zero_shot_qwen3_8b.md,Measured Ollama output.
+P05,peer_review_critique,few_shot,ollama,qwen3:8b,0.9,0.5,True,1.0,0,,,48.8664,,results/prompt_comparison/prompt_outputs/P05_few_shot_qwen3_8b.md,Measured Ollama output.
+P06,beginner_explanation,zero_shot,ollama,qwen3:8b,0.55,0.5,True,1.0,1,,,92.8718,,results/prompt_comparison/prompt_outputs/P06_zero_shot_qwen3_8b.md,Measured Ollama output.
+P06,beginner_explanation,few_shot,ollama,qwen3:8b,0.63,0.5,True,1.0,0,"2107.09645v1,2107.09645v1_fd56aa5c6a","2107.09645v1,2107.09645v1_fd56aa5c6a",37.1642,,results/prompt_comparison/prompt_outputs/P06_few_shot_qwen3_8b.md,Measured Ollama output.

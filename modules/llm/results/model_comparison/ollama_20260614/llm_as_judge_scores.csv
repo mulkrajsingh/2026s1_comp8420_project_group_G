@@ -1,0 +1,13 @@
+prompt_id,task,model_variant,correctness,structure,citation_safety,usefulness,judge,caveat
+P01,uploaded_paper_summary,base,0.5,0.63,1.0,0.56,heuristic_local_judge,Use as consistency signal only; add human spot checks.
+P01,uploaded_paper_summary,lora,0.5,0.63,1.0,0.56,heuristic_local_judge,Use as consistency signal only; add human spot checks.
+P02,topic_search_synthesis,base,1.0,0.9,1.0,0.95,heuristic_local_judge,Use as consistency signal only; add human spot checks.
+P02,topic_search_synthesis,lora,1.0,0.81,1.0,0.91,heuristic_local_judge,Use as consistency signal only; add human spot checks.
+P03,research_gap_identification,base,0.5,0.81,1.0,0.66,heuristic_local_judge,Use as consistency signal only; add human spot checks.
+P03,research_gap_identification,lora,0.5,0.81,1.0,0.66,heuristic_local_judge,Use as consistency signal only; add human spot checks.
+P04,citation_recommendation,base,0.5,0.63,1.0,0.56,heuristic_local_judge,Use as consistency signal only; add human spot checks.
+P04,citation_recommendation,lora,0.5,0.63,0.5,0.56,heuristic_local_judge,Use as consistency signal only; add human spot checks.
+P05,peer_review_critique,base,0.5,0.9,1.0,0.7,heuristic_local_judge,Use as consistency signal only; add human spot checks.
+P05,peer_review_critique,lora,0.5,0.9,1.0,0.7,heuristic_local_judge,Use as consistency signal only; add human spot checks.
+P06,beginner_explanation,base,0.5,0.72,1.0,0.61,heuristic_local_judge,Use as consistency signal only; add human spot checks.
+P06,beginner_explanation,lora,0.5,0.63,1.0,0.56,heuristic_local_judge,Use as consistency signal only; add human spot checks.

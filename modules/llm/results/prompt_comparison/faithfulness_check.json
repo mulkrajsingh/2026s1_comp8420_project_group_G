@@ -1,0 +1,9 @@
+{
+  "method": "Heuristic source-id and citation-safety audit over generated outputs.",
+  "total_outputs_checked": 12,
+  "outputs_with_source_ids": 5,
+  "unsupported_source_id_outputs": 1,
+  "generation_errors": 0,
+  "supported_claim_percentage": 91.67,
+  "caveat": "This checks citation plumbing; final report also needs human review of claim meaning."
+}

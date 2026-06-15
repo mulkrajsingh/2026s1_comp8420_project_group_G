@@ -1,0 +1,11 @@
+{
+  "checks": [
+    {
+      "code": "no_explicit_limitations",
+      "severity": "low",
+      "message": "No explicit limitations section was detected.",
+      "evidence": ""
+    }
+  ],
+  "count": 1
+}

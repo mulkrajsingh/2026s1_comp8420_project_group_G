@@ -1,0 +1,3 @@
+prompt_id,task,model_variant,model_tag,backend,prompt_strategy,adapter,quantization,structure_compliance,evidence_faithfulness,evidence_check_applicable,citation_safety,format_error_rate,source_ids_used,unsupported_source_ids,latency_seconds,error,output_path
+P04,citation_recommendation,base,qwen3:8b,ollama,few_shot,none,user_supplied_model_tag,0.81,1.0,True,1.0,0,2102.00002,,24.1097,,results/model_comparison/ollama_20260614_citation_guard_enforced/model_outputs/P04_base.md
+P04,citation_recommendation,lora,qwen3-research-lora:latest,ollama,few_shot,models/adapters/research_lora_adapter/,user_supplied_model_tag,0.81,1.0,True,1.0,0,2102.00002,,22.0353,,results/model_comparison/ollama_20260614_citation_guard_enforced/model_outputs/P04_lora.md

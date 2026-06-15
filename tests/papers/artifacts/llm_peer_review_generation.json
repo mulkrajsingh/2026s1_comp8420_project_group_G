@@ -1,0 +1,105 @@
+{
+  "input_contract": "parsed_paper_only",
+  "paper_path": "/Users/kyojin/work/uni/nlp_comp8420/major proj/comp8420_NLP_project/tests/papers/artifacts/siga_parsed.json",
+  "retrieval_used": false,
+  "external_evidence_used": false,
+  "requested_style": "reviewer",
+  "resolved_style": "reviewer",
+  "query_analysis": {
+    "intent": "critique",
+    "emotion": "neutral",
+    "topic_expertise": "advanced",
+    "verbosity": "detailed",
+    "style": "reviewer",
+    "confidence": 0.388,
+    "cosine_confidence": 0.2498,
+    "style_source": "explicit_override",
+    "style_scores": {
+      "concise": 0.4459,
+      "beginner": 0.2367,
+      "reviewer": 0.6709,
+      "technical": 0.2364
+    },
+    "field_confidences": {
+      "intent": 0.7062,
+      "emotion": 0.388,
+      "topic_expertise": 0.4117,
+      "verbosity": 0.4778,
+      "style": 1.0
+    },
+    "field_sources": {
+      "intent": "tinybert_fallback",
+      "emotion": "tinybert_fallback",
+      "topic_expertise": "tinybert_fallback",
+      "verbosity": "tinybert_fallback",
+      "style": "explicit_override"
+    },
+    "similarity_scores": {
+      "intent": {
+        "paper_recommendation": 0.1884,
+        "chit_chat": 0.2082,
+        "debugging": 0.0868,
+        "critique": 0.5617,
+        "request_explanation": 0.1936,
+        "question": 0.1889
+      },
+      "emotion": {
+        "frustrated": 0.0954,
+        "confused": 0.0223,
+        "positive": 0.212,
+        "neutral": 0.3415
+      },
+      "topic_expertise": {
+        "advanced": 0.1521,
+        "beginner": 0.2498,
+        "intermediate": 0.2063
+      },
+      "verbosity": {
+        "concise": 0.2773,
+        "detailed": 0.0508,
+        "normal": 0.2244
+      },
+      "style": {
+        "concise": 0.4459,
+        "beginner": 0.2367,
+        "reviewer": 0.6709,
+        "technical": 0.2364
+      }
+    },
+    "fallback_used": true,
+    "fallback_fields": [
+      "intent",
+      "emotion",
+      "topic_expertise",
+      "verbosity"
+    ],
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "fallback_model": "cross-encoder/stsb-TinyBERT-L4"
+  },
+  "text": "```markdown\n# Scope\n\nThis paper addresses a critical challenge in scientific simulation: the translation of natural language scientific goals into executable configurations for complex simulators. The focus is on the problem of **agent-tool interface grounding**, specifically how to adapt off-the-shelf coding agents to operate real scientific software. The work centers on the development of **SIGA**, a Simulator-Interface Grounding Adapter, and evaluates its performance on the **GEOS** simulator, an open-source multiphysics tool used in subsurface science. The scope is well-defined, targeting the **setup phase** of scientific simulations, which is a known bottleneck for domain scientists.\n\n# Core Contribution\n\nThe core contribution of this paper is the introduction of **SIGA**, a lightweight, self-improvable grounding layer that enables general coding agents to operate scientific simulators effectively. The authors propose that by providing the simulator's **executable contract**\u2014including vocabulary, structural constraints, validation rules, and termination conditions\u2014coding agents can be adapted to produce valid and high-quality simulation configurations. The paper also introduces the concept of **self-evolution**, where the adapter content is rewritten based on prior trajectories, further improving performance. This contribution is significant as it bridges the gap between general-purpose coding agents and domain-specific scientific tools.\n\n# Method\n\nThe method section is **incomplete** in the provided input, which limits the depth of analysis. However, based on the abstract and results, the method involves the following components:\n\n- **Retrieval**: Acquiring the simulator's executable contract.\n- **Procedural Memory**: Storing and reusing past interactions with the simulator.\n- **In-Trajectory Validation**: Ensuring intermediate outputs adhere to the simulator's constraints.\n- **Validation-Enforced Termination**: Halting the process if invalid outputs are detected.\n- **Self-Evolution**: Rewriting the adapter content based on prior trajectories to improve performance.\n\nThe paper also describes a **factorial ablation study** to isolate the effect of each grounding component, and cross-simulator transfer studies to assess the generalizability of the approach.\n\n# Results\n\nThe results demonstrate that **SIGA significantly improves the reliability and quality** of simulation configuration generation. On the **GEOS** simulator, SIGA produces a complete deck in about five minutes with a **TreeSim score above 0.90**, matching the quality of a human expert who required about three hours. On a harder held-out set, the grounding component raises **TreeSim from 0.720 to 0.789**, a 10% relative gain. Self-evolution further improves performance, yielding the highest held-out GEOS mean and matching or outperforming the strongest hand-designed configuration.\n\nThe paper also reports **cross-simulator transfer results** to **OpenFOAM** and **LAMMPS**, showing that the dominant mechanism shifts by interface: **validation** is most important when structural completeness is the bottleneck, while **memory and retrieval** matter most when domain correctness is the bottleneck.\n\n# Limitations\n\nThe paper has several limitations, primarily due to the **incomplete method section** and **limited experimental detail**:\n\n1. **Method Section Incomplete**: The method section is missing, which is critical for understanding the implementation of SIGA. This omission limits the ability to assess the technical soundness and reproducibility of the approach.\n\n2. **Limited Technical Detail**: While the results are compelling, the paper lacks detailed descriptions of the **implementation of retrieval, procedural memory, and validation mechanisms**, which are central to the proposed method.\n\n3. **No Mention of Baseline Comparisons**: The paper does not clearly specify the **baseline models** or **comparison baselines** used in the experiments, which is essential for evaluating the effectiveness of SIGA.\n\n4. **Limited Generalizability Discussion**: Although cross-simulator transfer is discussed, the paper does not provide a thorough analysis of how the **grounding mechanism** adapts across different simulators or domains.\n\n5. **Missing Metrics and Evaluation Criteria**: The paper mentions **TreeSim** as a metric but does not define it or provide its mathematical formulation. A more detailed explanation of the evaluation criteria would strengthen the results section.\n\n6. **No Mention of Computational Resources**: The paper does not specify the **computational resources** used for training or evaluating SIGA, which is important for assessing the practicality of the approach.\n\n# Suggestions for Improvement\n\nTo strengthen the paper, the following improvements are recommended:\n\n1. **Complete the Method Section**: Provide a detailed description of the implementation of retrieval, procedural memory, in-trajectory validation, and validation-enforced termination. Include pseudocode or architecture diagrams to clarify the design.\n\n2. **Define Metrics and Evaluation Criteria**: Clearly define **TreeSim** and other metrics used to evaluate the performance of SIGA. Include mathematical formulations and justification for their use.\n\n3. **Provide Baseline Comparisons**: Specify the **baseline models** and **comparison baselines** used in the experiments. This will help readers understand the relative performance of SIGA.\n\n4. **Enhance Generalizability Analysis**: Expand the discussion on how the grounding mechanism adapts across different simulators and domains. Include more detailed analysis of the **interface-specific bottlenecks** and how they are addressed.\n\n5. **Include Computational Resource Details**: Specify the **computational resources** used for training and evaluation, including hardware specifications, software environments, and any optimizations applied.\n\n6. **Clarify the Role of Self-Evolution**: Provide a more detailed explanation of how **self-evolution** is implemented and how it contributes to the overall performance of SIGA. Include a discussion on the trade-offs between self-evolution and manual configuration.\n\nThese improvements would make the paper more rigorous, reproducible, and impactful for the scientific community.\n```",
+  "backend": "ollama",
+  "model": "qwen3:8b",
+  "prompt_id": "paper_only_summary",
+  "task": "uploaded_paper_summary",
+  "strategy": "zero_shot",
+  "latency_seconds": 97.7404,
+  "error": null,
+  "evidence_ids_used": [],
+  "run_metadata": {
+    "host": "http://127.0.0.1:11434",
+    "keep_alive": "5m",
+    "temperature": 0.2,
+    "top_p": 0.9,
+    "thinking_fallback_used": false,
+    "thinking_enabled": false,
+    "thinking_policy_reason": "long_context_direct:uploaded_paper_summary",
+    "context_window": 24576,
+    "max_new_tokens": 3072,
+    "timeout_seconds": 600,
+    "ollama_load_duration_ms": 189.7308,
+    "ollama_prompt_eval_count": 5012,
+    "ollama_prompt_eval_duration_ms": 28852.912,
+    "ollama_eval_count": 1179,
+    "ollama_eval_duration_ms": 67863.778
+  }
+}

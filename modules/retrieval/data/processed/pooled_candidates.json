@@ -1,0 +1,1022 @@
+{
+  "natural language processing text classification": {
+    "seed_ids": [
+      "1004.3183",
+      "1108.3848",
+      "1106.0411",
+      "1105.4318",
+      "1203.2498"
+    ],
+    "candidates": [
+      "0704.3665",
+      "0707.3559",
+      "0708.0694",
+      "0805.4521",
+      "0807.2569",
+      "0810.0332",
+      "0810.3416",
+      "0912.1820",
+      "0912.1829",
+      "0912.3747",
+      "1001.4277",
+      "1002.1095",
+      "1003.1795",
+      "1003.4149",
+      "1004.3183",
+      "1006.2835",
+      "1008.0706",
+      "1009.4574",
+      "1009.4582",
+      "1009.4976",
+      "1010.2384",
+      "1010.3177",
+      "1102.1803",
+      "1103.0398",
+      "1105.4318",
+      "1106.0411",
+      "1106.5308",
+      "1107.1322",
+      "1107.4687",
+      "1108.3848",
+      "1111.4343",
+      "1111.5293",
+      "1201.2073",
+      "1201.4733",
+      "1202.0116",
+      "1202.4063",
+      "1203.2498",
+      "1203.3023",
+      "1204.2058",
+      "1204.2061"
+    ],
+    "sources": {
+      "1004.3183": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1108.3848": [
+        "seed",
+        "tfidf",
+        "bm25"
+      ],
+      "1106.0411": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "1105.4318": [
+        "seed",
+        "tfidf",
+        "bm25"
+      ],
+      "1203.2498": [
+        "seed",
+        "tfidf",
+        "bm25"
+      ],
+      "1009.4976": [
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1009.4574": [
+        "tfidf",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1009.4582": [
+        "tfidf",
+        "embedding_specter2_base",
+        "hybrid_ensemble"
+      ],
+      "1107.1322": [
+        "tfidf",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0707.3559": [
+        "tfidf"
+      ],
+      "1103.0398": [
+        "tfidf"
+      ],
+      "1010.3177": [
+        "tfidf"
+      ],
+      "1201.4733": [
+        "tfidf"
+      ],
+      "0912.1820": [
+        "tfidf"
+      ],
+      "1111.4343": [
+        "tfidf",
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "0704.3665": [
+        "bm25"
+      ],
+      "1001.4277": [
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "1107.4687": [
+        "bm25"
+      ],
+      "0912.3747": [
+        "bm25"
+      ],
+      "1006.2835": [
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "1202.0116": [
+        "bm25"
+      ],
+      "1003.4149": [
+        "bm25"
+      ],
+      "1203.3023": [
+        "bm25"
+      ],
+      "1204.2061": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0708.0694": [
+        "embedding_specter2_base"
+      ],
+      "1202.4063": [
+        "embedding_specter2_base",
+        "section_aware"
+      ],
+      "1106.5308": [
+        "embedding_specter2_base",
+        "hybrid_ensemble"
+      ],
+      "1003.1795": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1111.5293": [
+        "embedding_specter2_base",
+        "hybrid_ensemble"
+      ],
+      "1201.2073": [
+        "embedding_specter2_base"
+      ],
+      "1204.2058": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1010.2384": [
+        "embedding_specter2_base",
+        "section_aware"
+      ],
+      "0810.0332": [
+        "embedding_specter2_base"
+      ],
+      "1102.1803": [
+        "embedding_specter2_base"
+      ],
+      "0807.2569": [
+        "section_aware"
+      ],
+      "1002.1095": [
+        "section_aware"
+      ],
+      "0912.1829": [
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0805.4521": [
+        "section_aware"
+      ],
+      "1008.0706": [
+        "section_aware"
+      ],
+      "0810.3416": [
+        "section_aware"
+      ]
+    }
+  },
+  "reinforcement learning policy reward agent": {
+    "seed_ids": [
+      "1104.5687",
+      "1107.0048",
+      "1009.2566",
+      "1012.1552",
+      "1205.4839"
+    ],
+    "candidates": [
+      "0803.3539",
+      "0805.2027",
+      "0810.3828",
+      "0810.5636",
+      "0812.1599",
+      "0903.4930",
+      "0904.0545",
+      "0904.0546",
+      "0906.1713",
+      "0910.2065",
+      "1005.0125",
+      "1007.0546",
+      "1007.0548",
+      "1007.2049",
+      "1009.2566",
+      "1011.1660",
+      "1011.5951",
+      "1012.1552",
+      "1102.5561",
+      "1104.5059",
+      "1104.5391",
+      "1104.5687",
+      "1106.0221",
+      "1106.0676",
+      "1106.1796",
+      "1106.3651",
+      "1107.0048",
+      "1107.4606",
+      "1110.1796",
+      "1112.1125",
+      "1202.1558",
+      "1202.3754",
+      "1202.6386",
+      "1203.3518",
+      "1205.2664",
+      "1205.4839"
+    ],
+    "sources": {
+      "1104.5687": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "1107.0048": [
+        "seed",
+        "tfidf"
+      ],
+      "1009.2566": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1012.1552": [
+        "seed",
+        "tfidf",
+        "hybrid_ensemble"
+      ],
+      "1205.4839": [
+        "seed",
+        "tfidf",
+        "hybrid_ensemble"
+      ],
+      "1202.1558": [
+        "tfidf",
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "1106.0221": [
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1106.3651": [
+        "tfidf",
+        "bm25"
+      ],
+      "0812.1599": [
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0810.5636": [
+        "tfidf",
+        "bm25"
+      ],
+      "1106.1796": [
+        "tfidf"
+      ],
+      "0805.2027": [
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1011.5951": [
+        "tfidf"
+      ],
+      "1106.0676": [
+        "tfidf"
+      ],
+      "1205.2664": [
+        "tfidf"
+      ],
+      "1203.3518": [
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "1102.5561": [
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "1112.1125": [
+        "bm25"
+      ],
+      "1007.0546": [
+        "bm25",
+        "embedding_specter2_base",
+        "hybrid_ensemble"
+      ],
+      "1104.5391": [
+        "bm25"
+      ],
+      "1202.3754": [
+        "bm25"
+      ],
+      "0910.2065": [
+        "bm25"
+      ],
+      "1011.1660": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0904.0545": [
+        "embedding_specter2_base",
+        "section_aware"
+      ],
+      "1005.0125": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1110.1796": [
+        "embedding_specter2_base"
+      ],
+      "1107.4606": [
+        "embedding_specter2_base",
+        "section_aware"
+      ],
+      "1007.0548": [
+        "embedding_specter2_base"
+      ],
+      "0904.0546": [
+        "embedding_specter2_base",
+        "section_aware"
+      ],
+      "1007.2049": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1104.5059": [
+        "embedding_specter2_base",
+        "hybrid_ensemble"
+      ],
+      "0903.4930": [
+        "embedding_specter2_base",
+        "section_aware"
+      ],
+      "0803.3539": [
+        "section_aware"
+      ],
+      "0810.3828": [
+        "section_aware"
+      ],
+      "1202.6386": [
+        "section_aware"
+      ],
+      "0906.1713": [
+        "section_aware"
+      ]
+    }
+  },
+  "support vector machine kernel classification": {
+    "seed_ids": [
+      "1101.2987",
+      "0804.0188",
+      "0912.0874",
+      "0906.4391",
+      "1010.0535"
+    ],
+    "candidates": [
+      "0705.0209",
+      "0708.0171",
+      "0708.1838",
+      "0712.1027",
+      "0804.0188",
+      "0809.2792",
+      "0812.2574",
+      "0812.2575",
+      "0812.3145",
+      "0902.4228",
+      "0903.4817",
+      "0906.4391",
+      "0911.5367",
+      "0912.0874",
+      "0912.1007",
+      "1001.2709",
+      "1001.4019",
+      "1004.0567",
+      "1005.5337",
+      "1007.5133",
+      "1008.0528",
+      "1009.5268",
+      "1010.0535",
+      "1101.2987",
+      "1105.0471",
+      "1109.4603",
+      "1110.3094",
+      "1111.2262",
+      "1202.6504",
+      "1203.0298",
+      "1203.1596",
+      "1203.4354",
+      "1203.5647"
+    ],
+    "sources": {
+      "1101.2987": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0804.0188": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0912.0874": [
+        "seed",
+        "tfidf",
+        "hybrid_ensemble"
+      ],
+      "0906.4391": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1010.0535": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0812.3145": [
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "hybrid_ensemble"
+      ],
+      "1202.6504": [
+        "tfidf",
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "0903.4817": [
+        "tfidf"
+      ],
+      "0712.1027": [
+        "tfidf",
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "1111.2262": [
+        "tfidf"
+      ],
+      "1004.0567": [
+        "tfidf"
+      ],
+      "1105.0471": [
+        "tfidf"
+      ],
+      "1007.5133": [
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0708.0171": [
+        "tfidf",
+        "bm25",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1005.5337": [
+        "tfidf",
+        "bm25"
+      ],
+      "1203.4354": [
+        "bm25"
+      ],
+      "1110.3094": [
+        "bm25"
+      ],
+      "0809.2792": [
+        "bm25",
+        "embedding_specter2_base",
+        "hybrid_ensemble"
+      ],
+      "1008.0528": [
+        "bm25"
+      ],
+      "0812.2575": [
+        "bm25",
+        "embedding_specter2_base",
+        "hybrid_ensemble"
+      ],
+      "1001.4019": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0705.0209": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1203.5647": [
+        "embedding_specter2_base"
+      ],
+      "0902.4228": [
+        "embedding_specter2_base",
+        "section_aware"
+      ],
+      "1203.0298": [
+        "embedding_specter2_base"
+      ],
+      "1109.4603": [
+        "embedding_specter2_base"
+      ],
+      "0812.2574": [
+        "embedding_specter2_base",
+        "hybrid_ensemble"
+      ],
+      "1203.1596": [
+        "embedding_specter2_base",
+        "section_aware"
+      ],
+      "0911.5367": [
+        "section_aware"
+      ],
+      "1001.2709": [
+        "section_aware"
+      ],
+      "0708.1838": [
+        "section_aware"
+      ],
+      "1009.5268": [
+        "section_aware"
+      ],
+      "0912.1007": [
+        "section_aware"
+      ]
+    }
+  },
+  "neural network deep learning representation": {
+    "seed_ids": [
+      "1202.2770",
+      "1111.4930",
+      "0804.3269",
+      "1105.0972",
+      "0912.1007"
+    ],
+    "candidates": [
+      "0704.1028",
+      "0704.3515",
+      "0705.2011",
+      "0712.0932",
+      "0712.0938",
+      "0804.3269",
+      "0804.4682",
+      "0812.2535",
+      "0906.1814",
+      "0911.0485",
+      "0911.3298",
+      "0912.1007",
+      "1001.0160",
+      "1001.1020",
+      "1001.1257",
+      "1001.4019",
+      "1002.0745",
+      "1003.0358",
+      "1005.5556",
+      "1010.6091",
+      "1101.4351",
+      "1102.0183",
+      "1102.4240",
+      "1103.4487",
+      "1105.0972",
+      "1108.3298",
+      "1108.3757",
+      "1110.0214",
+      "1110.2626",
+      "1111.4930",
+      "1201.3249",
+      "1201.5959",
+      "1202.2745",
+      "1202.2770",
+      "1203.3783",
+      "1203.4416",
+      "1204.3968",
+      "1205.3966"
+    ],
+    "sources": {
+      "1202.2770": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "1111.4930": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "hybrid_ensemble"
+      ],
+      "0804.3269": [
+        "seed",
+        "tfidf"
+      ],
+      "1105.0972": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "hybrid_ensemble"
+      ],
+      "0912.1007": [
+        "seed",
+        "tfidf"
+      ],
+      "1202.2745": [
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1110.2626": [
+        "tfidf"
+      ],
+      "1110.0214": [
+        "tfidf"
+      ],
+      "1001.1257": [
+        "tfidf"
+      ],
+      "0704.3515": [
+        "tfidf"
+      ],
+      "0712.0932": [
+        "tfidf",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0911.0485": [
+        "tfidf",
+        "bm25"
+      ],
+      "0704.1028": [
+        "tfidf",
+        "hybrid_ensemble"
+      ],
+      "1101.4351": [
+        "tfidf"
+      ],
+      "1205.3966": [
+        "tfidf"
+      ],
+      "1102.0183": [
+        "bm25",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0906.1814": [
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1001.0160": [
+        "bm25"
+      ],
+      "0911.3298": [
+        "bm25"
+      ],
+      "1103.4487": [
+        "bm25",
+        "section_aware"
+      ],
+      "1001.4019": [
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1010.6091": [
+        "bm25"
+      ],
+      "1001.1020": [
+        "bm25"
+      ],
+      "1102.4240": [
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0712.0938": [
+        "bm25"
+      ],
+      "1204.3968": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1003.0358": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0812.2535": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1005.5556": [
+        "embedding_specter2_base"
+      ],
+      "1203.4416": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1201.5959": [
+        "embedding_specter2_base"
+      ],
+      "0804.4682": [
+        "embedding_specter2_base"
+      ],
+      "1108.3298": [
+        "embedding_specter2_base"
+      ],
+      "1108.3757": [
+        "embedding_specter2_base"
+      ],
+      "0705.2011": [
+        "section_aware"
+      ],
+      "1203.3783": [
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1201.3249": [
+        "section_aware"
+      ],
+      "1002.0745": [
+        "section_aware"
+      ]
+    }
+  },
+  "bayesian probabilistic graphical model": {
+    "seed_ids": [
+      "1111.6925",
+      "0706.2040",
+      "1106.1799",
+      "1011.0935",
+      "1004.2304"
+    ],
+    "candidates": [
+      "0706.2040",
+      "0707.3972",
+      "0812.4581",
+      "0904.0977",
+      "0904.2160",
+      "0907.4447",
+      "0908.0570",
+      "0908.3817",
+      "0908.4425",
+      "0909.1685",
+      "1001.1009",
+      "1002.4802",
+      "1004.2304",
+      "1005.1036",
+      "1005.4214",
+      "1008.5386",
+      "1011.0935",
+      "1011.4088",
+      "1012.0866",
+      "1104.5256",
+      "1105.5462",
+      "1106.1797",
+      "1106.1799",
+      "1106.2697",
+      "1107.1270",
+      "1110.6497",
+      "1111.6925",
+      "1201.0794",
+      "1201.4058",
+      "1202.3733",
+      "1202.3766",
+      "1203.3476",
+      "1203.3479",
+      "1203.3725",
+      "1204.1637",
+      "1205.1925",
+      "1205.2617",
+      "1205.5012"
+    ],
+    "sources": {
+      "1111.6925": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0706.2040": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1106.1799": [
+        "seed",
+        "tfidf",
+        "bm25"
+      ],
+      "1011.0935": [
+        "seed",
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1004.2304": [
+        "seed",
+        "tfidf",
+        "hybrid_ensemble"
+      ],
+      "1201.4058": [
+        "tfidf",
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "1107.1270": [
+        "tfidf"
+      ],
+      "1110.6497": [
+        "tfidf",
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "1001.1009": [
+        "tfidf",
+        "bm25"
+      ],
+      "1105.5462": [
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "hybrid_ensemble"
+      ],
+      "1202.3733": [
+        "tfidf"
+      ],
+      "1205.5012": [
+        "tfidf",
+        "hybrid_ensemble"
+      ],
+      "1201.0794": [
+        "tfidf",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0908.4425": [
+        "tfidf"
+      ],
+      "1005.1036": [
+        "tfidf",
+        "bm25",
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "0907.4447": [
+        "bm25"
+      ],
+      "1106.1797": [
+        "bm25"
+      ],
+      "1203.3476": [
+        "bm25"
+      ],
+      "0904.2160": [
+        "bm25"
+      ],
+      "0707.3972": [
+        "bm25"
+      ],
+      "1011.4088": [
+        "bm25",
+        "hybrid_ensemble"
+      ],
+      "1204.1637": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1203.3479": [
+        "embedding_specter2_base",
+        "section_aware"
+      ],
+      "0909.1685": [
+        "embedding_specter2_base",
+        "section_aware"
+      ],
+      "0904.0977": [
+        "embedding_specter2_base",
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1012.0866": [
+        "embedding_specter2_base"
+      ],
+      "1002.4802": [
+        "embedding_specter2_base"
+      ],
+      "1008.5386": [
+        "embedding_specter2_base"
+      ],
+      "0908.0570": [
+        "embedding_specter2_base"
+      ],
+      "1205.1925": [
+        "embedding_specter2_base"
+      ],
+      "0908.3817": [
+        "embedding_specter2_base"
+      ],
+      "1205.2617": [
+        "embedding_specter2_base",
+        "section_aware"
+      ],
+      "0812.4581": [
+        "section_aware"
+      ],
+      "1202.3766": [
+        "section_aware"
+      ],
+      "1203.3725": [
+        "section_aware",
+        "hybrid_ensemble"
+      ],
+      "1005.4214": [
+        "section_aware"
+      ],
+      "1106.2697": [
+        "section_aware"
+      ],
+      "1104.5256": [
+        "hybrid_ensemble"
+      ]
+    }
+  }
+}

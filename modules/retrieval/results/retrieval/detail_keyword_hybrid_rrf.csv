@@ -1,0 +1,6 @@
+query,n_relevant,P@5,R@5,F1@5,nDCG@5,P@10,R@10,F1@10,nDCG@10,MRR,MAP
+natural language processing text classification,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+reinforcement learning policy reward agent,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+support vector machine kernel classification,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+neural network deep learning representation,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+bayesian probabilistic graphical model,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0

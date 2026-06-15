@@ -1,0 +1,20 @@
+track,capability,implemented,status,notes
+nadiyah_original,parser,0,pending,Original parser/CLI import failed; repaired parser executes but quality is scored separately.
+nadiyah_repaired,parser,1,implemented,Original parser/CLI import failed; repaired parser executes but quality is scored separately.
+reference,parser,1,implemented,Independent comparison implementation.
+nadiyah_original,pos,0,pending,Original preprocessing has a syntax error.
+nadiyah_repaired,pos,1,implemented,Original preprocessing has a syntax error.
+reference,pos,1,implemented,Independent comparison implementation.
+nadiyah_original,ner,0,pending,Original real-abstract inference failed on token_type_ids.
+nadiyah_repaired,ner,1,implemented,Original real-abstract inference failed on token_type_ids.
+reference,ner,1,implemented,Independent comparison implementation.
+nadiyah_original,keyphrases,0,pending,Original import failed because KeyBERT was unavailable.
+nadiyah_repaired,keyphrases,1,implemented,Original import failed because KeyBERT was unavailable.
+reference,keyphrases,1,implemented,Independent comparison implementation.
+nadiyah_original,extractive_summary,0,pending,"Nadiyah implemented BART abstractive summarisation, not the planned extractive baseline."
+nadiyah_repaired,extractive_summary,0,pending,"Nadiyah implemented BART abstractive summarisation, not the planned extractive baseline."
+reference,extractive_summary,1,implemented,Independent comparison implementation.
+nadiyah_original,structural_checks,0,pending,No Nadiyah implementation was supplied.
+nadiyah_repaired,structural_checks,0,pending,No Nadiyah implementation was supplied.
+reference,structural_checks,1,implemented,Independent comparison implementation.
+nadiyah_repaired,abstractive_summary_supporting_only,1,mixed,"Functional BART comparison, but it does not satisfy the extractive-summary requirement."

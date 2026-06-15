@@ -1,0 +1,6 @@
+query,n_relevant,P@5,R@5,F1@5,nDCG@5,P@10,R@10,F1@10,nDCG@10,MRR,MAP
+natural language processing text classification,5,0.2,0.2,0.2,0.6309,0.1,0.2,0.1333,0.6309,0.5,0.1
+reinforcement learning policy reward agent,7,0.2,0.1429,0.1667,1.0,0.1,0.1429,0.1176,1.0,1.0,0.1429
+support vector machine kernel classification,8,0.6,0.375,0.4615,1.0,0.5,0.625,0.5556,0.9379,1.0,0.5159
+neural network deep learning representation,6,0.2,0.1667,0.1818,1.0,0.1,0.1667,0.125,1.0,1.0,0.1667
+bayesian probabilistic graphical model,5,0.4,0.4,0.4,0.6509,0.2,0.4,0.2667,0.6509,0.5,0.2

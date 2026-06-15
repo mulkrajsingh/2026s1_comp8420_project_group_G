@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "run_id": "20260615-200528-379540",
+  "session_log": "/Users/kyojin/work/uni/nlp_comp8420/project/2026s1_comp8420_project_group_G/integration/data/sessions/20260615-200528-379540/session.jsonl",
+  "state": "completed",
+  "started_at": "2026-06-15T10:05:28.380269+00:00",
+  "last_activity_at": "2026-06-15T12:19:59.645995+00:00",
+  "completed_at": "2026-06-15T12:19:59.645995+00:00",
+  "turn_count": 2,
+  "message_count": 4,
+  "event_count": 17,
+  "components": [
+    "integration",
+    "llm",
+    "retrieval"
+  ],
+  "failure_count": 0,
+  "recorded_duration_ms": 41305.2
+}

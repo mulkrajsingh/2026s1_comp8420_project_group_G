@@ -1,0 +1,261 @@
+{
+  "status": "provisional_agent_reviewed_not_human_validated",
+  "notes": [
+    "Labels were prepared from the five real PDFs before inspecting comparison metrics.",
+    "NER labels use SciER-compatible Method, Dataset, and Task categories.",
+    "Every exact occurrence of each listed NER term in the extracted abstract is evaluated.",
+    "Parser reference counts are provisional bibliography-entry counts."
+  ],
+  "papers": {
+    "drq_v2": {
+      "title": "Mastering Visual Continuous Control: Improved Data-Augmented Reinforcement Learning",
+      "expected_sections": [
+        "abstract",
+        "introduction",
+        "background",
+        "method",
+        "experiments",
+        "related_work",
+        "conclusion",
+        "references"
+      ],
+      "reference_count": 52,
+      "entities": [
+        {"text": "DrQ-v2", "type": "Method"},
+        {"text": "model-free reinforcement learning", "type": "Method"},
+        {"text": "DrQ", "type": "Method"},
+        {"text": "off-policy actor-critic", "type": "Method"},
+        {"text": "data augmentation", "type": "Method"},
+        {"text": "DeepMind Control Suite", "type": "Dataset"},
+        {"text": "visual continuous control", "type": "Task"},
+        {"text": "humanoid locomotion", "type": "Task"}
+      ],
+      "key_concepts": [
+        "DrQ-v2",
+        "visual continuous control",
+        "reinforcement learning",
+        "data augmentation",
+        "off-policy actor-critic",
+        "DeepMind Control Suite",
+        "humanoid locomotion",
+        "model-free RL",
+        "computational efficiency",
+        "pixel observations"
+      ],
+      "pos": [
+        {"text": "present", "pos": "VERB"},
+        {"text": "reinforcement", "pos": "NOUN"},
+        {"text": "learning", "pos": "NOUN"},
+        {"text": "algorithm", "pos": "NOUN"},
+        {"text": "visual", "pos": "ADJ"},
+        {"text": "continuous", "pos": "ADJ"},
+        {"text": "control", "pos": "NOUN"},
+        {"text": "builds", "pos": "VERB"},
+        {"text": "approach", "pos": "NOUN"},
+        {"text": "pixels", "pos": "NOUN"}
+      ],
+      "expected_structural_issues": ["no_explicit_limitations"]
+    },
+    "siga": {
+      "title": "SIGA: Self-Evolving Coding-Agent Adapters for Scientific Simulation",
+      "expected_sections": [
+        "abstract",
+        "introduction",
+        "related_work",
+        "background",
+        "method",
+        "experiments",
+        "results",
+        "conclusion",
+        "references",
+        "limitations"
+      ],
+      "reference_count": 37,
+      "entities": [
+        {"text": "simulator setup", "type": "Task"},
+        {"text": "SIGA", "type": "Method"},
+        {"text": "Simulator-Interface Grounding Adapter", "type": "Method"},
+        {"text": "retrieval", "type": "Method"},
+        {"text": "procedural memory", "type": "Method"},
+        {"text": "in-trajectory validation", "type": "Method"},
+        {"text": "GEOS", "type": "Dataset"},
+        {"text": "OpenFOAM", "type": "Dataset"},
+        {"text": "LAMMPS", "type": "Dataset"}
+      ],
+      "key_concepts": [
+        "SIGA",
+        "simulator-interface grounding",
+        "coding agent",
+        "scientific simulation",
+        "GEOS",
+        "TreeSim",
+        "retrieval",
+        "procedural memory",
+        "validation",
+        "self-evolution"
+      ],
+      "pos": [
+        {"text": "Advanced", "pos": "ADJ"},
+        {"text": "scientific", "pos": "ADJ"},
+        {"text": "simulators", "pos": "NOUN"},
+        {"text": "expose", "pos": "VERB"},
+        {"text": "specialized", "pos": "ADJ"},
+        {"text": "languages", "pos": "NOUN"},
+        {"text": "turn", "pos": "VERB"},
+        {"text": "simulation", "pos": "NOUN"},
+        {"text": "goals", "pos": "NOUN"},
+        {"text": "configurations", "pos": "NOUN"}
+      ],
+      "expected_structural_issues": []
+    },
+    "transformer": {
+      "title": "Attention Is All You Need",
+      "expected_sections": [
+        "abstract",
+        "introduction",
+        "background",
+        "method",
+        "results",
+        "conclusion",
+        "references"
+      ],
+      "reference_count": 40,
+      "entities": [
+        {"text": "encoder", "type": "Method"},
+        {"text": "decoder", "type": "Method"},
+        {"text": "attention mechanism", "type": "Method"},
+        {"text": "Transformer", "type": "Method"},
+        {"text": "attention mechanisms", "type": "Method"},
+        {"text": "WMT 2014", "type": "Dataset"},
+        {"text": "machine translation", "type": "Task"},
+        {"text": "English-to-German translation", "type": "Task"},
+        {"text": "English-to-French translation", "type": "Task"},
+        {"text": "English constituency parsing", "type": "Task"}
+      ],
+      "key_concepts": [
+        "Transformer",
+        "self-attention",
+        "attention mechanism",
+        "sequence transduction",
+        "machine translation",
+        "encoder-decoder",
+        "WMT 2014",
+        "parallelization",
+        "BLEU",
+        "constituency parsing"
+      ],
+      "pos": [
+        {"text": "dominant", "pos": "ADJ"},
+        {"text": "sequence", "pos": "NOUN"},
+        {"text": "transduction", "pos": "NOUN"},
+        {"text": "models", "pos": "NOUN"},
+        {"text": "based", "pos": "VERB"},
+        {"text": "complex", "pos": "ADJ"},
+        {"text": "recurrent", "pos": "ADJ"},
+        {"text": "networks", "pos": "NOUN"},
+        {"text": "propose", "pos": "VERB"},
+        {"text": "architecture", "pos": "NOUN"}
+      ],
+      "expected_structural_issues": ["no_explicit_limitations", "weak_related_work_signal"]
+    },
+    "bert": {
+      "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+      "expected_sections": [
+        "abstract",
+        "introduction",
+        "related_work",
+        "method",
+        "experiments",
+        "conclusion",
+        "references"
+      ],
+      "reference_count": 57,
+      "entities": [
+        {"text": "BERT", "type": "Method"},
+        {"text": "Bidirectional Encoder Representations from Transformers", "type": "Method"},
+        {"text": "GLUE", "type": "Dataset"},
+        {"text": "MultiNLI", "type": "Dataset"},
+        {"text": "SQuAD v1.1", "type": "Dataset"},
+        {"text": "SQuAD v2.0", "type": "Dataset"},
+        {"text": "question answering", "type": "Task"},
+        {"text": "language inference", "type": "Task"}
+      ],
+      "key_concepts": [
+        "BERT",
+        "bidirectional pre-training",
+        "language representation",
+        "fine-tuning",
+        "GLUE",
+        "MultiNLI",
+        "SQuAD",
+        "question answering",
+        "language inference",
+        "natural language processing"
+      ],
+      "pos": [
+        {"text": "introduce", "pos": "VERB"},
+        {"text": "new", "pos": "ADJ"},
+        {"text": "language", "pos": "NOUN"},
+        {"text": "representation", "pos": "NOUN"},
+        {"text": "model", "pos": "NOUN"},
+        {"text": "BERT", "pos": "PROPN"},
+        {"text": "designed", "pos": "VERB"},
+        {"text": "bidirectional", "pos": "ADJ"},
+        {"text": "unlabeled", "pos": "ADJ"},
+        {"text": "text", "pos": "NOUN"}
+      ],
+      "expected_structural_issues": ["no_explicit_limitations"]
+    },
+    "rag": {
+      "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "expected_sections": [
+        "abstract",
+        "introduction",
+        "method",
+        "experiments",
+        "results",
+        "related_work",
+        "discussion",
+        "references"
+      ],
+      "reference_count": 68,
+      "entities": [
+        {"text": "pre-trained language models", "type": "Method"},
+        {"text": "retrieval-augmented generation", "type": "Method"},
+        {"text": "RAG", "type": "Method"},
+        {"text": "seq2seq model", "type": "Method"},
+        {"text": "neural retriever", "type": "Method"},
+        {"text": "Wikipedia", "type": "Dataset"},
+        {"text": "knowledge-intensive tasks", "type": "Task"},
+        {"text": "extractive downstream tasks", "type": "Task"},
+        {"text": "language generation", "type": "Task"},
+        {"text": "open domain QA", "type": "Task"}
+      ],
+      "key_concepts": [
+        "retrieval-augmented generation",
+        "parametric memory",
+        "non-parametric memory",
+        "dense vector index",
+        "Wikipedia",
+        "neural retriever",
+        "knowledge-intensive NLP",
+        "open-domain QA",
+        "seq2seq",
+        "factual generation"
+      ],
+      "pos": [
+        {"text": "Large", "pos": "ADJ"},
+        {"text": "language", "pos": "NOUN"},
+        {"text": "models", "pos": "NOUN"},
+        {"text": "shown", "pos": "VERB"},
+        {"text": "store", "pos": "VERB"},
+        {"text": "factual", "pos": "ADJ"},
+        {"text": "knowledge", "pos": "NOUN"},
+        {"text": "parameters", "pos": "NOUN"},
+        {"text": "achieve", "pos": "VERB"},
+        {"text": "downstream", "pos": "ADJ"}
+      ],
+      "expected_structural_issues": ["no_explicit_limitations"]
+    }
+  }
+}
