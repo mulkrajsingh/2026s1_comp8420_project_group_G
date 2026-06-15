@@ -1,0 +1,16 @@
+query,n_relevant,P@5,R@5,F1@5,nDCG@5,P@10,R@10,F1@10,nDCG@10,MRR,MAP
+natural language processing text classification,5,0.2,0.2,0.2,1.0,0.1,0.2,0.1333,1.0,1.0,0.2
+reinforcement learning policy reward agent,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+support vector machine kernel classification,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+neural network deep learning representation,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+bayesian probabilistic graphical model,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+What papers should I read on text classification and natural language processing?,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+"Find research on reinforcement learning agents, policies, and reward design.",5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Recommend papers about support vector machines and kernel methods for classification.,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+What work exists on deep neural networks and representation learning?,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Suggest papers on bayesian methods and probabilistic graphical models.,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Recommend papers about retrieval augmented generation for scientific literature.,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+What papers discuss learning control policies directly from pixel observations?,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Find papers on transformer self-attention mechanisms.,5,0.4,0.4,0.4,1.0,0.3,0.6,0.4,0.9134,1.0,0.475
+Suggest recent work on contrastive learning for unsupervised representation learning.,5,0.6,0.6,0.6,1.0,0.4,0.8,0.5333,0.9709,1.0,0.7333
+What are good papers on variational autoencoders and generative modeling?,5,0.4,0.4,0.4,0.6934,0.3,0.6,0.4,0.6664,0.5,0.2933

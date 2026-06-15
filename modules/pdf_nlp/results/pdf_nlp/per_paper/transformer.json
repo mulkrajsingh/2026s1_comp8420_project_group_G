@@ -1,0 +1,5314 @@
+{
+  "input": {
+    "paper_id": "transformer",
+    "pdf_sha256": "bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697",
+    "source_url": "https://arxiv.org/pdf/1706.03762v7"
+  },
+  "parsed_paper": {
+    "metadata": {
+      "paper_id": "1706.03762v7_45961f309b",
+      "title": "Provided proper attribution is provided, Google hereby grants permission to",
+      "abstract": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 English- to-German translation task, improving over the existing best results, including ensembles, by over 2 BLEU. On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.8 after training for 3.5 days on eight GPUs, a small fraction of the training costs of the best models from the literature. We show that the Transformer generalizes well to other tasks by applying it successfully to English constituency parsing both with large and limited training data. \u2217Equal contribution. Listing order is random. Jakob proposed replacing RNNs with self-attention and started the effort to evaluate this idea. Ashish, with Illia, designed and implemented the first Transformer models and has been crucially involved in every aspect of this work. Noam proposed scaled dot-product attention, multi-head attention and the parameter-free position representation and became the other person involved in nearly every detail. Niki designed, implemented, tuned and evaluated countless model variants in our original codebase and tensor2tensor. Llion also experimented with novel model variants, was responsible for our initial codebase, and efficient inference and visualizations. Lukasz and Aidan spent countless long days designing various parts of and implementing tensor2tensor, replacing our earlier codebase, greatly improving results and massively accelerating our research. \u2020Work performed while at Google Brain. \u2021Work performed while at Google Research. 31st Conference on Neural Information Processing Systems (NIPS 2017), Long Beach, CA, USA. arXiv:1706.03762v7 [cs.CL] 2 Aug 2023",
+      "authors": [
+        "reproduce the tables",
+        "figures in this paper solely for use in journalistic or",
+        "Attention Is All You Need"
+      ],
+      "categories": [],
+      "published_date": null,
+      "venue": null,
+      "doi": null,
+      "arxiv_id": "1706.03762v7",
+      "url": "https://arxiv.org/abs/1706.03762v7",
+      "source": "uploaded_pdf"
+    },
+    "sections": {
+      "abstract": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 English- to-German translation task, improving over the existing best results, including ensembles, by over 2 BLEU. On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.8 after training for 3.5 days on eight GPUs, a small fraction of the training costs of the best models from the literature. We show that the Transformer generalizes well to other tasks by applying it successfully to English constituency parsing both with large and limited training data. \u2217Equal contribution. Listing order is random. Jakob proposed replacing RNNs with self-attention and started the effort to evaluate this idea. Ashish, with Illia, designed and implemented the first Transformer models and has been crucially involved in every aspect of this work. Noam proposed scaled dot-product attention, multi-head attention and the parameter-free position representation and became the other person involved in nearly every detail. Niki designed, implemented, tuned and evaluated countless model variants in our original codebase and tensor2tensor. Llion also experimented with novel model variants, was responsible for our initial codebase, and efficient inference and visualizations. Lukasz and Aidan spent countless long days designing various parts of and implementing tensor2tensor, replacing our earlier codebase, greatly improving results and massively accelerating our research. \u2020Work performed while at Google Brain. \u2021Work performed while at Google Research. 31st Conference on Neural Information Processing Systems (NIPS 2017), Long Beach, CA, USA. arXiv:1706.03762v7 [cs.CL] 2 Aug 2023",
+      "introduction": "Recurrent neural networks, long short-term memory [13] and gated recurrent [7] neural networks\nin particular, have been firmly established as state of the art approaches in sequence modeling and\ntransduction problems such as language modeling and machine translation [ 35, 2, 5]. Numerous\nefforts have since continued to push the boundaries of recurrent language models and encoder-decoder\narchitectures [38, 24, 15].\nRecurrent models typically factor computation along the symbol positions of the input and output\nsequences. Aligning the positions to steps in computation time, they generate a sequence of hidden\nstates ht, as a function of the previous hidden state ht\u22121 and the input for position t. This inherently\nsequential nature precludes parallelization within training examples, which becomes critical at longer\nsequence lengths, as memory constraints limit batching across examples. Recent work has achieved\nsignificant improvements in computational efficiency through factorization tricks [21] and conditional\ncomputation [32], while also improving model performance in case of the latter. The fundamental\nconstraint of sequential computation, however, remains.\nAttention mechanisms have become an integral part of compelling sequence modeling and transduc-\ntion models in various tasks, allowing modeling of dependencies without regard to their distance in\nthe input or output sequences [2, 19]. In all but a few cases [27], however, such attention mechanisms\nare used in conjunction with a recurrent network.\nIn this work we propose the Transformer, a model architecture eschewing recurrence and instead\nrelying entirely on an attention mechanism to draw global dependencies between input and output.\nThe Transformer allows for significantly more parallelization and can reach a new state of the art in\ntranslation quality after being trained for as little as twelve hours on eight P100 GPUs.\n\nThe goal of reducing sequential computation also forms the foundation of the Extended Neural GPU\n[16], ByteNet [18] and ConvS2S [9], all of which use convolutional neural networks as basic building\nblock, computing hidden representations in parallel for all input and output positions. In these models,\nthe number of operations required to relate signals from two arbitrary input or output positions grows\nin the distance between positions, linearly for ConvS2S and logarithmically for ByteNet. This makes\nit more difficult to learn dependencies between distant positions [ 12]. In the Transformer this is\nreduced to a constant number of operations, albeit at the cost of reduced effective resolution due\nto averaging attention-weighted positions, an effect we counteract with Multi-Head Attention as\ndescribed in section 3.2.\nSelf-attention, sometimes called intra-attention is an attention mechanism relating different positions\nof a single sequence in order to compute a representation of the sequence. Self-attention has been\nused successfully in a variety of tasks including reading comprehension, abstractive summarization,\ntextual entailment and learning task-independent sentence representations [4, 27, 28, 22].\nEnd-to-end memory networks are based on a recurrent attention mechanism instead of sequence-\naligned recurrence and have been shown to perform well on simple-language question answering and\nlanguage modeling tasks [34].\nTo the best of our knowledge, however, the Transformer is the first transduction model relying\nentirely on self-attention to compute representations of its input and output without using sequence-\naligned RNNs or convolution. In the following sections, we will describe the Transformer, motivate\nself-attention and discuss its advantages over models such as [17, 18] and [9].",
+      "method": "Most competitive neural sequence transduction models have an encoder-decoder structure [5, 2, 35].\nHere, the encoder maps an input sequence of symbol representations (x1, ..., xn) to a sequence\nof continuous representations z = ( z1, ..., zn). Given z, the decoder then generates an output\nsequence (y1, ..., ym) of symbols one element at a time. At each step the model is auto-regressive\n[10], consuming the previously generated symbols as additional input when generating the next.\n\nTo evaluate the importance of different components of the Transformer, we varied our base model\nin different ways, measuring the change in performance on English-to-German translation on the\n5We used values of 2.8, 3.7, 6.0 and 9.5 TFLOPS for K80, K40, M40 and P100, respectively.",
+      "results": "",
+      "conclusion": "In this work, we presented the Transformer, the first sequence transduction model based entirely on\nattention, replacing the recurrent layers most commonly used in encoder-decoder architectures with\nmulti-headed self-attention.\nFor translation tasks, the Transformer can be trained significantly faster than architectures based\non recurrent or convolutional layers. On both WMT 2014 English-to-German and WMT 2014\nEnglish-to-French translation tasks, we achieve a new state of the art. In the former task our best\nmodel outperforms even all previously reported ensembles.\nWe are excited about the future of attention-based models and plan to apply them to other tasks. We\nplan to extend the Transformer to problems involving input and output modalities other than text and\nto investigate local, restricted attention mechanisms to efficiently handle large inputs and outputs\nsuch as images, audio and video. Making generation less sequential is another research goals of ours.\nThe code we used to train and evaluate our models is available at https://github.com/\ntensorflow/tensor2tensor.\nAcknowledgements We are grateful to Nal Kalchbrenner and Stephan Gouws for their fruitful\ncomments, corrections and inspiration.\nReferences\n[1] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton. Layer normalization. arXiv preprint\narXiv:1607.06450, 2016.\n[2] Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. Neural machine translation by jointly\nlearning to align and translate. CoRR, abs/1409.0473, 2014.\n[3] Denny Britz, Anna Goldie, Minh-Thang Luong, and Quoc V . Le. Massive exploration of neural\nmachine translation architectures. CoRR, abs/1703.03906, 2017.\n[4] Jianpeng Cheng, Li Dong, and Mirella Lapata. Long short-term memory-networks for machine\nreading. arXiv preprint arXiv:1601.06733, 2016.\n10\n[5] Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Fethi Bougares, Holger Schwenk,\nand Yoshua Bengio. Learning phrase representations using rnn encoder-decoder for statistical\nmachine translation. CoRR, abs/1406.1078, 2014.\n[6] Francois Chollet. Xception: Deep learning with depthwise separable convolutions. arXiv\npreprint arXiv:1610.02357, 2016.\n[7] Junyoung Chung, \u00c7aglar G\u00fcl\u00e7ehre, Kyunghyun Cho, and Yoshua Bengio. Empirical evaluation\nof gated recurrent neural networks on sequence modeling. CoRR, abs/1412.3555, 2014.\n[8] Chris Dyer, Adhiguna Kuncoro, Miguel Ballesteros, and Noah A. Smith. Recurrent neural\nnetwork grammars. In Proc. of NAACL, 2016.\n[9] Jonas Gehring, Michael Auli, David Grangier, Denis Yarats, and Yann N. Dauphin. Convolu-\ntional sequence to sequence learning. arXiv preprint arXiv:1705.03122v2, 2017.\n[10] Alex Graves. Generating sequences with recurrent neural networks. arXiv preprint\narXiv:1308.0850, 2013.\n[11] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for im-\nage recognition. In Proceedings of the IEEE Conference on Computer Vision and Pattern\nRecognition, pages 770\u2013778, 2016.\n[12] Sepp Hochreiter, Yoshua Bengio, Paolo Frasconi, and J\u00fcrgen Schmidhuber. Gradient flow in\nrecurrent nets: the difficulty of learning long-term dependencies, 2001.\n[13] Sepp Hochreiter and J\u00fcrgen Schmidhuber. Long short-term memory. Neural computation,\n9(8):1735\u20131780, 1997.\n[14] Zhongqiang Huang and Mary Harper. Self-training PCFG grammars with latent annotations\nacross languages. In Proceedings of the 2009 Conference on Empirical Methods in Natural\nLanguage Processing, pages 832\u2013841. ACL, August 2009.\n[15] Rafal Jozefowicz, Oriol Vinyals, Mike Schuster, Noam Shazeer, and Yonghui Wu. Exploring\nthe limits of language modeling. arXiv preprint arXiv:1602.02410, 2016.\n[16] \u0141ukasz Kaiser and Samy Bengio. Can active memory replace attention? In Advances in Neural\nInformation Processing Systems, (NIPS), 2016.\n[17] \u0141ukasz Kaiser and Ilya Sutskever. Neural GPUs learn algorithms. In International Conference\non Learning Representations (ICLR), 2016.\n[18] Nal Kalchbrenner, Lasse Espeholt, Karen Simonyan, Aaron van den Oord, Alex Graves, and Ko-\nray Kavukcuoglu. Neural machine translation in linear time.arXiv preprint arXiv:1610.10099v2,\n2017.\n[19] Yoon Kim, Carl Denton, Luong Hoang, and Alexander M. Rush. Structured attention networks.\nIn International Conference on Learning Representations , 2017.\n[20] Diederik Kingma and Jimmy Ba. Adam: A method for stochastic optimization. In ICLR, 2015.\n[21] Oleksii Kuchaiev and Boris Ginsburg. Factorization tricks for LSTM networks. arXiv preprint\narXiv:1703.10722, 2017.\n[22] Zhouhan Lin, Minwei Feng, Cicero Nogueira dos Santos, Mo Yu, Bing Xiang, Bowen\nZhou, and Yoshua Bengio. A structured self-attentive sentence embedding. arXiv preprint\narXiv:1703.03130, 2017.\n[23] Minh-Thang Luong, Quoc V . Le, Ilya Sutskever, Oriol Vinyals, and Lukasz Kaiser. Multi-task\nsequence to sequence learning. arXiv preprint arXiv:1511.06114, 2015.\n[24] Minh-Thang Luong, Hieu Pham, and Christopher D Manning. Effective approaches to attention-\nbased neural machine translation. arXiv preprint arXiv:1508.04025, 2015.\n11\n[25] Mitchell P Marcus, Mary Ann Marcinkiewicz, and Beatrice Santorini. Building a large annotated\ncorpus of english: The penn treebank. Computational linguistics, 19(2):313\u2013330, 1993.\n[26] David McClosky, Eugene Charniak, and Mark Johnson. Effective self-training for parsing. In\nProceedings of the Human Language Technology Conference of the NAACL, Main Conference ,\npages 152\u2013159. ACL, June 2006.\n[27] Ankur Parikh, Oscar T\u00e4ckstr\u00f6m, Dipanjan Das, and Jakob Uszkoreit. A decomposable attention\nmodel. In Empirical Methods in Natural Language Processing , 2016.\n[28] Romain Paulus, Caiming Xiong, and Richard Socher. A deep reinforced model for abstractive\nsummarization. arXiv preprint arXiv:1705.04304, 2017.\n[29] Slav Petrov, Leon Barrett, Romain Thibaux, and Dan Klein. Learning accurate, compact,\nand interpretable tree annotation. In Proceedings of the 21st International Conference on\nComputational Linguistics and 44th Annual Meeting of the ACL , pages 433\u2013440. ACL, July\n2006.\n[30] Ofir Press and Lior Wolf. Using the output embedding to improve language models. arXiv\npreprint arXiv:1608.05859, 2016.\n[31] Rico Sennrich, Barry Haddow, and Alexandra Birch. Neural machine translation of rare words\nwith subword units. arXiv preprint arXiv:1508.07909, 2015.\n[32] Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton,\nand Jeff Dean. Outrageously large neural networks: The sparsely-gated mixture-of-experts\nlayer. arXiv preprint arXiv:1701.06538, 2017.\n[33] Nitish Srivastava, Geoffrey E Hinton, Alex Krizhevsky, Ilya Sutskever, and Ruslan Salakhutdi-\nnov. Dropout: a simple way to prevent neural networks from overfitting. Journal of Machine\nLearning Research, 15(1):1929\u20131958, 2014.\n[34] Sainbayar Sukhbaatar, Arthur Szlam, Jason Weston, and Rob Fergus. End-to-end memory\nnetworks. In C. Cortes, N. D. Lawrence, D. D. Lee, M. Sugiyama, and R. Garnett, editors,\nAdvances in Neural Information Processing Systems 28 , pages 2440\u20132448. Curran Associates,\nInc., 2015.\n[35] Ilya Sutskever, Oriol Vinyals, and Quoc VV Le. Sequence to sequence learning with neural\nnetworks. In Advances in Neural Information Processing Systems , pages 3104\u20133112, 2014.\n[36] Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, and Zbigniew Wojna.\nRethinking the inception architecture for computer vision. CoRR, abs/1512.00567, 2015.\n[37] Vinyals & Kaiser, Koo, Petrov, Sutskever, and Hinton. Grammar as a foreign language. In\nAdvances in Neural Information Processing Systems , 2015.\n[38] Yonghui Wu, Mike Schuster, Zhifeng Chen, Quoc V Le, Mohammad Norouzi, Wolfgang\nMacherey, Maxim Krikun, Yuan Cao, Qin Gao, Klaus Macherey, et al. Google\u2019s neural machine\ntranslation system: Bridging the gap between human and machine translation. arXiv preprint\narXiv:1609.08144, 2016.\n[39] Jie Zhou, Ying Cao, Xuguang Wang, Peng Li, and Wei Xu. Deep recurrent models with\nfast-forward connections for neural machine translation. CoRR, abs/1606.04199, 2016.\n[40] Muhua Zhu, Yue Zhang, Wenliang Chen, Min Zhang, and Jingbo Zhu. Fast and accurate\nshift-reduce constituent parsing. In Proceedings of the 51st Annual Meeting of the ACL (V olume\n1: Long Papers), pages 434\u2013443. ACL, August 2013."
+    },
+    "references": [
+      "Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton. Layer normalization. arXiv preprint arXiv:1607.06450, 2016",
+      "Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. Neural machine translation by jointly learning to align and translate. CoRR, abs/1409.0473, 2014",
+      "Denny Britz, Anna Goldie, Minh-Thang Luong, and Quoc V . Le. Massive exploration of neural machine translation architectures. CoRR, abs/1703.03906, 2017",
+      "Jianpeng Cheng, Li Dong, and Mirella Lapata. Long short-term memory-networks for machine reading. arXiv preprint arXiv:1601.06733, 2016. 10",
+      "Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Fethi Bougares, Holger Schwenk, and Yoshua Bengio. Learning phrase representations using rnn encoder-decoder for statistical machine translation. CoRR, abs/1406.1078, 2014",
+      "Francois Chollet. Xception: Deep learning with depthwise separable convolutions. arXiv preprint arXiv:1610.02357, 2016",
+      "Junyoung Chung, \u00c7aglar G\u00fcl\u00e7ehre, Kyunghyun Cho, and Yoshua Bengio. Empirical evaluation of gated recurrent neural networks on sequence modeling. CoRR, abs/1412.3555, 2014",
+      "Chris Dyer, Adhiguna Kuncoro, Miguel Ballesteros, and Noah A. Smith. Recurrent neural network grammars. In Proc. of NAACL, 2016",
+      "Jonas Gehring, Michael Auli, David Grangier, Denis Yarats, and Yann N. Dauphin. Convolu- tional sequence to sequence learning. arXiv preprint arXiv:1705.03122v2, 2017",
+      "Alex Graves. Generating sequences with recurrent neural networks. arXiv preprint arXiv:1308.0850, 2013",
+      "Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for im- age recognition. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pages 770\u2013778, 2016",
+      "Sepp Hochreiter, Yoshua Bengio, Paolo Frasconi, and J\u00fcrgen Schmidhuber. Gradient flow in recurrent nets: the difficulty of learning long-term dependencies, 2001",
+      "Sepp Hochreiter and J\u00fcrgen Schmidhuber. Long short-term memory. Neural computation, 9(8):1735\u20131780, 1997",
+      "Zhongqiang Huang and Mary Harper. Self-training PCFG grammars with latent annotations across languages. In Proceedings of the 2009 Conference on Empirical Methods in Natural Language Processing, pages 832\u2013841. ACL, August 2009",
+      "Rafal Jozefowicz, Oriol Vinyals, Mike Schuster, Noam Shazeer, and Yonghui Wu. Exploring the limits of language modeling. arXiv preprint arXiv:1602.02410, 2016",
+      "\u0141ukasz Kaiser and Samy Bengio. Can active memory replace attention? In Advances in Neural Information Processing Systems, (NIPS), 2016",
+      "\u0141ukasz Kaiser and Ilya Sutskever. Neural GPUs learn algorithms. In International Conference on Learning Representations (ICLR), 2016",
+      "Nal Kalchbrenner, Lasse Espeholt, Karen Simonyan, Aaron van den Oord, Alex Graves, and Ko- ray Kavukcuoglu. Neural machine translation in linear time.arXiv preprint arXiv:1610.10099v2, 2017",
+      "Yoon Kim, Carl Denton, Luong Hoang, and Alexander M. Rush. Structured attention networks. In International Conference on Learning Representations , 2017",
+      "Diederik Kingma and Jimmy Ba. Adam: A method for stochastic optimization. In ICLR, 2015",
+      "Oleksii Kuchaiev and Boris Ginsburg. Factorization tricks for LSTM networks. arXiv preprint arXiv:1703.10722, 2017",
+      "Zhouhan Lin, Minwei Feng, Cicero Nogueira dos Santos, Mo Yu, Bing Xiang, Bowen Zhou, and Yoshua Bengio. A structured self-attentive sentence embedding. arXiv preprint arXiv:1703.03130, 2017",
+      "Minh-Thang Luong, Quoc V . Le, Ilya Sutskever, Oriol Vinyals, and Lukasz Kaiser. Multi-task sequence to sequence learning. arXiv preprint arXiv:1511.06114, 2015",
+      "Minh-Thang Luong, Hieu Pham, and Christopher D Manning. Effective approaches to attention- based neural machine translation. arXiv preprint arXiv:1508.04025, 2015. 11",
+      "Mitchell P Marcus, Mary Ann Marcinkiewicz, and Beatrice Santorini. Building a large annotated corpus of english: The penn treebank. Computational linguistics, 19(2):313\u2013330, 1993",
+      "David McClosky, Eugene Charniak, and Mark Johnson. Effective self-training for parsing. In Proceedings of the Human Language Technology Conference of the NAACL, Main Conference , pages 152\u2013159. ACL, June 2006",
+      "Ankur Parikh, Oscar T\u00e4ckstr\u00f6m, Dipanjan Das, and Jakob Uszkoreit. A decomposable attention model. In Empirical Methods in Natural Language Processing , 2016",
+      "Romain Paulus, Caiming Xiong, and Richard Socher. A deep reinforced model for abstractive summarization. arXiv preprint arXiv:1705.04304, 2017",
+      "Slav Petrov, Leon Barrett, Romain Thibaux, and Dan Klein. Learning accurate, compact, and interpretable tree annotation. In Proceedings of the 21st International Conference on Computational Linguistics and 44th Annual Meeting of the ACL , pages 433\u2013440. ACL, July 2006",
+      "Ofir Press and Lior Wolf. Using the output embedding to improve language models. arXiv preprint arXiv:1608.05859, 2016",
+      "Rico Sennrich, Barry Haddow, and Alexandra Birch. Neural machine translation of rare words with subword units. arXiv preprint arXiv:1508.07909, 2015",
+      "Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton, and Jeff Dean. Outrageously large neural networks: The sparsely-gated mixture-of-experts layer. arXiv preprint arXiv:1701.06538, 2017",
+      "Nitish Srivastava, Geoffrey E Hinton, Alex Krizhevsky, Ilya Sutskever, and Ruslan Salakhutdi- nov. Dropout: a simple way to prevent neural networks from overfitting. Journal of Machine Learning Research, 15(1):1929\u20131958, 2014",
+      "Sainbayar Sukhbaatar, Arthur Szlam, Jason Weston, and Rob Fergus. End-to-end memory networks. In C. Cortes, N. D. Lawrence, D. D. Lee, M. Sugiyama, and R. Garnett, editors, Advances in Neural Information Processing Systems 28 , pages 2440\u20132448. Curran Associates, Inc., 2015",
+      "Ilya Sutskever, Oriol Vinyals, and Quoc VV Le. Sequence to sequence learning with neural networks. In Advances in Neural Information Processing Systems , pages 3104\u20133112, 2014",
+      "Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, and Zbigniew Wojna. Rethinking the inception architecture for computer vision. CoRR, abs/1512.00567, 2015",
+      "Vinyals & Kaiser, Koo, Petrov, Sutskever, and Hinton. Grammar as a foreign language. In Advances in Neural Information Processing Systems , 2015",
+      "Yonghui Wu, Mike Schuster, Zhifeng Chen, Quoc V Le, Mohammad Norouzi, Wolfgang Macherey, Maxim Krikun, Yuan Cao, Qin Gao, Klaus Macherey, et al. Google\u2019s neural machine translation system: Bridging the gap between human and machine translation. arXiv preprint arXiv:1609.08144, 2016",
+      "Jie Zhou, Ying Cao, Xuguang Wang, Peng Li, and Wei Xu. Deep recurrent models with fast-forward connections for neural machine translation. CoRR, abs/1606.04199, 2016",
+      "Muhua Zhu, Yue Zhang, Wenliang Chen, Min Zhang, and Jingbo Zhu. Fast and accurate shift-reduce constituent parsing. In Proceedings of the 51st Annual Meeting of the ACL (V olume 1: Long Papers), pages 434\u2013443. ACL, August 2013. 12 Attention Visualizations Input-Input Layer5 It is in this spirit that a majority of American governments have passed new laws since 2009 making the registration or voting process more difficult . <EOS> <pad> <pad> <pad> <pad> <pad> <pad> It is in this spirit that a majority of American governments have passed new laws since 2009 making the registration or voting process more difficult . <EOS> <pad> <pad> <pad> <pad> <pad> <pad> Figure 3: An example of the attention mechanism following long-distance dependencies in the encoder self-attention in layer 5 of 6. Many of the attention heads attend to a distant dependency of the verb \u2018making\u2019, completing the phrase \u2018making...more difficult\u2019. Attentions here shown only for the word \u2018making\u2019. Different colors represent different heads. Best viewed in color. 13 Input-Input Layer5 The Law will never be perfect , but its application should be just - this is what we are missing , in my opinion . <EOS> <pad> The Law will never be perfect , but its application should be just - this is what we are missing , in my opinion . <EOS> <pad> Input-Input Layer5 The Law will never be perfect , but its application should be just - this is what we are missing , in my opinion . <EOS> <pad> The Law will never be perfect , but its application should be just - this is what we are missing , in my opinion . <EOS> <pad> Figure 4: Two attention heads, also in layer 5 of 6, apparently involved in anaphora resolution. Top: Full attentions for head 5. Bottom: Isolated attentions from just the word \u2018its\u2019 for attention heads 5 and 6. Note that the attentions are very sharp for this word. 14 Input-Input Layer5 The Law will never be perfect , but its application should be just - this is what we are missing , in my opinion . <EOS> <pad> The Law will never be perfect , but its application should be just - this is what we are missing , in my opinion . <EOS> <pad> Input-Input Layer5 The Law will never be perfect , but its application should be just - this is what we are missing , in my opinion . <EOS> <pad> The Law will never be perfect , but its application should be just - this is what we are missing , in my opinion . <EOS> <pad> Figure 5: Many of the attention heads exhibit behaviour that seems related to the structure of the sentence. We give two such examples above, from two different heads from the encoder self-attention at layer 5 of 6. The heads clearly learned to perform different tasks. 15"
+    ],
+    "keywords": [
+      "attention translation tasks",
+      "machine translation tasks",
+      "transduction models encoder",
+      "translation tasks models",
+      "self attention translation",
+      "attention translation",
+      "recurrent models fast",
+      "recurrent language models",
+      "attention based models",
+      "attention compute representations",
+      "short term memory",
+      "translation task improving",
+      "translation tasks",
+      "decoder attention",
+      "recurrent neural networks",
+      "recurrent network",
+      "models encoder decoder",
+      "encoder decoder structure",
+      "neural sequence transduction",
+      "models encoder"
+    ],
+    "entities": {
+      "methods": [
+        "recurrent",
+        "convolutional neural networks",
+        "encoder",
+        "decoder",
+        "Transformer",
+        "attention mechanisms",
+        "convolutions",
+        "jakob",
+        "rnns",
+        "self - attention",
+        "self-attention",
+        "transformer models",
+        "scaled dot - product attention",
+        "multi - head attention",
+        "parameter - free position representation",
+        "tensor2tensor",
+        "sequence transduction model",
+        "attention",
+        "recurrent layers",
+        "encoder - decoder",
+        "multi - headed self - attention",
+        "convolutional layers",
+        "attention - based models",
+        "layer normalization",
+        "short - term memory - networks",
+        "rnn encoder - decoder",
+        "deep learning",
+        "depthwise separable convolutions",
+        "gated recurrent neural networks",
+        "recurrent neural network",
+        "convolu - tional sequence",
+        "recurrent neural networks",
+        "deep residual learning",
+        "gradient flow",
+        "recurrent nets",
+        "short - term memory",
+        "pcfg",
+        "neural gpus",
+        "structured attention networks",
+        "adam",
+        "lstm",
+        "structured self - attentive sentence embedding",
+        "self - training",
+        "decomposable attention model",
+        "dropout",
+        "neural information processing systems",
+        "neural networks",
+        "neural machine",
+        "system",
+        "recurrent models",
+        "fast - forward connections",
+        "shift - reduce",
+        "long short - term memory",
+        "gated recurrent",
+        "factorization",
+        "transduc - tion",
+        "recurrent network",
+        "neural gpu",
+        "bytenet",
+        "convs2s",
+        "Self-attention",
+        "intra - attention",
+        "recurrent attention mechanism",
+        "transduction model",
+        "aligned rnns",
+        "convolution",
+        "auto - regressive"
+      ],
+      "datasets": [
+        "WMT 2014",
+        "wmt 2014 english - to - german",
+        "wmt 2014 english - to - french",
+        "illia",
+        "google brain",
+        "google research",
+        "naacl",
+        "iclr",
+        "penn treebank",
+        "ofir press",
+        "wolf",
+        "acl",
+        "5we"
+      ],
+      "tasks": [
+        "machine translation",
+        "english constituency parsing",
+        "constituency parsing",
+        "translation",
+        "machine reading",
+        "statistical machine translation",
+        "sequence modeling",
+        "sequence learning",
+        "im - age recognition",
+        "computer vision",
+        "pattern recognition",
+        "natural language processing",
+        "language modeling",
+        "human language",
+        "abstractive summarization",
+        "computational linguistics",
+        "human",
+        "neural machine translation",
+        "transduction",
+        "reading comprehension",
+        "textual entailment",
+        "learning task - independent sentence representations",
+        "simple - language question answering",
+        "question answering"
+      ],
+      "metrics": [
+        "BLEU"
+      ],
+      "institutions": [
+        "Transformer",
+        "the WMT 2014 English-",
+        "WMT",
+        "BLEU",
+        "Niki",
+        "Google Research",
+        "CoRR",
+        "Quoc V .",
+        "Fethi Bougares",
+        "arXiv:1705.03122v2",
+        "the IEEE Conference on Computer Vision",
+        "Sepp Hochreiter",
+        "ACL",
+        "Oriol Vinyals",
+        "Neural\nInformation Processing Systems",
+        "Lasse Espeholt",
+        "linear",
+        "the Human Language Technology Conference of the NAACL",
+        "Ankur Parikh",
+        "the 21st International Conference on\nComputational Linguistics",
+        "Alexandra Birch",
+        "Azalia Mirhoseini",
+        "Journal of Machine\nLearning Research",
+        "Curran Associates",
+        "Quoc VV Le",
+        "Vinyals & Kaiser",
+        "Google",
+        "ByteNet",
+        "ConvS2S",
+        "Multi-Head Attention"
+      ]
+    },
+    "analysis": {
+      "pos": {
+        "token_count": 2799,
+        "displayed_token_count": 250,
+        "pos_counts": {
+          "ADJ": 195,
+          "ADP": 222,
+          "ADV": 51,
+          "AUX": 33,
+          "CCONJ": 98,
+          "DET": 123,
+          "NOUN": 516,
+          "NUM": 141,
+          "PART": 21,
+          "PRON": 40,
+          "PROPN": 540,
+          "PUNCT": 552,
+          "SCONJ": 12,
+          "SYM": 1,
+          "VERB": 174,
+          "X": 80
+        },
+        "tokens": [
+          {
+            "text": "The",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 0,
+            "end": 3
+          },
+          {
+            "text": "dominant",
+            "lemma": "dominant",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 4,
+            "end": 12
+          },
+          {
+            "text": "sequence",
+            "lemma": "sequence",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 13,
+            "end": 21
+          },
+          {
+            "text": "transduction",
+            "lemma": "transduction",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 22,
+            "end": 34
+          },
+          {
+            "text": "models",
+            "lemma": "model",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "nsubjpass",
+            "section": "abstract",
+            "start": 35,
+            "end": 41
+          },
+          {
+            "text": "are",
+            "lemma": "be",
+            "pos": "AUX",
+            "tag": "VBP",
+            "dependency": "auxpass",
+            "section": "abstract",
+            "start": 42,
+            "end": 45
+          },
+          {
+            "text": "based",
+            "lemma": "base",
+            "pos": "VERB",
+            "tag": "VBN",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 46,
+            "end": 51
+          },
+          {
+            "text": "on",
+            "lemma": "on",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 52,
+            "end": 54
+          },
+          {
+            "text": "complex",
+            "lemma": "complex",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 55,
+            "end": 62
+          },
+          {
+            "text": "recurrent",
+            "lemma": "recurrent",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 63,
+            "end": 72
+          },
+          {
+            "text": "or",
+            "lemma": "or",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 73,
+            "end": 75
+          },
+          {
+            "text": "convolutional",
+            "lemma": "convolutional",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 76,
+            "end": 89
+          },
+          {
+            "text": "neural",
+            "lemma": "neural",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 90,
+            "end": 96
+          },
+          {
+            "text": "networks",
+            "lemma": "network",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 97,
+            "end": 105
+          },
+          {
+            "text": "that",
+            "lemma": "that",
+            "pos": "PRON",
+            "tag": "WDT",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 106,
+            "end": 110
+          },
+          {
+            "text": "include",
+            "lemma": "include",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "relcl",
+            "section": "abstract",
+            "start": 111,
+            "end": 118
+          },
+          {
+            "text": "an",
+            "lemma": "an",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 119,
+            "end": 121
+          },
+          {
+            "text": "encoder",
+            "lemma": "encoder",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 122,
+            "end": 129
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 130,
+            "end": 133
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 134,
+            "end": 135
+          },
+          {
+            "text": "decoder",
+            "lemma": "decoder",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 136,
+            "end": 143
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 143,
+            "end": 144
+          },
+          {
+            "text": "The",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 145,
+            "end": 148
+          },
+          {
+            "text": "best",
+            "lemma": "well",
+            "pos": "ADV",
+            "tag": "RBS",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 149,
+            "end": 153
+          },
+          {
+            "text": "performing",
+            "lemma": "perform",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 154,
+            "end": 164
+          },
+          {
+            "text": "models",
+            "lemma": "model",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 165,
+            "end": 171
+          },
+          {
+            "text": "also",
+            "lemma": "also",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 172,
+            "end": 176
+          },
+          {
+            "text": "connect",
+            "lemma": "connect",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 177,
+            "end": 184
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 185,
+            "end": 188
+          },
+          {
+            "text": "encoder",
+            "lemma": "encoder",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 189,
+            "end": 196
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 197,
+            "end": 200
+          },
+          {
+            "text": "decoder",
+            "lemma": "decoder",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 201,
+            "end": 208
+          },
+          {
+            "text": "through",
+            "lemma": "through",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 209,
+            "end": 216
+          },
+          {
+            "text": "an",
+            "lemma": "an",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 217,
+            "end": 219
+          },
+          {
+            "text": "attention",
+            "lemma": "attention",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 220,
+            "end": 229
+          },
+          {
+            "text": "mechanism",
+            "lemma": "mechanism",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 230,
+            "end": 239
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 239,
+            "end": 240
+          },
+          {
+            "text": "We",
+            "lemma": "we",
+            "pos": "PRON",
+            "tag": "PRP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 241,
+            "end": 243
+          },
+          {
+            "text": "propose",
+            "lemma": "propose",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 244,
+            "end": 251
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 252,
+            "end": 253
+          },
+          {
+            "text": "new",
+            "lemma": "new",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 254,
+            "end": 257
+          },
+          {
+            "text": "simple",
+            "lemma": "simple",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 258,
+            "end": 264
+          },
+          {
+            "text": "network",
+            "lemma": "network",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 265,
+            "end": 272
+          },
+          {
+            "text": "architecture",
+            "lemma": "architecture",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 273,
+            "end": 285
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 285,
+            "end": 286
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 287,
+            "end": 290
+          },
+          {
+            "text": "Transformer",
+            "lemma": "Transformer",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "appos",
+            "section": "abstract",
+            "start": 291,
+            "end": 302
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 302,
+            "end": 303
+          },
+          {
+            "text": "based",
+            "lemma": "base",
+            "pos": "VERB",
+            "tag": "VBN",
+            "dependency": "acl",
+            "section": "abstract",
+            "start": 304,
+            "end": 309
+          },
+          {
+            "text": "solely",
+            "lemma": "solely",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 310,
+            "end": 316
+          },
+          {
+            "text": "on",
+            "lemma": "on",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 317,
+            "end": 319
+          },
+          {
+            "text": "attention",
+            "lemma": "attention",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 320,
+            "end": 329
+          },
+          {
+            "text": "mechanisms",
+            "lemma": "mechanism",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 330,
+            "end": 340
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 340,
+            "end": 341
+          },
+          {
+            "text": "dispensing",
+            "lemma": "dispense",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "acl",
+            "section": "abstract",
+            "start": 342,
+            "end": 352
+          },
+          {
+            "text": "with",
+            "lemma": "with",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 353,
+            "end": 357
+          },
+          {
+            "text": "recurrence",
+            "lemma": "recurrence",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 358,
+            "end": 368
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 369,
+            "end": 372
+          },
+          {
+            "text": "convolutions",
+            "lemma": "convolution",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 373,
+            "end": 385
+          },
+          {
+            "text": "entirely",
+            "lemma": "entirely",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 386,
+            "end": 394
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 394,
+            "end": 395
+          },
+          {
+            "text": "Experiments",
+            "lemma": "experiment",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 396,
+            "end": 407
+          },
+          {
+            "text": "on",
+            "lemma": "on",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 408,
+            "end": 410
+          },
+          {
+            "text": "two",
+            "lemma": "two",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "abstract",
+            "start": 411,
+            "end": 414
+          },
+          {
+            "text": "machine",
+            "lemma": "machine",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 415,
+            "end": 422
+          },
+          {
+            "text": "translation",
+            "lemma": "translation",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 423,
+            "end": 434
+          },
+          {
+            "text": "tasks",
+            "lemma": "task",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 435,
+            "end": 440
+          },
+          {
+            "text": "show",
+            "lemma": "show",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 441,
+            "end": 445
+          },
+          {
+            "text": "these",
+            "lemma": "these",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 446,
+            "end": 451
+          },
+          {
+            "text": "models",
+            "lemma": "model",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 452,
+            "end": 458
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "PART",
+            "tag": "TO",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 459,
+            "end": 461
+          },
+          {
+            "text": "be",
+            "lemma": "be",
+            "pos": "AUX",
+            "tag": "VB",
+            "dependency": "ccomp",
+            "section": "abstract",
+            "start": 462,
+            "end": 464
+          },
+          {
+            "text": "superior",
+            "lemma": "superior",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "acomp",
+            "section": "abstract",
+            "start": 465,
+            "end": 473
+          },
+          {
+            "text": "in",
+            "lemma": "in",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 474,
+            "end": 476
+          },
+          {
+            "text": "quality",
+            "lemma": "quality",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 477,
+            "end": 484
+          },
+          {
+            "text": "while",
+            "lemma": "while",
+            "pos": "SCONJ",
+            "tag": "IN",
+            "dependency": "mark",
+            "section": "abstract",
+            "start": 485,
+            "end": 490
+          },
+          {
+            "text": "being",
+            "lemma": "be",
+            "pos": "AUX",
+            "tag": "VBG",
+            "dependency": "advcl",
+            "section": "abstract",
+            "start": 491,
+            "end": 496
+          },
+          {
+            "text": "more",
+            "lemma": "more",
+            "pos": "ADV",
+            "tag": "RBR",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 497,
+            "end": 501
+          },
+          {
+            "text": "parallelizable",
+            "lemma": "parallelizable",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "acomp",
+            "section": "abstract",
+            "start": 502,
+            "end": 516
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 517,
+            "end": 520
+          },
+          {
+            "text": "requiring",
+            "lemma": "require",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 521,
+            "end": 530
+          },
+          {
+            "text": "significantly",
+            "lemma": "significantly",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 531,
+            "end": 544
+          },
+          {
+            "text": "less",
+            "lemma": "less",
+            "pos": "ADJ",
+            "tag": "JJR",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 545,
+            "end": 549
+          },
+          {
+            "text": "time",
+            "lemma": "time",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 550,
+            "end": 554
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "PART",
+            "tag": "TO",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 555,
+            "end": 557
+          },
+          {
+            "text": "train",
+            "lemma": "train",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "relcl",
+            "section": "abstract",
+            "start": 558,
+            "end": 563
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 563,
+            "end": 564
+          },
+          {
+            "text": "Our",
+            "lemma": "our",
+            "pos": "PRON",
+            "tag": "PRP$",
+            "dependency": "poss",
+            "section": "abstract",
+            "start": 565,
+            "end": 568
+          },
+          {
+            "text": "model",
+            "lemma": "model",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 569,
+            "end": 574
+          },
+          {
+            "text": "achieves",
+            "lemma": "achieve",
+            "pos": "VERB",
+            "tag": "VBZ",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 575,
+            "end": 583
+          },
+          {
+            "text": "28.4",
+            "lemma": "28.4",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "abstract",
+            "start": 584,
+            "end": 588
+          },
+          {
+            "text": "BLEU",
+            "lemma": "bleu",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 589,
+            "end": 593
+          },
+          {
+            "text": "on",
+            "lemma": "on",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 594,
+            "end": 596
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 597,
+            "end": 600
+          },
+          {
+            "text": "WMT",
+            "lemma": "WMT",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "nmod",
+            "section": "abstract",
+            "start": 601,
+            "end": 604
+          },
+          {
+            "text": "2014",
+            "lemma": "2014",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "abstract",
+            "start": 605,
+            "end": 609
+          },
+          {
+            "text": "English-",
+            "lemma": "English-",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "nmod",
+            "section": "abstract",
+            "start": 610,
+            "end": 618
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "AUX",
+            "tag": "IN",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 619,
+            "end": 621
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 621,
+            "end": 622
+          },
+          {
+            "text": "German",
+            "lemma": "german",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 622,
+            "end": 628
+          },
+          {
+            "text": "translation",
+            "lemma": "translation",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 629,
+            "end": 640
+          },
+          {
+            "text": "task",
+            "lemma": "task",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 641,
+            "end": 645
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 645,
+            "end": 646
+          },
+          {
+            "text": "improving",
+            "lemma": "improve",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "advcl",
+            "section": "abstract",
+            "start": 647,
+            "end": 656
+          },
+          {
+            "text": "over",
+            "lemma": "over",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 657,
+            "end": 661
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 662,
+            "end": 665
+          },
+          {
+            "text": "existing",
+            "lemma": "exist",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 666,
+            "end": 674
+          },
+          {
+            "text": "best",
+            "lemma": "good",
+            "pos": "ADJ",
+            "tag": "JJS",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 675,
+            "end": 679
+          },
+          {
+            "text": "results",
+            "lemma": "result",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 680,
+            "end": 687
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 687,
+            "end": 688
+          },
+          {
+            "text": "including",
+            "lemma": "include",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 689,
+            "end": 698
+          },
+          {
+            "text": "ensembles",
+            "lemma": "ensemble",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 699,
+            "end": 708
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 708,
+            "end": 709
+          },
+          {
+            "text": "by",
+            "lemma": "by",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 710,
+            "end": 712
+          },
+          {
+            "text": "over",
+            "lemma": "over",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "quantmod",
+            "section": "abstract",
+            "start": 713,
+            "end": 717
+          },
+          {
+            "text": "2",
+            "lemma": "2",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "abstract",
+            "start": 718,
+            "end": 719
+          },
+          {
+            "text": "BLEU",
+            "lemma": "BLEU",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 720,
+            "end": 724
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 724,
+            "end": 725
+          },
+          {
+            "text": "On",
+            "lemma": "on",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 726,
+            "end": 728
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 729,
+            "end": 732
+          },
+          {
+            "text": "WMT",
+            "lemma": "WMT",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "nmod",
+            "section": "abstract",
+            "start": 733,
+            "end": 736
+          },
+          {
+            "text": "2014",
+            "lemma": "2014",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "abstract",
+            "start": 737,
+            "end": 741
+          },
+          {
+            "text": "English",
+            "lemma": "English",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "nmod",
+            "section": "abstract",
+            "start": 742,
+            "end": 749
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 749,
+            "end": 750
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 750,
+            "end": 752
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 752,
+            "end": 753
+          },
+          {
+            "text": "French",
+            "lemma": "french",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 753,
+            "end": 759
+          },
+          {
+            "text": "translation",
+            "lemma": "translation",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 760,
+            "end": 771
+          },
+          {
+            "text": "task",
+            "lemma": "task",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 772,
+            "end": 776
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 776,
+            "end": 777
+          },
+          {
+            "text": "our",
+            "lemma": "our",
+            "pos": "PRON",
+            "tag": "PRP$",
+            "dependency": "poss",
+            "section": "abstract",
+            "start": 778,
+            "end": 781
+          },
+          {
+            "text": "model",
+            "lemma": "model",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 782,
+            "end": 787
+          },
+          {
+            "text": "establishes",
+            "lemma": "establish",
+            "pos": "VERB",
+            "tag": "VBZ",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 788,
+            "end": 799
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 800,
+            "end": 801
+          },
+          {
+            "text": "new",
+            "lemma": "new",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 802,
+            "end": 805
+          },
+          {
+            "text": "single",
+            "lemma": "single",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 806,
+            "end": 812
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 812,
+            "end": 813
+          },
+          {
+            "text": "model",
+            "lemma": "model",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 813,
+            "end": 818
+          },
+          {
+            "text": "state",
+            "lemma": "state",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "nmod",
+            "section": "abstract",
+            "start": 819,
+            "end": 824
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 824,
+            "end": 825
+          },
+          {
+            "text": "of",
+            "lemma": "of",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 825,
+            "end": 827
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 827,
+            "end": 828
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 828,
+            "end": 831
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 831,
+            "end": 832
+          },
+          {
+            "text": "art",
+            "lemma": "art",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 832,
+            "end": 835
+          },
+          {
+            "text": "BLEU",
+            "lemma": "BLEU",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 836,
+            "end": 840
+          },
+          {
+            "text": "score",
+            "lemma": "score",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 841,
+            "end": 846
+          },
+          {
+            "text": "of",
+            "lemma": "of",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 847,
+            "end": 849
+          },
+          {
+            "text": "41.8",
+            "lemma": "41.8",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 850,
+            "end": 854
+          },
+          {
+            "text": "after",
+            "lemma": "after",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 855,
+            "end": 860
+          },
+          {
+            "text": "training",
+            "lemma": "training",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 861,
+            "end": 869
+          },
+          {
+            "text": "for",
+            "lemma": "for",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 870,
+            "end": 873
+          },
+          {
+            "text": "3.5",
+            "lemma": "3.5",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "abstract",
+            "start": 874,
+            "end": 877
+          },
+          {
+            "text": "days",
+            "lemma": "day",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 878,
+            "end": 882
+          },
+          {
+            "text": "on",
+            "lemma": "on",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 883,
+            "end": 885
+          },
+          {
+            "text": "eight",
+            "lemma": "eight",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "abstract",
+            "start": 886,
+            "end": 891
+          },
+          {
+            "text": "GPUs",
+            "lemma": "gpu",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 892,
+            "end": 896
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 896,
+            "end": 897
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 898,
+            "end": 899
+          },
+          {
+            "text": "small",
+            "lemma": "small",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 900,
+            "end": 905
+          },
+          {
+            "text": "fraction",
+            "lemma": "fraction",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "appos",
+            "section": "abstract",
+            "start": 906,
+            "end": 914
+          },
+          {
+            "text": "of",
+            "lemma": "of",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 915,
+            "end": 917
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 918,
+            "end": 921
+          },
+          {
+            "text": "training",
+            "lemma": "training",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 922,
+            "end": 930
+          },
+          {
+            "text": "costs",
+            "lemma": "cost",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 931,
+            "end": 936
+          },
+          {
+            "text": "of",
+            "lemma": "of",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 937,
+            "end": 939
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 940,
+            "end": 943
+          },
+          {
+            "text": "best",
+            "lemma": "good",
+            "pos": "ADJ",
+            "tag": "JJS",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 944,
+            "end": 948
+          },
+          {
+            "text": "models",
+            "lemma": "model",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 949,
+            "end": 955
+          },
+          {
+            "text": "from",
+            "lemma": "from",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 956,
+            "end": 960
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 961,
+            "end": 964
+          },
+          {
+            "text": "literature",
+            "lemma": "literature",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 965,
+            "end": 975
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 975,
+            "end": 976
+          },
+          {
+            "text": "We",
+            "lemma": "we",
+            "pos": "PRON",
+            "tag": "PRP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 977,
+            "end": 979
+          },
+          {
+            "text": "show",
+            "lemma": "show",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 980,
+            "end": 984
+          },
+          {
+            "text": "that",
+            "lemma": "that",
+            "pos": "SCONJ",
+            "tag": "IN",
+            "dependency": "mark",
+            "section": "abstract",
+            "start": 985,
+            "end": 989
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 990,
+            "end": 993
+          },
+          {
+            "text": "Transformer",
+            "lemma": "Transformer",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 994,
+            "end": 1005
+          },
+          {
+            "text": "generalizes",
+            "lemma": "generalize",
+            "pos": "VERB",
+            "tag": "VBZ",
+            "dependency": "ccomp",
+            "section": "abstract",
+            "start": 1006,
+            "end": 1017
+          },
+          {
+            "text": "well",
+            "lemma": "well",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 1018,
+            "end": 1022
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1023,
+            "end": 1025
+          },
+          {
+            "text": "other",
+            "lemma": "other",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1026,
+            "end": 1031
+          },
+          {
+            "text": "tasks",
+            "lemma": "task",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1032,
+            "end": 1037
+          },
+          {
+            "text": "by",
+            "lemma": "by",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1038,
+            "end": 1040
+          },
+          {
+            "text": "applying",
+            "lemma": "apply",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "pcomp",
+            "section": "abstract",
+            "start": 1041,
+            "end": 1049
+          },
+          {
+            "text": "it",
+            "lemma": "it",
+            "pos": "PRON",
+            "tag": "PRP",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 1050,
+            "end": 1052
+          },
+          {
+            "text": "successfully",
+            "lemma": "successfully",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 1053,
+            "end": 1065
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1066,
+            "end": 1068
+          },
+          {
+            "text": "English",
+            "lemma": "english",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1069,
+            "end": 1076
+          },
+          {
+            "text": "constituency",
+            "lemma": "constituency",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1077,
+            "end": 1089
+          },
+          {
+            "text": "parsing",
+            "lemma": "parse",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "acl",
+            "section": "abstract",
+            "start": 1090,
+            "end": 1097
+          },
+          {
+            "text": "both",
+            "lemma": "both",
+            "pos": "PRON",
+            "tag": "DT",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 1098,
+            "end": 1102
+          },
+          {
+            "text": "with",
+            "lemma": "with",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1103,
+            "end": 1107
+          },
+          {
+            "text": "large",
+            "lemma": "large",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1108,
+            "end": 1113
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 1114,
+            "end": 1117
+          },
+          {
+            "text": "limited",
+            "lemma": "limited",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 1118,
+            "end": 1125
+          },
+          {
+            "text": "training",
+            "lemma": "training",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 1126,
+            "end": 1134
+          },
+          {
+            "text": "data",
+            "lemma": "datum",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1135,
+            "end": 1139
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1139,
+            "end": 1140
+          },
+          {
+            "text": "\u2217Equal",
+            "lemma": "\u2217equal",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1141,
+            "end": 1147
+          },
+          {
+            "text": "contribution",
+            "lemma": "contribution",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 1148,
+            "end": 1160
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1160,
+            "end": 1161
+          },
+          {
+            "text": "Listing",
+            "lemma": "list",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1162,
+            "end": 1169
+          },
+          {
+            "text": "order",
+            "lemma": "order",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 1170,
+            "end": 1175
+          },
+          {
+            "text": "is",
+            "lemma": "be",
+            "pos": "AUX",
+            "tag": "VBZ",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 1176,
+            "end": 1178
+          },
+          {
+            "text": "random",
+            "lemma": "random",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "acomp",
+            "section": "abstract",
+            "start": 1179,
+            "end": 1185
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1185,
+            "end": 1186
+          },
+          {
+            "text": "Jakob",
+            "lemma": "Jakob",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 1187,
+            "end": 1192
+          },
+          {
+            "text": "proposed",
+            "lemma": "propose",
+            "pos": "VERB",
+            "tag": "VBD",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 1193,
+            "end": 1201
+          },
+          {
+            "text": "replacing",
+            "lemma": "replace",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "xcomp",
+            "section": "abstract",
+            "start": 1202,
+            "end": 1211
+          },
+          {
+            "text": "RNNs",
+            "lemma": "rnn",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 1212,
+            "end": 1216
+          },
+          {
+            "text": "with",
+            "lemma": "with",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1217,
+            "end": 1221
+          },
+          {
+            "text": "self",
+            "lemma": "self",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 1222,
+            "end": 1226
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1226,
+            "end": 1227
+          },
+          {
+            "text": "attention",
+            "lemma": "attention",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1227,
+            "end": 1236
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 1237,
+            "end": 1240
+          },
+          {
+            "text": "started",
+            "lemma": "start",
+            "pos": "VERB",
+            "tag": "VBD",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 1241,
+            "end": 1248
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 1249,
+            "end": 1252
+          },
+          {
+            "text": "effort",
+            "lemma": "effort",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 1253,
+            "end": 1259
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "PART",
+            "tag": "TO",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 1260,
+            "end": 1262
+          },
+          {
+            "text": "evaluate",
+            "lemma": "evaluate",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "acl",
+            "section": "abstract",
+            "start": 1263,
+            "end": 1271
+          },
+          {
+            "text": "this",
+            "lemma": "this",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 1272,
+            "end": 1276
+          },
+          {
+            "text": "idea",
+            "lemma": "idea",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 1277,
+            "end": 1281
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1281,
+            "end": 1282
+          },
+          {
+            "text": "Ashish",
+            "lemma": "Ashish",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 1283,
+            "end": 1289
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1289,
+            "end": 1290
+          },
+          {
+            "text": "with",
+            "lemma": "with",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1291,
+            "end": 1295
+          },
+          {
+            "text": "Illia",
+            "lemma": "Illia",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1296,
+            "end": 1301
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1301,
+            "end": 1302
+          },
+          {
+            "text": "designed",
+            "lemma": "design",
+            "pos": "VERB",
+            "tag": "VBN",
+            "dependency": "acl",
+            "section": "abstract",
+            "start": 1303,
+            "end": 1311
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 1312,
+            "end": 1315
+          },
+          {
+            "text": "implemented",
+            "lemma": "implement",
+            "pos": "VERB",
+            "tag": "VBD",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 1316,
+            "end": 1327
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 1328,
+            "end": 1331
+          },
+          {
+            "text": "first",
+            "lemma": "first",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1332,
+            "end": 1337
+          },
+          {
+            "text": "Transformer",
+            "lemma": "Transformer",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 1338,
+            "end": 1349
+          },
+          {
+            "text": "models",
+            "lemma": "model",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 1350,
+            "end": 1356
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 1357,
+            "end": 1360
+          },
+          {
+            "text": "has",
+            "lemma": "have",
+            "pos": "AUX",
+            "tag": "VBZ",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 1361,
+            "end": 1364
+          },
+          {
+            "text": "been",
+            "lemma": "be",
+            "pos": "AUX",
+            "tag": "VBN",
+            "dependency": "auxpass",
+            "section": "abstract",
+            "start": 1365,
+            "end": 1369
+          },
+          {
+            "text": "crucially",
+            "lemma": "crucially",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 1370,
+            "end": 1379
+          },
+          {
+            "text": "involved",
+            "lemma": "involve",
+            "pos": "VERB",
+            "tag": "VBN",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 1380,
+            "end": 1388
+          },
+          {
+            "text": "in",
+            "lemma": "in",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1389,
+            "end": 1391
+          },
+          {
+            "text": "every",
+            "lemma": "every",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 1392,
+            "end": 1397
+          },
+          {
+            "text": "aspect",
+            "lemma": "aspect",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1398,
+            "end": 1404
+          },
+          {
+            "text": "of",
+            "lemma": "of",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1405,
+            "end": 1407
+          },
+          {
+            "text": "this",
+            "lemma": "this",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 1408,
+            "end": 1412
+          },
+          {
+            "text": "work",
+            "lemma": "work",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1413,
+            "end": 1417
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1417,
+            "end": 1418
+          },
+          {
+            "text": "Noam",
+            "lemma": "Noam",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 1419,
+            "end": 1423
+          },
+          {
+            "text": "proposed",
+            "lemma": "propose",
+            "pos": "VERB",
+            "tag": "VBD",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 1424,
+            "end": 1432
+          }
+        ],
+        "noun_chunks": [
+          {
+            "text": "The dominant sequence transduction models",
+            "section": "abstract",
+            "start": 0,
+            "end": 41
+          },
+          {
+            "text": "complex recurrent",
+            "section": "abstract",
+            "start": 55,
+            "end": 72
+          },
+          {
+            "text": "convolutional neural networks",
+            "section": "abstract",
+            "start": 76,
+            "end": 105
+          },
+          {
+            "text": "that",
+            "section": "abstract",
+            "start": 106,
+            "end": 110
+          },
+          {
+            "text": "an encoder",
+            "section": "abstract",
+            "start": 119,
+            "end": 129
+          },
+          {
+            "text": "a decoder",
+            "section": "abstract",
+            "start": 134,
+            "end": 143
+          },
+          {
+            "text": "The best performing models",
+            "section": "abstract",
+            "start": 145,
+            "end": 171
+          },
+          {
+            "text": "the encoder",
+            "section": "abstract",
+            "start": 185,
+            "end": 196
+          },
+          {
+            "text": "decoder",
+            "section": "abstract",
+            "start": 201,
+            "end": 208
+          },
+          {
+            "text": "an attention mechanism",
+            "section": "abstract",
+            "start": 217,
+            "end": 239
+          },
+          {
+            "text": "We",
+            "section": "abstract",
+            "start": 241,
+            "end": 243
+          },
+          {
+            "text": "a new simple network architecture",
+            "section": "abstract",
+            "start": 252,
+            "end": 285
+          },
+          {
+            "text": "the Transformer",
+            "section": "abstract",
+            "start": 287,
+            "end": 302
+          },
+          {
+            "text": "attention mechanisms",
+            "section": "abstract",
+            "start": 320,
+            "end": 340
+          },
+          {
+            "text": "recurrence",
+            "section": "abstract",
+            "start": 358,
+            "end": 368
+          },
+          {
+            "text": "convolutions",
+            "section": "abstract",
+            "start": 373,
+            "end": 385
+          },
+          {
+            "text": "Experiments",
+            "section": "abstract",
+            "start": 396,
+            "end": 407
+          },
+          {
+            "text": "two machine translation tasks",
+            "section": "abstract",
+            "start": 411,
+            "end": 440
+          },
+          {
+            "text": "these models",
+            "section": "abstract",
+            "start": 446,
+            "end": 458
+          },
+          {
+            "text": "quality",
+            "section": "abstract",
+            "start": 477,
+            "end": 484
+          },
+          {
+            "text": "significantly less time",
+            "section": "abstract",
+            "start": 531,
+            "end": 554
+          },
+          {
+            "text": "Our model",
+            "section": "abstract",
+            "start": 565,
+            "end": 574
+          },
+          {
+            "text": "28.4 BLEU",
+            "section": "abstract",
+            "start": 584,
+            "end": 593
+          },
+          {
+            "text": "the WMT 2014 English- to-German translation task",
+            "section": "abstract",
+            "start": 597,
+            "end": 645
+          },
+          {
+            "text": "the existing best results",
+            "section": "abstract",
+            "start": 662,
+            "end": 687
+          },
+          {
+            "text": "ensembles",
+            "section": "abstract",
+            "start": 699,
+            "end": 708
+          },
+          {
+            "text": "over 2 BLEU",
+            "section": "abstract",
+            "start": 713,
+            "end": 724
+          },
+          {
+            "text": "the WMT 2014 English-to-French translation task",
+            "section": "abstract",
+            "start": 729,
+            "end": 776
+          },
+          {
+            "text": "our model",
+            "section": "abstract",
+            "start": 778,
+            "end": 787
+          },
+          {
+            "text": "the-art",
+            "section": "abstract",
+            "start": 828,
+            "end": 835
+          },
+          {
+            "text": "training",
+            "section": "abstract",
+            "start": 861,
+            "end": 869
+          },
+          {
+            "text": "3.5 days",
+            "section": "abstract",
+            "start": 874,
+            "end": 882
+          },
+          {
+            "text": "eight GPUs",
+            "section": "abstract",
+            "start": 886,
+            "end": 896
+          },
+          {
+            "text": "a small fraction",
+            "section": "abstract",
+            "start": 898,
+            "end": 914
+          },
+          {
+            "text": "the training costs",
+            "section": "abstract",
+            "start": 918,
+            "end": 936
+          },
+          {
+            "text": "the best models",
+            "section": "abstract",
+            "start": 940,
+            "end": 955
+          },
+          {
+            "text": "the literature",
+            "section": "abstract",
+            "start": 961,
+            "end": 975
+          },
+          {
+            "text": "We",
+            "section": "abstract",
+            "start": 977,
+            "end": 979
+          },
+          {
+            "text": "the Transformer",
+            "section": "abstract",
+            "start": 990,
+            "end": 1005
+          },
+          {
+            "text": "other tasks",
+            "section": "abstract",
+            "start": 1026,
+            "end": 1037
+          },
+          {
+            "text": "it",
+            "section": "abstract",
+            "start": 1050,
+            "end": 1052
+          },
+          {
+            "text": "English constituency",
+            "section": "abstract",
+            "start": 1069,
+            "end": 1089
+          },
+          {
+            "text": "both",
+            "section": "abstract",
+            "start": 1098,
+            "end": 1102
+          },
+          {
+            "text": "large and limited training data",
+            "section": "abstract",
+            "start": 1108,
+            "end": 1139
+          },
+          {
+            "text": "\u2217Equal contribution",
+            "section": "abstract",
+            "start": 1141,
+            "end": 1160
+          },
+          {
+            "text": "Listing order",
+            "section": "abstract",
+            "start": 1162,
+            "end": 1175
+          },
+          {
+            "text": "Jakob",
+            "section": "abstract",
+            "start": 1187,
+            "end": 1192
+          },
+          {
+            "text": "RNNs",
+            "section": "abstract",
+            "start": 1212,
+            "end": 1216
+          },
+          {
+            "text": "self-attention",
+            "section": "abstract",
+            "start": 1222,
+            "end": 1236
+          },
+          {
+            "text": "the effort",
+            "section": "abstract",
+            "start": 1249,
+            "end": 1259
+          },
+          {
+            "text": "this idea",
+            "section": "abstract",
+            "start": 1272,
+            "end": 1281
+          },
+          {
+            "text": "Ashish",
+            "section": "abstract",
+            "start": 1283,
+            "end": 1289
+          },
+          {
+            "text": "Illia",
+            "section": "abstract",
+            "start": 1296,
+            "end": 1301
+          },
+          {
+            "text": "the first Transformer models",
+            "section": "abstract",
+            "start": 1328,
+            "end": 1356
+          },
+          {
+            "text": "every aspect",
+            "section": "abstract",
+            "start": 1392,
+            "end": 1404
+          },
+          {
+            "text": "this work",
+            "section": "abstract",
+            "start": 1408,
+            "end": 1417
+          },
+          {
+            "text": "Noam",
+            "section": "abstract",
+            "start": 1419,
+            "end": 1423
+          },
+          {
+            "text": "scaled dot-product attention",
+            "section": "abstract",
+            "start": 1433,
+            "end": 1461
+          },
+          {
+            "text": "multi-head attention",
+            "section": "abstract",
+            "start": 1463,
+            "end": 1483
+          },
+          {
+            "text": "the parameter-free position representation",
+            "section": "abstract",
+            "start": 1488,
+            "end": 1530
+          },
+          {
+            "text": "the other person",
+            "section": "abstract",
+            "start": 1542,
+            "end": 1558
+          },
+          {
+            "text": "nearly every detail",
+            "section": "abstract",
+            "start": 1571,
+            "end": 1590
+          },
+          {
+            "text": "Niki",
+            "section": "abstract",
+            "start": 1592,
+            "end": 1596
+          },
+          {
+            "text": "countless model variants",
+            "section": "abstract",
+            "start": 1640,
+            "end": 1664
+          },
+          {
+            "text": "our original codebase",
+            "section": "abstract",
+            "start": 1668,
+            "end": 1689
+          },
+          {
+            "text": "tensor2tensor",
+            "section": "abstract",
+            "start": 1694,
+            "end": 1707
+          },
+          {
+            "text": "Llion",
+            "section": "abstract",
+            "start": 1709,
+            "end": 1714
+          },
+          {
+            "text": "novel model variants",
+            "section": "abstract",
+            "start": 1738,
+            "end": 1758
+          },
+          {
+            "text": "our initial codebase",
+            "section": "abstract",
+            "start": 1780,
+            "end": 1800
+          },
+          {
+            "text": "efficient inference",
+            "section": "abstract",
+            "start": 1806,
+            "end": 1825
+          },
+          {
+            "text": "visualizations",
+            "section": "abstract",
+            "start": 1830,
+            "end": 1844
+          },
+          {
+            "text": "Lukasz",
+            "section": "abstract",
+            "start": 1846,
+            "end": 1852
+          },
+          {
+            "text": "Aidan",
+            "section": "abstract",
+            "start": 1857,
+            "end": 1862
+          },
+          {
+            "text": "countless long days",
+            "section": "abstract",
+            "start": 1869,
+            "end": 1888
+          },
+          {
+            "text": "various parts",
+            "section": "abstract",
+            "start": 1899,
+            "end": 1912
+          },
+          {
+            "text": "tensor2tensor",
+            "section": "abstract",
+            "start": 1933,
+            "end": 1946
+          },
+          {
+            "text": "our earlier codebase",
+            "section": "abstract",
+            "start": 1958,
+            "end": 1978
+          },
+          {
+            "text": "results",
+            "section": "abstract",
+            "start": 1998,
+            "end": 2005
+          },
+          {
+            "text": "our research",
+            "section": "abstract",
+            "start": 2033,
+            "end": 2045
+          },
+          {
+            "text": "\u2020Work",
+            "section": "abstract",
+            "start": 2047,
+            "end": 2052
+          },
+          {
+            "text": "Google Brain",
+            "section": "abstract",
+            "start": 2072,
+            "end": 2084
+          },
+          {
+            "text": "\u2021Work",
+            "section": "abstract",
+            "start": 2086,
+            "end": 2091
+          },
+          {
+            "text": "Google Research",
+            "section": "abstract",
+            "start": 2111,
+            "end": 2126
+          },
+          {
+            "text": "31st Conference",
+            "section": "abstract",
+            "start": 2128,
+            "end": 2143
+          },
+          {
+            "text": "Neural Information Processing Systems",
+            "section": "abstract",
+            "start": 2147,
+            "end": 2184
+          },
+          {
+            "text": "NIPS",
+            "section": "abstract",
+            "start": 2186,
+            "end": 2190
+          },
+          {
+            "text": "Long Beach",
+            "section": "abstract",
+            "start": 2198,
+            "end": 2208
+          },
+          {
+            "text": "CA",
+            "section": "abstract",
+            "start": 2210,
+            "end": 2212
+          },
+          {
+            "text": "USA",
+            "section": "abstract",
+            "start": 2214,
+            "end": 2217
+          },
+          {
+            "text": "[cs.CL",
+            "section": "abstract",
+            "start": 2238,
+            "end": 2244
+          },
+          {
+            "text": "2 Aug",
+            "section": "abstract",
+            "start": 2246,
+            "end": 2251
+          },
+          {
+            "text": "Recurrent neural networks",
+            "section": "introduction",
+            "start": 0,
+            "end": 25
+          },
+          {
+            "text": "long short-term memory",
+            "section": "introduction",
+            "start": 27,
+            "end": 49
+          },
+          {
+            "text": "neural networks",
+            "section": "introduction",
+            "start": 79,
+            "end": 94
+          },
+          {
+            "text": "state",
+            "section": "introduction",
+            "start": 142,
+            "end": 147
+          },
+          {
+            "text": "the art approaches",
+            "section": "introduction",
+            "start": 151,
+            "end": 169
+          },
+          {
+            "text": "sequence modeling",
+            "section": "introduction",
+            "start": 173,
+            "end": 190
+          },
+          {
+            "text": "transduction problems",
+            "section": "introduction",
+            "start": 195,
+            "end": 216
+          },
+          {
+            "text": "language modeling",
+            "section": "introduction",
+            "start": 225,
+            "end": 242
+          },
+          {
+            "text": "machine translation",
+            "section": "introduction",
+            "start": 247,
+            "end": 266
+          },
+          {
+            "text": "Numerous\nefforts",
+            "section": "introduction",
+            "start": 280,
+            "end": 296
+          },
+          {
+            "text": "the boundaries",
+            "section": "introduction",
+            "start": 326,
+            "end": 340
+          },
+          {
+            "text": "recurrent language models",
+            "section": "introduction",
+            "start": 344,
+            "end": 369
+          },
+          {
+            "text": "encoder-decoder",
+            "section": "introduction",
+            "start": 374,
+            "end": 389
+          },
+          {
+            "text": "Recurrent models",
+            "section": "introduction",
+            "start": 418,
+            "end": 434
+          },
+          {
+            "text": "computation",
+            "section": "introduction",
+            "start": 452,
+            "end": 463
+          },
+          {
+            "text": "the symbol positions",
+            "section": "introduction",
+            "start": 470,
+            "end": 490
+          },
+          {
+            "text": "the input and output\nsequences",
+            "section": "introduction",
+            "start": 494,
+            "end": 524
+          },
+          {
+            "text": "the positions",
+            "section": "introduction",
+            "start": 535,
+            "end": 548
+          },
+          {
+            "text": "steps",
+            "section": "introduction",
+            "start": 552,
+            "end": 557
+          },
+          {
+            "text": "computation time",
+            "section": "introduction",
+            "start": 561,
+            "end": 577
+          },
+          {
+            "text": "they",
+            "section": "introduction",
+            "start": 579,
+            "end": 583
+          },
+          {
+            "text": "a sequence",
+            "section": "introduction",
+            "start": 593,
+            "end": 603
+          },
+          {
+            "text": "hidden\nstates",
+            "section": "introduction",
+            "start": 607,
+            "end": 620
+          },
+          {
+            "text": "a function",
+            "section": "introduction",
+            "start": 628,
+            "end": 638
+          },
+          {
+            "text": "the previous hidden state ht\u22121",
+            "section": "introduction",
+            "start": 642,
+            "end": 672
+          },
+          {
+            "text": "the input",
+            "section": "introduction",
+            "start": 677,
+            "end": 686
+          },
+          {
+            "text": "position",
+            "section": "introduction",
+            "start": 691,
+            "end": 699
+          },
+          {
+            "text": "This inherently\nsequential nature precludes parallelization",
+            "section": "introduction",
+            "start": 703,
+            "end": 762
+          },
+          {
+            "text": "training examples",
+            "section": "introduction",
+            "start": 770,
+            "end": 787
+          },
+          {
+            "text": "which",
+            "section": "introduction",
+            "start": 789,
+            "end": 794
+          },
+          {
+            "text": "longer\nsequence lengths",
+            "section": "introduction",
+            "start": 815,
+            "end": 838
+          },
+          {
+            "text": "examples",
+            "section": "introduction",
+            "start": 884,
+            "end": 892
+          },
+          {
+            "text": "Recent work",
+            "section": "introduction",
+            "start": 894,
+            "end": 905
+          },
+          {
+            "text": "significant improvements",
+            "section": "introduction",
+            "start": 919,
+            "end": 943
+          },
+          {
+            "text": "computational efficiency",
+            "section": "introduction",
+            "start": 947,
+            "end": 971
+          },
+          {
+            "text": "factorization tricks",
+            "section": "introduction",
+            "start": 980,
+            "end": 1000
+          },
+          {
+            "text": "conditional\ncomputation",
+            "section": "introduction",
+            "start": 1010,
+            "end": 1033
+          },
+          {
+            "text": "model performance",
+            "section": "introduction",
+            "start": 1061,
+            "end": 1078
+          },
+          {
+            "text": "case",
+            "section": "introduction",
+            "start": 1082,
+            "end": 1086
+          },
+          {
+            "text": "The fundamental\nconstraint",
+            "section": "introduction",
+            "start": 1102,
+            "end": 1128
+          },
+          {
+            "text": "sequential computation",
+            "section": "introduction",
+            "start": 1132,
+            "end": 1154
+          },
+          {
+            "text": "Attention mechanisms",
+            "section": "introduction",
+            "start": 1174,
+            "end": 1194
+          },
+          {
+            "text": "an integral part",
+            "section": "introduction",
+            "start": 1207,
+            "end": 1223
+          },
+          {
+            "text": "compelling sequence modeling",
+            "section": "introduction",
+            "start": 1227,
+            "end": 1255
+          },
+          {
+            "text": "transduc-\ntion models",
+            "section": "introduction",
+            "start": 1260,
+            "end": 1281
+          },
+          {
+            "text": "various tasks",
+            "section": "introduction",
+            "start": 1285,
+            "end": 1298
+          },
+          {
+            "text": "modeling",
+            "section": "introduction",
+            "start": 1309,
+            "end": 1317
+          },
+          {
+            "text": "dependencies",
+            "section": "introduction",
+            "start": 1321,
+            "end": 1333
+          },
+          {
+            "text": "regard",
+            "section": "introduction",
+            "start": 1342,
+            "end": 1348
+          },
+          {
+            "text": "their distance",
+            "section": "introduction",
+            "start": 1352,
+            "end": 1366
+          },
+          {
+            "text": "the input or output sequences",
+            "section": "introduction",
+            "start": 1370,
+            "end": 1399
+          },
+          {
+            "text": "all but a few cases",
+            "section": "introduction",
+            "start": 1412,
+            "end": 1431
+          },
+          {
+            "text": "such attention mechanisms",
+            "section": "introduction",
+            "start": 1447,
+            "end": 1472
+          },
+          {
+            "text": "conjunction",
+            "section": "introduction",
+            "start": 1485,
+            "end": 1496
+          },
+          {
+            "text": "a recurrent network",
+            "section": "introduction",
+            "start": 1502,
+            "end": 1521
+          },
+          {
+            "text": "this work",
+            "section": "introduction",
+            "start": 1526,
+            "end": 1535
+          },
+          {
+            "text": "we",
+            "section": "introduction",
+            "start": 1536,
+            "end": 1538
+          },
+          {
+            "text": "the Transformer",
+            "section": "introduction",
+            "start": 1547,
+            "end": 1562
+          },
+          {
+            "text": "a model architecture",
+            "section": "introduction",
+            "start": 1564,
+            "end": 1584
+          }
+        ]
+      },
+      "entity_mentions": [
+        {
+          "text": "recurrent",
+          "type": "Method",
+          "score": 0.935779,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 63,
+          "end": 72
+        },
+        {
+          "text": "convolutional neural networks",
+          "type": "Method",
+          "score": 0.986977,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 76,
+          "end": 105
+        },
+        {
+          "text": "encoder",
+          "type": "Method",
+          "score": 0.765113,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 122,
+          "end": 129
+        },
+        {
+          "text": "decoder",
+          "type": "Method",
+          "score": 0.870156,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 136,
+          "end": 143
+        },
+        {
+          "text": "Transformer",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "abstract",
+          "start": 291,
+          "end": 302
+        },
+        {
+          "text": "Transformer",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "abstract",
+          "start": 291,
+          "end": 302
+        },
+        {
+          "text": "attention mechanisms",
+          "type": "Method",
+          "score": 0.764158,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 320,
+          "end": 340
+        },
+        {
+          "text": "convolutions",
+          "type": "Method",
+          "score": 0.977017,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 373,
+          "end": 385
+        },
+        {
+          "text": "machine translation",
+          "type": "Task",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "abstract",
+          "start": 415,
+          "end": 434
+        },
+        {
+          "text": "BLEU",
+          "type": "Metric",
+          "score": 1.0,
+          "source": "metric_regex",
+          "section": "abstract",
+          "start": 589,
+          "end": 593
+        },
+        {
+          "text": "the WMT 2014 English-",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "abstract",
+          "start": 597,
+          "end": 618
+        },
+        {
+          "text": "WMT 2014",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "abstract",
+          "start": 601,
+          "end": 609
+        },
+        {
+          "text": "wmt 2014 english - to - german",
+          "type": "Dataset",
+          "score": 0.772117,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 601,
+          "end": 628
+        },
+        {
+          "text": "wmt 2014 english - to - french",
+          "type": "Dataset",
+          "score": 0.783546,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 733,
+          "end": 759
+        },
+        {
+          "text": "WMT",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "abstract",
+          "start": 733,
+          "end": 736
+        },
+        {
+          "text": "BLEU",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "abstract",
+          "start": 836,
+          "end": 840
+        },
+        {
+          "text": "english constituency parsing",
+          "type": "Task",
+          "score": 0.942614,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1069,
+          "end": 1097
+        },
+        {
+          "text": "constituency parsing",
+          "type": "Task",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "abstract",
+          "start": 1077,
+          "end": 1097
+        },
+        {
+          "text": "jakob",
+          "type": "Method",
+          "score": 0.742756,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1187,
+          "end": 1192
+        },
+        {
+          "text": "rnns",
+          "type": "Method",
+          "score": 0.998847,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1212,
+          "end": 1216
+        },
+        {
+          "text": "self - attention",
+          "type": "Method",
+          "score": 0.998723,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1222,
+          "end": 1236
+        },
+        {
+          "text": "self-attention",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "abstract",
+          "start": 1222,
+          "end": 1236
+        },
+        {
+          "text": "illia",
+          "type": "Dataset",
+          "score": 0.946905,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1296,
+          "end": 1301
+        },
+        {
+          "text": "transformer models",
+          "type": "Method",
+          "score": 0.8603,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1338,
+          "end": 1356
+        },
+        {
+          "text": "scaled dot - product attention",
+          "type": "Method",
+          "score": 0.987488,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1433,
+          "end": 1461
+        },
+        {
+          "text": "multi - head attention",
+          "type": "Method",
+          "score": 0.990892,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1463,
+          "end": 1483
+        },
+        {
+          "text": "parameter - free position representation",
+          "type": "Method",
+          "score": 0.829834,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1492,
+          "end": 1530
+        },
+        {
+          "text": "Niki",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "abstract",
+          "start": 1592,
+          "end": 1596
+        },
+        {
+          "text": "tensor2tensor",
+          "type": "Method",
+          "score": 0.964522,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1933,
+          "end": 1946
+        },
+        {
+          "text": "google brain",
+          "type": "Dataset",
+          "score": 0.933303,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 2072,
+          "end": 2084
+        },
+        {
+          "text": "google research",
+          "type": "Dataset",
+          "score": 0.902216,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 2111,
+          "end": 2126
+        },
+        {
+          "text": "Google Research",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "abstract",
+          "start": 2111,
+          "end": 2126
+        },
+        {
+          "text": "Transformer",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 31,
+          "end": 42
+        },
+        {
+          "text": "Transformer",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "conclusion",
+          "start": 31,
+          "end": 42
+        },
+        {
+          "text": "sequence transduction model",
+          "type": "Method",
+          "score": 0.85328,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 54,
+          "end": 81
+        },
+        {
+          "text": "attention",
+          "type": "Method",
+          "score": 0.882565,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 100,
+          "end": 109
+        },
+        {
+          "text": "recurrent layers",
+          "type": "Method",
+          "score": 0.743294,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 125,
+          "end": 141
+        },
+        {
+          "text": "encoder - decoder",
+          "type": "Method",
+          "score": 0.975672,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 164,
+          "end": 179
+        },
+        {
+          "text": "multi - headed self - attention",
+          "type": "Method",
+          "score": 0.988435,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 199,
+          "end": 226
+        },
+        {
+          "text": "self-attention",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "conclusion",
+          "start": 212,
+          "end": 226
+        },
+        {
+          "text": "translation",
+          "type": "Task",
+          "score": 0.949651,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 232,
+          "end": 243
+        },
+        {
+          "text": "recurrent",
+          "type": "Method",
+          "score": 0.944192,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 331,
+          "end": 340
+        },
+        {
+          "text": "convolutional layers",
+          "type": "Method",
+          "score": 0.980971,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 344,
+          "end": 364
+        },
+        {
+          "text": "WMT 2014",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "conclusion",
+          "start": 374,
+          "end": 382
+        },
+        {
+          "text": "WMT",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 374,
+          "end": 377
+        },
+        {
+          "text": "attention - based models",
+          "type": "Method",
+          "score": 0.826404,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 607,
+          "end": 629
+        },
+        {
+          "text": "layer normalization",
+          "type": "Method",
+          "score": 0.980588,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 1287,
+          "end": 1306
+        },
+        {
+          "text": "machine translation",
+          "type": "Task",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "conclusion",
+          "start": 1410,
+          "end": 1429
+        },
+        {
+          "text": "CoRR",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 1474,
+          "end": 1478
+        },
+        {
+          "text": "Quoc V .",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 1553,
+          "end": 1561
+        },
+        {
+          "text": "short - term memory - networks",
+          "type": "Method",
+          "score": 0.829078,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 1713,
+          "end": 1739
+        },
+        {
+          "text": "machine reading",
+          "type": "Task",
+          "score": 0.914946,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 1744,
+          "end": 1759
+        },
+        {
+          "text": "Fethi Bougares",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 1861,
+          "end": 1875
+        },
+        {
+          "text": "rnn encoder - decoder",
+          "type": "Method",
+          "score": 0.966469,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 1950,
+          "end": 1969
+        },
+        {
+          "text": "statistical machine translation",
+          "type": "Task",
+          "score": 0.98896,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 1974,
+          "end": 2005
+        },
+        {
+          "text": "deep learning",
+          "type": "Method",
+          "score": 0.972967,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2066,
+          "end": 2079
+        },
+        {
+          "text": "depthwise separable convolutions",
+          "type": "Method",
+          "score": 0.992375,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2085,
+          "end": 2117
+        },
+        {
+          "text": "gated recurrent neural networks",
+          "type": "Method",
+          "score": 0.93937,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2253,
+          "end": 2284
+        },
+        {
+          "text": "sequence modeling",
+          "type": "Task",
+          "score": 0.839159,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2288,
+          "end": 2305
+        },
+        {
+          "text": "recurrent neural network",
+          "type": "Method",
+          "score": 0.794668,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2407,
+          "end": 2431
+        },
+        {
+          "text": "naacl",
+          "type": "Dataset",
+          "score": 0.98004,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2454,
+          "end": 2459
+        },
+        {
+          "text": "convolu - tional sequence",
+          "type": "Method",
+          "score": 0.942719,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2551,
+          "end": 2575
+        },
+        {
+          "text": "sequence learning",
+          "type": "Task",
+          "score": 0.799712,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2579,
+          "end": 2596
+        },
+        {
+          "text": "arXiv:1705.03122v2",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 2613,
+          "end": 2631
+        },
+        {
+          "text": "recurrent neural networks",
+          "type": "Method",
+          "score": 0.978465,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2683,
+          "end": 2708
+        },
+        {
+          "text": "deep residual learning",
+          "type": "Method",
+          "score": 0.863546,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2808,
+          "end": 2830
+        },
+        {
+          "text": "im - age recognition",
+          "type": "Task",
+          "score": 0.994095,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2835,
+          "end": 2854
+        },
+        {
+          "text": "the IEEE Conference on Computer Vision",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 2874,
+          "end": 2912
+        },
+        {
+          "text": "computer vision",
+          "type": "Task",
+          "score": 0.993778,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2897,
+          "end": 2912
+        },
+        {
+          "text": "pattern recognition",
+          "type": "Task",
+          "score": 0.994069,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2917,
+          "end": 2936
+        },
+        {
+          "text": "Sepp Hochreiter",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 2964,
+          "end": 2979
+        },
+        {
+          "text": "gradient flow",
+          "type": "Method",
+          "score": 0.8956,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 3036,
+          "end": 3049
+        },
+        {
+          "text": "recurrent nets",
+          "type": "Method",
+          "score": 0.951455,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 3053,
+          "end": 3067
+        },
+        {
+          "text": "short - term memory",
+          "type": "Method",
+          "score": 0.790608,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 3176,
+          "end": 3193
+        },
+        {
+          "text": "pcfg",
+          "type": "Method",
+          "score": 0.98983,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 3290,
+          "end": 3294
+        },
+        {
+          "text": "natural language processing",
+          "type": "Task",
+          "score": 0.989622,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 3408,
+          "end": 3435
+        },
+        {
+          "text": "ACL",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 3452,
+          "end": 3455
+        },
+        {
+          "text": "Oriol Vinyals",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 3493,
+          "end": 3506
+        },
+        {
+          "text": "language modeling",
+          "type": "Task",
+          "score": 0.910914,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 3577,
+          "end": 3594
+        },
+        {
+          "text": "Neural\nInformation Processing Systems",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 3723,
+          "end": 3760
+        },
+        {
+          "text": "neural gpus",
+          "type": "Method",
+          "score": 0.756358,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 3815,
+          "end": 3826
+        },
+        {
+          "text": "Lasse Espeholt",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 3938,
+          "end": 3952
+        },
+        {
+          "text": "linear",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 4058,
+          "end": 4064
+        },
+        {
+          "text": "structured attention networks",
+          "type": "Method",
+          "score": 0.971019,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 4175,
+          "end": 4204
+        },
+        {
+          "text": "adam",
+          "type": "Method",
+          "score": 0.990971,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 4305,
+          "end": 4309
+        },
+        {
+          "text": "iclr",
+          "type": "Dataset",
+          "score": 0.839873,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 4352,
+          "end": 4356
+        },
+        {
+          "text": "lstm",
+          "type": "Method",
+          "score": 0.994591,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 4431,
+          "end": 4435
+        },
+        {
+          "text": "structured self - attentive sentence embedding",
+          "type": "Method",
+          "score": 0.777997,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 4596,
+          "end": 4640
+        },
+        {
+          "text": "penn treebank",
+          "type": "Dataset",
+          "score": 0.921512,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 5142,
+          "end": 5155
+        },
+        {
+          "text": "self - training",
+          "type": "Method",
+          "score": 0.861702,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 5271,
+          "end": 5284
+        },
+        {
+          "text": "the Human Language Technology Conference of the NAACL",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 5316,
+          "end": 5369
+        },
+        {
+          "text": "human language",
+          "type": "Task",
+          "score": 0.84449,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 5320,
+          "end": 5334
+        },
+        {
+          "text": "Ankur Parikh",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 5425,
+          "end": 5437
+        },
+        {
+          "text": "decomposable attention model",
+          "type": "Method",
+          "score": 0.826617,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 5493,
+          "end": 5521
+        },
+        {
+          "text": "abstractive summarization",
+          "type": "Task",
+          "score": 0.924152,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 5666,
+          "end": 5691
+        },
+        {
+          "text": "the 21st International Conference on\nComputational Linguistics",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 5876,
+          "end": 5938
+        },
+        {
+          "text": "computational linguistics",
+          "type": "Task",
+          "score": 0.857639,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 5913,
+          "end": 5938
+        },
+        {
+          "text": "ofir press",
+          "type": "Dataset",
+          "score": 0.866292,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 6012,
+          "end": 6022
+        },
+        {
+          "text": "wolf",
+          "type": "Dataset",
+          "score": 0.731081,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 6032,
+          "end": 6036
+        },
+        {
+          "text": "Alexandra Birch",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 6170,
+          "end": 6185
+        },
+        {
+          "text": "Azalia Mirhoseini",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 6306,
+          "end": 6323
+        },
+        {
+          "text": "dropout",
+          "type": "Method",
+          "score": 0.993429,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 6621,
+          "end": 6628
+        },
+        {
+          "text": "Journal of Machine\nLearning Research",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 6688,
+          "end": 6724
+        },
+        {
+          "text": "neural information processing systems",
+          "type": "Method",
+          "score": 0.794015,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 6939,
+          "end": 6976
+        },
+        {
+          "text": "Curran Associates",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 6999,
+          "end": 7016
+        },
+        {
+          "text": "Quoc VV Le",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 7070,
+          "end": 7080
+        },
+        {
+          "text": "neural networks",
+          "type": "Method",
+          "score": 0.979606,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 7117,
+          "end": 7132
+        },
+        {
+          "text": "Vinyals & Kaiser",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 7398,
+          "end": 7414
+        },
+        {
+          "text": "Google",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 7694,
+          "end": 7700
+        },
+        {
+          "text": "neural machine",
+          "type": "Method",
+          "score": 0.866503,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 7703,
+          "end": 7717
+        },
+        {
+          "text": "system",
+          "type": "Method",
+          "score": 0.872842,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 7730,
+          "end": 7736
+        },
+        {
+          "text": "human",
+          "type": "Task",
+          "score": 0.980218,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 7763,
+          "end": 7768
+        },
+        {
+          "text": "recurrent models",
+          "type": "Method",
+          "score": 0.805018,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 7898,
+          "end": 7914
+        },
+        {
+          "text": "fast - forward connections",
+          "type": "Method",
+          "score": 0.911394,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 7920,
+          "end": 7944
+        },
+        {
+          "text": "neural machine translation",
+          "type": "Task",
+          "score": 0.966986,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 7949,
+          "end": 7975
+        },
+        {
+          "text": "shift - reduce",
+          "type": "Method",
+          "score": 0.857485,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 8092,
+          "end": 8104
+        },
+        {
+          "text": "acl",
+          "type": "Dataset",
+          "score": 0.896983,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 8175,
+          "end": 8178
+        },
+        {
+          "text": "recurrent neural networks",
+          "type": "Method",
+          "score": 0.987005,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 0,
+          "end": 25
+        },
+        {
+          "text": "long short - term memory",
+          "type": "Method",
+          "score": 0.989781,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 27,
+          "end": 49
+        },
+        {
+          "text": "gated recurrent",
+          "type": "Method",
+          "score": 0.984498,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 59,
+          "end": 74
+        },
+        {
+          "text": "neural networks",
+          "type": "Method",
+          "score": 0.962193,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 79,
+          "end": 94
+        },
+        {
+          "text": "sequence modeling",
+          "type": "Task",
+          "score": 0.952095,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 173,
+          "end": 190
+        },
+        {
+          "text": "transduction",
+          "type": "Task",
+          "score": 0.971934,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 195,
+          "end": 207
+        },
+        {
+          "text": "language modeling",
+          "type": "Task",
+          "score": 0.989477,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 225,
+          "end": 242
+        },
+        {
+          "text": "machine translation",
+          "type": "Task",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "introduction",
+          "start": 247,
+          "end": 266
+        },
+        {
+          "text": "encoder - decoder",
+          "type": "Method",
+          "score": 0.957623,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 374,
+          "end": 389
+        },
+        {
+          "text": "factorization",
+          "type": "Method",
+          "score": 0.82012,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 980,
+          "end": 993
+        },
+        {
+          "text": "transduc - tion",
+          "type": "Method",
+          "score": 0.97398,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 1260,
+          "end": 1274
+        },
+        {
+          "text": "recurrent network",
+          "type": "Method",
+          "score": 0.898751,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 1504,
+          "end": 1521
+        },
+        {
+          "text": "Transformer",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 1551,
+          "end": 1562
+        },
+        {
+          "text": "Transformer",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "introduction",
+          "start": 1551,
+          "end": 1562
+        },
+        {
+          "text": "neural gpu",
+          "type": "Method",
+          "score": 0.900845,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 1994,
+          "end": 2004
+        },
+        {
+          "text": "ByteNet",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 2011,
+          "end": 2018
+        },
+        {
+          "text": "bytenet",
+          "type": "Method",
+          "score": 0.978415,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2011,
+          "end": 2018
+        },
+        {
+          "text": "convs2s",
+          "type": "Method",
+          "score": 0.984574,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2028,
+          "end": 2035
+        },
+        {
+          "text": "convolutional neural networks",
+          "type": "Method",
+          "score": 0.990122,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2058,
+          "end": 2087
+        },
+        {
+          "text": "ConvS2S",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 2362,
+          "end": 2369
+        },
+        {
+          "text": "Multi-Head Attention",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 2685,
+          "end": 2705
+        },
+        {
+          "text": "multi - head attention",
+          "type": "Method",
+          "score": 0.941098,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2685,
+          "end": 2705
+        },
+        {
+          "text": "Self-attention",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "introduction",
+          "start": 2735,
+          "end": 2749
+        },
+        {
+          "text": "self - attention",
+          "type": "Method",
+          "score": 0.991627,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2735,
+          "end": 2749
+        },
+        {
+          "text": "intra - attention",
+          "type": "Method",
+          "score": 0.990045,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2768,
+          "end": 2783
+        },
+        {
+          "text": "reading comprehension",
+          "type": "Task",
+          "score": 0.991458,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2988,
+          "end": 3009
+        },
+        {
+          "text": "abstractive summarization",
+          "type": "Task",
+          "score": 0.992205,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3011,
+          "end": 3036
+        },
+        {
+          "text": "textual entailment",
+          "type": "Task",
+          "score": 0.981238,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3038,
+          "end": 3056
+        },
+        {
+          "text": "learning task - independent sentence representations",
+          "type": "Task",
+          "score": 0.727223,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3061,
+          "end": 3111
+        },
+        {
+          "text": "recurrent attention mechanism",
+          "type": "Method",
+          "score": 0.800565,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3171,
+          "end": 3200
+        },
+        {
+          "text": "simple - language question answering",
+          "type": "Task",
+          "score": 0.961906,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3280,
+          "end": 3314
+        },
+        {
+          "text": "question answering",
+          "type": "Task",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "introduction",
+          "start": 3296,
+          "end": 3314
+        },
+        {
+          "text": "transduction model",
+          "type": "Method",
+          "score": 0.793793,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3417,
+          "end": 3435
+        },
+        {
+          "text": "aligned rnns",
+          "type": "Method",
+          "score": 0.886633,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3546,
+          "end": 3558
+        },
+        {
+          "text": "convolution",
+          "type": "Method",
+          "score": 0.996449,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3562,
+          "end": 3573
+        },
+        {
+          "text": "encoder - decoder",
+          "type": "Method",
+          "score": 0.967484,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 61,
+          "end": 76
+        },
+        {
+          "text": "auto - regressive",
+          "type": "Method",
+          "score": 0.873186,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 373,
+          "end": 388
+        },
+        {
+          "text": "Transformer",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 543,
+          "end": 554
+        },
+        {
+          "text": "Transformer",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "method",
+          "start": 543,
+          "end": 554
+        },
+        {
+          "text": "5we",
+          "type": "Dataset",
+          "score": 0.936213,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 676,
+          "end": 679
+        }
+      ],
+      "keyphrases": [
+        {
+          "text": "attention translation tasks",
+          "score": 0.6651,
+          "section": "conclusion",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "machine translation tasks",
+          "score": 0.6144,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "transduction models encoder",
+          "score": 0.5948,
+          "section": "method",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "translation tasks models",
+          "score": 0.5896,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "self attention translation",
+          "score": 0.5844,
+          "section": "conclusion",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "attention translation",
+          "score": 0.5841,
+          "section": "conclusion",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "recurrent models fast",
+          "score": 0.5808,
+          "section": "conclusion",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "recurrent language models",
+          "score": 0.5751,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "attention based models",
+          "score": 0.5735,
+          "section": "conclusion",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "attention compute representations",
+          "score": 0.5702,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "short term memory",
+          "score": 0.5666,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "translation task improving",
+          "score": 0.5655,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "translation tasks",
+          "score": 0.5611,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "decoder attention",
+          "score": 0.5442,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "recurrent neural networks",
+          "score": 0.5408,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "recurrent network",
+          "score": 0.5407,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "models encoder decoder",
+          "score": 0.5309,
+          "section": "method",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "encoder decoder structure",
+          "score": 0.5022,
+          "section": "method",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "neural sequence transduction",
+          "score": 0.4961,
+          "section": "method",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "models encoder",
+          "score": 0.4939,
+          "section": "method",
+          "source": "nadiyah_keybert_minilm"
+        }
+      ],
+      "extractive_summary": {
+        "text": "Recurrent neural networks, long short-term memory [13] and gated recurrent [7] neural networks\nin particular, have been firmly established as state of the art approaches in sequence modeling and\ntransduction problems such as language modeling and machine translation [ 35, 2, 5]. In this work, we presented the Transformer, the first sequence transduction model based entirely on\nattention, replacing the recurrent layers most commonly used in encoder-decoder architectures with\nmulti-headed self-attention. Neural machine translation in linear time.arXiv preprint arXiv:1610.10099v2,\n2017. Effective approaches to attention-\nbased neural machine translation. Sequence to sequence learning with neural\nnetworks.",
+        "sentences": [
+          {
+            "text": "Recurrent neural networks, long short-term memory [13] and gated recurrent [7] neural networks\nin particular, have been firmly established as state of the art approaches in sequence modeling and\ntransduction problems such as language modeling and machine translation [ 35, 2, 5].",
+            "section": "introduction",
+            "source": "extractive_textrank"
+          },
+          {
+            "text": "In this work, we presented the Transformer, the first sequence transduction model based entirely on\nattention, replacing the recurrent layers most commonly used in encoder-decoder architectures with\nmulti-headed self-attention.",
+            "section": "conclusion",
+            "source": "extractive_textrank"
+          },
+          {
+            "text": "Neural machine translation in linear time.arXiv preprint arXiv:1610.10099v2,\n2017.",
+            "section": "conclusion",
+            "source": "extractive_textrank"
+          },
+          {
+            "text": "Effective approaches to attention-\nbased neural machine translation.",
+            "section": "conclusion",
+            "source": "extractive_textrank"
+          },
+          {
+            "text": "Sequence to sequence learning with neural\nnetworks.",
+            "section": "conclusion",
+            "source": "extractive_textrank"
+          }
+        ],
+        "candidate_sentence_count": 147,
+        "source_traceable": true
+      },
+      "structural_checks": [
+        {
+          "code": "missing_or_weak_results",
+          "severity": "high",
+          "message": "Experiment or results evidence is missing or very short.",
+          "evidence": ""
+        },
+        {
+          "code": "no_explicit_limitations",
+          "severity": "low",
+          "message": "No explicit limitations section was detected.",
+          "evidence": ""
+        },
+        {
+          "code": "weak_related_work_signal",
+          "severity": "low",
+          "message": "No explicit related-work section was detected.",
+          "evidence": ""
+        }
+      ],
+      "timings_seconds": {
+        "pos": 0.685073,
+        "ner": 3.068568,
+        "keyphrases": 3.05083,
+        "extractive_summary": 0.560185,
+        "structural_checks": 4.5e-05
+      },
+      "provenance": {
+        "pos": "spaCy en_core_web_sm from team runtime archive",
+        "ner": "Nadiyah fine-tuned SciER DistilBERT at threshold 0.7, plus regex/spaCy completion",
+        "keyphrases": "Nadiyah KeyBERT approach with local all-MiniLM-L6-v2",
+        "summary": "deterministic extractive TextRank",
+        "structural_checks": "deterministic project rules",
+        "bart_status": "historical comparison only; not production"
+      }
+    }
+  },
+  "debug_summary": {
+    "page_count": 15,
+    "headings": [
+      "1 Introduction",
+      "2 Background",
+      "3 Model Architecture",
+      "2\nFigure 1: The Transformer - model architecture.",
+      "3.1 Encoder and Decoder Stacks",
+      "3.2 Attention",
+      "3\nScaled Dot-Product Attention",
+      "3.2.1 Scaled Dot-Product Attention",
+      "3.2.2 Multi-Head Attention",
+      "3.2.3 Applications of Attention in our Model",
+      "3.3 Position-wise Feed-Forward Networks",
+      "3.4 Embeddings and Softmax",
+      "5\nTable 1: Maximum path lengths, per-layer complexity and minimum number of sequential operations",
+      "3.5 Positional Encoding",
+      "4 Why Self-Attention",
+      "5 Training",
+      "5.1 Training Data and Batching",
+      "2014 English-French dataset consisting of 36M sentences and split tokens into a 32000 word-piece",
+      "5.2 Hardware and Schedule",
+      "5.3 Optimizer",
+      "5.4 Regularization",
+      "7\nTable 2: The Transformer achieves better BLEU scores than previous state-of-the-art models on the",
+      "6 Results",
+      "6.1 Machine Translation",
+      "6.2 Model Variations",
+      "8\nTable 3: Variations on the Transformer architecture. Unlisted values are identical to those of the base",
+      "6.3 English Constituency Parsing",
+      "9\nTable 4: The Transformer generalizes well to English constituency parsing (Results are on Section 23",
+      "7 Conclusion",
+      "12\nAttention Visualizations",
+      "13\nInput-Input Layer5",
+      "14\nInput-Input Layer5"
+    ],
+    "warnings": []
+  }
+}

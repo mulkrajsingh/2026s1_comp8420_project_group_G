@@ -1,0 +1,17 @@
+{
+  "run_date": "2026-06-09",
+  "input_records": 5000,
+  "processed_records": 5000,
+  "semantic_scholar_matches": 4797,
+  "semantic_scholar_not_found": 203,
+  "match_rate": 0.9594,
+  "recorded_runtime": "06:46:44",
+  "unique_cache_files": 4897,
+  "rebuilt_enriched_records": 5000,
+  "rebuilt_enriched_true": 4797,
+  "rebuilt_cached_misses": 100,
+  "rebuilt_without_unique_cache_entry": 103,
+  "input_sha256": "e67c59ca939828f3eea063c23d08f28a7c150d2626e255172a54d623135d30c1",
+  "enriched_sha256": "a8757c4df3efcd16b502c61d09d65249e0e8fe41c3a0701ff5a5abc9d80cae34",
+  "raw_snapshot_sha256": "7a819aa11b09a817cc8e4930eff269438963930573f6ac9aa7ff9d92c5b1183c"
+}

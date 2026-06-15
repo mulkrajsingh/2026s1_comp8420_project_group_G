@@ -1,0 +1,6 @@
+expected_reference_count,paper_id,pos_accuracy,reference_absolute_error,reference_count,runtime_seconds,section_recall,structural_f1,title_similarity
+52,drq_v2,0.8,0,52,13.8389,0.875,0.6667,1.0
+37,siga,0.9,0,37,8.4301,0.7,0.0,1.0
+40,transformer,0.9,0,40,7.3647,0.8571,0.8,0.2828
+57,bert,0.9,0,57,11.8157,0.7143,0.4,0.8296
+68,rag,1.0,0,68,5.0211,0.875,0.4,0.8312

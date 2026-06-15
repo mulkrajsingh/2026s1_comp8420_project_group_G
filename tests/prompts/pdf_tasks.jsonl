@@ -1,0 +1,3 @@
+{"paper": "drq_v2", "task": "summarize", "query": "Summarize the core contribution and method."}
+{"paper": "siga", "task": "peer_review", "query": "Provide peer-review feedback with strengths and weaknesses."}
+{"paper": "drq_v2", "task": "chat", "query": "What baseline methods does this paper compare against?"}

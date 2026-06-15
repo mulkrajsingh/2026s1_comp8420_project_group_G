@@ -1,0 +1,35 @@
+{
+  "steps": [
+    {
+      "step": "analyze-pdf START",
+      "detail": "path='../tests/papers/drq_v2/2107.09645v1.pdf' parser=live q='Mastering Visual Continuous Control: Improved Data-Augmented Reinforcement Learning'",
+      "elapsed_ms": 0.0
+    },
+    {
+      "step": "retrieving evidence (RAG)",
+      "detail": "source=live",
+      "elapsed_ms": 0.2
+    },
+    {
+      "step": "recommending related papers",
+      "detail": "source=live",
+      "elapsed_ms": 1899.5
+    },
+    {
+      "step": "synthesizing summary/findings/gaps",
+      "detail": "source=live",
+      "elapsed_ms": 1899.5
+    },
+    {
+      "step": "peer-review assistance",
+      "detail": "source=live",
+      "elapsed_ms": 120086.8
+    },
+    {
+      "step": "analyze-pdf DONE",
+      "detail": "sources={'parser': 'live', 'paper_source': 'file-backed', 'recommender': 'live', 'synthesizer': 'live'}",
+      "elapsed_ms": 206055.0
+    }
+  ],
+  "session": "/Users/kyojin/work/uni/nlp_comp8420/major proj/comp8420_NLP_project/integration/data/sessions/20260613-143524-4f2a939e/session.jsonl"
+}

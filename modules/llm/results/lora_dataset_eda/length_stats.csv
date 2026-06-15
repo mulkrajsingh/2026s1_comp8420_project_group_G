@@ -1,0 +1,5 @@
+field,min,p25,median,p75,p95,max,mean
+user_words,12,44,125.0,209,2070,2725,440.6
+assistant_words,2,5,25.0,74,104,285,44.1
+total_words,61,99,210.5,298,2223,2963,525.7
+source_id_markers,0,0,0.0,1,2,6,0.6

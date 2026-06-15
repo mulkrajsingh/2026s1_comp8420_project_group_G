@@ -1,0 +1,6 @@
+concept_retention,paper_id,source_traceability
+0.4,drq_v2,1.0
+0.0,siga,1.0
+0.5,transformer,1.0
+0.4,bert,1.0
+0.7,rag,1.0

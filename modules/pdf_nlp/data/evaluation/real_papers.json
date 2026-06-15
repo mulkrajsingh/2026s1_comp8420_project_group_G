@@ -1,0 +1,46 @@
+{
+  "description": "Five real research-paper PDFs used for production PDF-NLP evaluation. No mock or generated paper text.",
+  "annotation_status": "provisional_agent_reviewed_not_human_validated",
+  "papers": [
+    {
+      "id": "drq_v2",
+      "path": "../../../../tests/papers/drq_v2/2107.09645v1.pdf",
+      "source_url": "https://arxiv.org/pdf/2107.09645v1",
+      "sha256": "7a9b7d03a6cbdf09767b132fa474620abed861197632352d236be61faa09a0fd",
+      "bytes": 2385290,
+      "pages": 18
+    },
+    {
+      "id": "siga",
+      "path": "../../../../tests/papers/siga/SIGA_Self_Evolving_Coding_Agent_Adapters_for_Scientific_Simulation.pdf",
+      "source_url": "https://arxiv.org/pdf/2606.09774v1",
+      "sha256": "2499663106a94f9792b11573df096c657e4b9c2b3ffd3004e08f81c1d111c9a7",
+      "bytes": 1738952,
+      "pages": 31
+    },
+    {
+      "id": "transformer",
+      "path": "../../../../tests/papers/transformer/1706.03762v7.pdf",
+      "source_url": "https://arxiv.org/pdf/1706.03762v7",
+      "sha256": "bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697",
+      "bytes": 2215244,
+      "pages": 15
+    },
+    {
+      "id": "bert",
+      "path": "../../../../tests/papers/bert/1810.04805v2.pdf",
+      "source_url": "https://arxiv.org/pdf/1810.04805v2",
+      "sha256": "5692a5514787a8c6727b4ff3b726a3385798bc68e12138d1d4af83947e2acf6e",
+      "bytes": 775166,
+      "pages": 16
+    },
+    {
+      "id": "rag",
+      "path": "../../../../tests/papers/rag/2005.11401v4.pdf",
+      "source_url": "https://arxiv.org/pdf/2005.11401v4",
+      "sha256": "23e3249e9a1e75418d82efecab0ea8c4d033b89c93742f63208d47ce01f21233",
+      "bytes": 885323,
+      "pages": 19
+    }
+  ]
+}

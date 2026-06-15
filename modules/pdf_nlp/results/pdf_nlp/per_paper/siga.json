@@ -1,0 +1,5073 @@
+{
+  "input": {
+    "paper_id": "siga",
+    "pdf_sha256": "2499663106a94f9792b11573df096c657e4b9c2b3ffd3004e08f81c1d111c9a7",
+    "source_url": "https://arxiv.org/pdf/2606.09774v1"
+  },
+  "parsed_paper": {
+    "metadata": {
+      "paper_id": "siga_self_evolving_coding_agent_adapters_for_scientific_simulation_7390a5d5cd",
+      "title": "SIGA: Self-Evolving Coding-Agent Adapters for Scientific Simulation",
+      "abstract": "Advanced scientific simulators expose specialized input languages that turn simula- tion goals into executable configurations, but learning and using these interfaces can cost domain scientists hours to days. We study simulator setup as a problem of agent-tool interface grounding: what minimal simulator-specific adaptations are needed for an off-the-shelf coding agent to operate real scientific software? Our intuition is that coding agents already know how to navigate files, edit code, run commands, and repair outputs, but they lack the simulator\u2019s executable contract: its vocabulary, structural constraints, validation rules, and termination conditions. We introduce SIGA, a Simulator-Interface Grounding Adapter that supplies this con- tract through retrieval, procedural memory, in-trajectory validation, and validation- enforced termination. We primarily evaluate SIGA on GEOS, an open-source multiphysics simulator used in subsurface science. SIGA produces a complete GEOS deck in about five minutes with TreeSim above 0.90, matching the quality of an extended-budget human expert who required about three hours, a roughly 36\u00d7 wall-clock speedup. On a harder held-out set, grounding raises TreeSim from 0.720 to 0.789, a roughly 10% relative gain over the bare agent, and can reduce the across-seed standard deviation by 16\u00d7. Self-evolution further improves SIGA by rewriting adapter contents from prior trajectories, yielding the highest held-out GEOS mean and matching or outperforming the strongest hand-designed configura- tion. Transfers to OpenFOAM and LAMMPS show that the dominant mechanism shifts by interface: validation matters most when structural completeness is the bottleneck, while memory and retrieval matter most when domain correctness is the bottleneck. Together, these results suggest that lightweight, self-improvable grounding layers can turn general coding agents into practical operators of scientific software.",
+      "authors": [
+        "Scientific Simulation"
+      ],
+      "categories": [],
+      "published_date": null,
+      "venue": null,
+      "doi": null,
+      "arxiv_id": null,
+      "url": null,
+      "source": "uploaded_pdf"
+    },
+    "sections": {
+      "abstract": "Advanced scientific simulators expose specialized input languages that turn simula- tion goals into executable configurations, but learning and using these interfaces can cost domain scientists hours to days. We study simulator setup as a problem of agent-tool interface grounding: what minimal simulator-specific adaptations are needed for an off-the-shelf coding agent to operate real scientific software? Our intuition is that coding agents already know how to navigate files, edit code, run commands, and repair outputs, but they lack the simulator\u2019s executable contract: its vocabulary, structural constraints, validation rules, and termination conditions. We introduce SIGA, a Simulator-Interface Grounding Adapter that supplies this con- tract through retrieval, procedural memory, in-trajectory validation, and validation- enforced termination. We primarily evaluate SIGA on GEOS, an open-source multiphysics simulator used in subsurface science. SIGA produces a complete GEOS deck in about five minutes with TreeSim above 0.90, matching the quality of an extended-budget human expert who required about three hours, a roughly 36\u00d7 wall-clock speedup. On a harder held-out set, grounding raises TreeSim from 0.720 to 0.789, a roughly 10% relative gain over the bare agent, and can reduce the across-seed standard deviation by 16\u00d7. Self-evolution further improves SIGA by rewriting adapter contents from prior trajectories, yielding the highest held-out GEOS mean and matching or outperforming the strongest hand-designed configura- tion. Transfers to OpenFOAM and LAMMPS show that the dominant mechanism shifts by interface: validation matters most when structural completeness is the bottleneck, while memory and retrieval matter most when domain correctness is the bottleneck. Together, these results suggest that lightweight, self-improvable grounding layers can turn general coding agents into practical operators of scientific software.",
+      "introduction": "Scientific simulation is one of the central computational workflows in modern science. Researchers\nuse simulators to study physical, chemical, biological, and engineering processes that would be\nexpensive, slow, dangerous, or impossible to observe directly in the laboratory. In geophysics,\nsimulators such as the GEOS 1 [GEOS Development Team, 2024] model CO2 sequestration, reservoir\nflow, hydraulic fracture, wellbore behavior, and induced seismicity; in molecular science, molecular-\ndynamics engines such as LAMMPS [Holbrook et al., 2026] encode atomistic systems, force fields,\nand time-integration protocols. Across these domains, the scientific goal may be expressed in natural\nlanguage, but the executable simulation must be written in a simulator-specific input language.\nThis translation from scientific intent to runnable simulator configuration is a persistent bottleneck in\nsimulation-driven research. Advanced simulators are not simple tools with a few stable arguments.\nThey expose large domain-specific language (DSL) whose tokens name solver classes, material\n1https://github.com/GEOS-DEV/GEOS\nPreprint.\narXiv:2606.09774v1  [cs.AI]  8 Jun 2026\nFigure 1: Illustrative example of advanced tooling usage bottleneck for the geophysics domain.\nHere, the GEOS simulator\u2019s extensive documentation helps as a translation guide for its elaborate\nconfiguration that is a custom XML (domain specific language/DSL) to produce results such as simu-\nlating carbon sequestration in deep saline formations (top right) or reservoir flow in heterogeneous\nhydrocarbon (bottom right).\nmodels, mesh regions, boundary conditions, event schedules, numerical schemes, and output requests.\nA valid input deck must satisfy syntax constraints, schema constraints, and physical or domain-\nconventional constraints, while maintaining consistent names and references across sections and often\nacross files. Scientists new to a simulator can therefore spend hours or days reading documentation,\nsearching examples, testing numerical settings, and debugging invalid configurations before obtaining\na runnable deck (Fig. 1).\nThis setup stage is a natural target for agentic AI because it is both valuable and constrained. It is\nvaluable because reducing setup time directly accelerates scientific iteration. It is constrained because\nthe agent is not being asked to invent a new hypothesis or interpret final physical results; it is being\nasked to operate an existing scientific tool according to a given specification. This makes simulator\nsetup a useful near-term testbed for scientific agents. If current agents cannot reliably translate a\nspecification into a simulator DSL, they are unlikely to be dependable in broader workflows that\nrequire experimental design, hypothesis revision, and domain reasoning.\nRecent scientific-agent systems have explored chemistry [Bran et al., 2023, Boiko et al., 2023],\nmolecular dynamics [Shi et al., 2026, Zhao et al., 2026, Guilbert et al., 2025], computational fluid\ndynamics [Chen et al., 2024a, Yue et al., 2025a, Pandey et al., 2025], finite-element and multiphysics\nmodeling [Zhang et al., 2025, Park et al., 2026, Ni and Buehler, 2023], reservoir simulation [Lie\net al., 2026], and other simulator-centered workflows. Two complementary gaps motivate our\nstudy.Application-wise, to the best of our knowledge no agent has been designed for GEOS in\nparticular, despite its central role in subsurface science: existing geoscience language models focus\non knowledge access and question answering [Deng et al., 2023, Lin et al., 2024], and the closest\ngeoscience-agent systems target narrower simulator families [Bekele, 2025, Ren et al., 2025, Lie\net al., 2026].Method-wise, many of these systems build simulator-specific agent loops from scratch,\nincluding custom planning, tool calling, retry logic, and termination handling, rather than building on\nthe substantial engineering already invested in frontier coding agents such as Claude Code or open-\nsource efforts such as OpenHands [Wang et al., 2025]. We study a different design point: adapting\nan off-the-shelf coding agent. Modern coding agents already provide useful infrastructure for file\nnavigation, iterative editing, shell use, and code repair. There is a further, less obvious reason to build\non the harness rather than around it: frontier models are increasingly post-trained inside specific\nagent harnesses (e.g., Cursor Research et al., 2026), so their planning, tool-use, and self-correction\n2\nbehaviors are calibrated to that scaffolding. Re-implementing the orchestration layer from scratch\ndiscards this alignment, whereas adapting the native harness preserves it and concentrates engineering\non the simulator-specific gap. The remaining question is what simulator-specific grounding layer is\nneeded to make such agents reliable simulator setup assistants.\nWe answer this question with the Simulator-Interface Grounding Adapter (SIGA), a thin wrapper\naround an off-the-shelf coding agent. The design is based on a simple intuition: modern coding agents\nalready provide useful general machinery for navigating files, editing code, running commands, and\nrepairing outputs, but they do not know the exact contract imposed by a scientific simulator. In\nsimulator setup, failures therefore arise less from the lack of a generic agent loop than from missing\ninterface grounding: the agent may not know the simulator\u2019s vocabulary, may drift away from schema\nor structural constraints while editing, or may stop after producing a plausible-looking but incomplete\ndeck. SIGA addresses this by grounding the agent at the points where these failures occur: before\ngeneration, during self-correction, and at termination.\nConcretely, SIGA factorizes this grounding into four reusable components. Retrieval gives semantic\naccess to simulator documentation, schemas, examples, and technical snippets; procedural memory\nkeeps high-frequency simulator vocabulary and configuration patterns always visible; an agent-\ncallable validator lets the agent check and repair outputs mid-trajectory; and a stop-hook makes\nvalidation a mandatory termination condition, preventing the agent from finishing with incomplete or\nstructurally invalid deliverables. This decomposition is simulator-agnostic: the same slots instantiate\nas XML schema checks for GEOS, required-file and dictionary checks for OpenFOAM, and checks\nover commands, references, force-field declarations, and run-control blocks for LAMMPS. Because\nSIGA is a small adapter rather than a full agent loop, it also creates a compact optimization surface:\nwe can ask whether prior trajectories can automatically improve the adapter\u2019s primer, memory, and\nauxiliary skills.\nOur study yields four findings.(1) Grounding turns hours of expert setup into minutes at\nexpert-level quality.On a representative GEOS task, a geoscience expert new to GEOS reached\na complete, high-quality deck only after roughly three hours, whereas the SIGA-equipped agent\nmatched that quality in about five minutes, a \u223c36\u00d7 gain in setup efficiency at parity with extended-\nbudget expert quality.(2) Grounding raises reliability, not just speed.On a harder held-out task set,\ngrounding improves mean deck quality by roughly 10% relative to the bare agent and cuts across-run\nstandard deviation by about 16\u00d7, with no loss in efficiency.(3) Further improvements can be\ndiscovered automatically.A self-evolved variant that rewrites its own grounding components from\nprior trajectories matches or outperforms the best hand-designed configuration on the held-out set\nwithout hand-tuning.(4) The useful mechanism shifts with the simulator interface.Validation\nenforces structural completeness in GEOS and OpenFOAM, while memory and retrieval supply\ndomain knowledge in LAMMPS, so adapting to a new simulator is less a matter of redesigning the\nagent than of selecting which grounding slots to emphasize.\nTaken together, these results suggest a pragmatic near-term target for AI-for-science: making agents\nreliable at operating the complex software scientific work already depends on. This is a bounded\nand immediately valuable goal, distinct from and a sensible precursor to the longer-term aim of\nautonomous scientific discovery. A lightweight, self-improvable grounding layer around a general\ncoding agent can cut simulator setup from hours to minutes, while adapting to each simulator\u2019s\ndominant bottleneck (validation for incomplete outputs; memory and retrieval for incorrect domain\nvalues). The minimal grounding design and the self-evolution mechanism together give a concrete\nrecipe for adapting a general coding agent to a new simulator interface with modest effort.\n\nLLM agents for scientific code and simulators.Scientific-coding agents are studied on curated\nbenchmarks (ScienceAgentBench, DA-Code Chen et al. [2024b], Huang et al. [2024]) and built\nas general-purpose harnesses (OpenHands, SWE-agent Wang et al. [2025], Yang et al. [2024a]),\nself-debugging loops Chen et al. [2023], or specialised search frameworks (SciNav Zhang and Sun\n[2026]). Domain-application systems include ChemCrow Bran et al. [2023] and Coscientist Boiko\net al. [2023] for chemistry, CellV oyager Alber et al. [2026] for single-cell analysis, and The AI\nScientist Lu et al. [2024], Yamada et al. [2025] for end-to-end ML research. Closer to our setting are\nagents for scientific simulators: OpenFOAM-oriented computational fluid dynamics agents Chen\n3\net al. [2024a], Pandey et al. [2025], Yue et al. [2025b], molecular-dynamics agents Shi et al. [2026],\nGuilbert et al. [2025], Zhao et al. [2026], finite-element/mechanics agents Zhang et al. [2025], Ni and\nBuehler [2023], and reservoir-simulation agents Lie et al. [2026]. The shared design lesson is that\ngeneral-purpose LLMs are insufficient for high-fidelity simulator use unless wrapped with domain\ngrounding, structured interfaces, execution feedback, and iterative correction. Unlike most of these\nwe buildon top ofan existing engineered coding harness (Claude Code) rather than writing an agent\nloop from scratch. Foam-Agent 2.0 Yue et al. [2025b] and MetaOpenFOAM Chen et al. [2024a]\nare the most direct comparators for our OpenFOAM transfer study (\u00a76.5); we compare against their\nlint-only execution mode and treat those as baselines.\nSelf-evolving agents, memory, and procedural guidance.Recent agent work treats capability\nas an iterative loop of planning, execution, feedback, and refinement that externalises experience\ninto memory, search states, or revised plans [Bran et al., 2023, Boiko et al., 2023, Alber et al., 2026,\nLu et al., 2024, Zhang and Sun, 2026, Li et al., 2026, Tang et al., 2025, Narayanan et al., 2024]. A\nparticularly active subfield, which treats the agent\u2019s own scaffolding as a learnable object (variously\nstudied under the headings of meta-harness design Lee et al. [2026], harness-as-code Ning et al.\n[2026], agentic harness engineering Lin et al. [2026], and skill optimization Yang et al. [2026]),\nhas shown promising results on core AI benchmarks (coding, terminal navigation, math). Our\nself-evolved variant (\u00a74.3) adopts this reflect-and-rewrite paradigm: the agent revises its own plugin,\nthe adapter, based on prior trajectories. Our focus is different: we study whether such self-revision\nhelps on a task whose bottleneck is domain knowledge and procedural guidance rather than general\nprogramming competence. This connects to work on procedural memory and cheatsheets for LLMs,\nsuch as Buffer of Thoughts [Yang et al., 2024b]; we return to this interface in \u00a77.\n\nA GEOS [GEOS Development Team, 2024] deck is one or more XML files that specify a multi-\nphysics simulation across ten canonical sections, covering the mesh, geometry, execution schedule,\nphysics modules, material models, computational regions, numerical methods, field specifications,\nfunctions, and outputs. Although GEOS reads plain XML, its elaborate tag vocabulary and vali-\ndation schema make its configuration language closer to a small domain-specific language (DSL);\na deck is then a program in that language, whose tags name GEOS components and whose at-\ntributes set their parameters. For example, a physics-module tag selects which governing equations\nare advanced, a material-model tag defines the constitutive law, and region or output tags connect\nthose choices to parts of the mesh and requested results. Writing a deck is therefore a translation\nfrom natural-language intent into a structured program over the simulator\u2019s executable interface.\nThis is difficult for four reasons: (i) the vocabulary is large and contains near-duplicate compo-\nnent names, such as DruckerPrager, ExtendedDruckerPrager, DruckerPragerHardening,\nandViscoDruckerPrager; (ii) documentation and examples may reflect older interface versions;\n(iii) constraints span sections, so names introduced in one place must be reused consistently elsewhere;\nand (iv) task briefs often under-specify choices that experts fill in with domain-conventional defaults.\nThe first difficulty is exact interface-token selection, while the others are program-level consistency\nconstraints. A concrete annotated deck is in App. K.",
+      "method": "",
+      "results": "Our experiments are designed to separate three questions that are often conflated in simulator-agent\nevaluation: whether the adapter improves final deck quality, whether it improves reliability by\npreventing catastrophic invalid outputs, and which simulator-interface failures remain unsolved. We\nfirst run a controlled factorial ablation on GEOS to estimate the effect of each grounding component.\nWe then analyze failure categories to identify the residual bottlenecks. Finally, we calibrate the\ntask against human domain users, test behavior under underspecified briefs, and run two cross-\nsimulator transfer studies (OpenFOAM and LAMMPS) to probe whether the dominant mechanism is\nGEOS-specific.\nThe results answer five research questions:RQ1: Reliability and quality.Does SIGA improve\nTreeSim, and is the gain driven by average quality or by fewer catastrophic failures?RQ2: Failure\nmechanisms.Which block-level or attribute-level errors are fixed by the adapter?RQ3: Human\nanchor.How does SIGA compare with domain experts on a representative GEOS deck-authoring\ntask?RQ4: Autonomy.When task briefs are underspecified, does the agent consult a human\nsupervisor or substitute other available information sources?RQ5: Transfer.Does the same\ngrounding mechanism transfer to other simulator interfaces (OpenFOAM, LAMMPS), and does the\ndominant component shift with the interface?\n\nThe main empirical finding is that simulator-interface grounding\u2019s largest gain is reliability. On\nin-distribution GEOS tasks, vanilla Claude Code already achieves high TreeSim. On harder held-out\ntasks, SIGA reduces catastrophic invalid or incomplete outputs, which raises mean performance and\nsharply reduces across-run variance. We further localize the residual errors to attribute-level semantic\nmistakes (\u00a76.2), which marks where future grounding can extend the gains.",
+      "conclusion": "We asked how far an off-the-shelf coding agent can be pushed for scientific simulator setup by wrapper-\nlevel grounding alone, taking GEOS deck authoring as our case study. On in-distribution tasks the\nbare harness already operates near a quality ceiling; on harder held-out compound multi-physics tasks\nour adapters lift mean TreeSim by roughly seven percentage points and reduce across-run variance\nby roughly an order of magnitude, largely by preventing the harness from occasionally returning\nunparseable or empty decks. Schema-driven adapters eliminate whole-block omissions, and transfer\nstudies on OpenFOAM (30 tasks, where SIGA returns complete cases that two native agents do\nnot) and LAMMPS (where memory and retrieval, not the completeness gate, carry the gain) show\nthe recipe carries over while its dominant component adapts to each interface\u2019s binding constraint.\nAs an application, SIGA brings deck authoring inside the time envelope of an experienced GEOS\n13\nuser, and for domain experts who are new to the simulator it compresses a multi-hour authoring\ntask into minutes (a \u223c36\u00d7 speedup at matched deck quality on our representative task); as an initial\nAI-for-science contribution, it argues that the advanced tool-operating bottleneck deserves deliberate\nattention before agents are entrusted with harder scientific reasoning, and that adapting an existing\nengineered harness is a viable alternative to rebuilding agents from scratch for each new scientific\ntarget.\nReferences\nS. Alber, B. Chen, E. Sun, A. Isakova, A. J. Wilk, and J. Zou. Cellvoyager: Ai compbio agent\ngenerates new insights by autonomously analyzing biological data.Nature Methods, pages 1\u201311,\n2026.\nY . W. Bekele. Geosim.ai: Ai assistants for numerical simulations in geomechanics, 2025. URL\nhttps://arxiv.org/abs/2501.14186.\nD. A. Boiko, R. MacKnight, B. Kline, and G. Gomes. Autonomous chemical research with large\nlanguage models.Nature, 624:570\u2013578, 2023. doi: 10.1038/s41586-023-06792-0.\nA. M. Bran, S. Cox, O. Schilter, C. Baldassari, A. D. White, and P. Schwaller. Chemcrow: Augment-\ning large-language models with chemistry tools, 2023. URL https://arxiv.org/abs/2304.\n05376.\nX. Chen, M. Lin, N. Sch\u00e4rli, and D. Zhou. Teaching large language models to self-debug, 2023. URL\nhttps://arxiv.org/abs/2304.05128.\nY . Chen, X. Zhu, H. Zhou, and Z. Ren. Metaopenfoam: an llm-based multi-agent framework for cfd,\n2024a. URLhttps://arxiv.org/abs/2407.21320.\nZ. Chen, S. Chen, Y . Ning, Q. Zhang, B. Wang, B. Yu, Y . Li, Z. Liao, C. Wei, Z. Lu, V . Dey, M. Xue,\nF. N. Baker, B. Burns, D. Adu-Ampratwum, X. Huang, X. Ning, S. Gao, Y . Su, and H. Sun.\nScienceagentbench: Toward rigorous assessment of language agents for data-driven scientific\ndiscovery, 2024b. URLhttps://arxiv.org/abs/2410.05080.\nCursor Research, A. Chan, A. Shalaby, A. Wettig, A. Sanger, A. Zhai, A. Ajay, A. Nair, C. Snell,\nC. Lu, C. Shen, E. Jia, F. Cassano, H. Liu, H. Chen, H. Wildermuth, J. Jackson, J. Li, J. Katz, J. Yao,\nJ. Hejna, J. Warner, J. Vering, K. Frans, L. Danilek, L. Wright, L. Cen, L. Melas-Kyriazi, M. Truell,\nM. de Jong, N. Jain, N. Schmidt, N. Wang, N. Muennighoff, O. Rybkin, P. Loh, P. Kravtsov,\nR. Yadav, S. Shah, S. Kottler, A. M. Rush, S. Zhang, S. Jain, S. Sankar, S. Heule, S. H. Sul,\nS. Asif, V . Rong, W. Zhu, W. Lin, Y . Wu, Y . V olkov, Y . Zemlyanskiy, Z. Holbrook, and Z. Zhang.\nComposer 2 technical report, 2026. URLhttps://arxiv.org/abs/2603.24477.\nC. Deng, T. Zhang, Z. He, Y . Xu, Q. Chen, Y . Shi, L. Fu, W. Zhang, X. Wang, C. Zhou, Z. Lin, and\nJ. He. K2: A foundation language model for geoscience knowledge understanding and utilization,\n2023. URLhttps://arxiv.org/abs/2306.05064.\nGEOS Development Team. GEOS: A multiphysics simulation framework for subsurface applications,\n2024. URLhttps://github.com/GEOS-DEV/GEOS.\nS. Guilbert, C. Masschelein, J. Goumaz, B. Naida, and P. Schwaller. Dynamate: An autonomous\nagent for protein-ligand molecular dynamics simulations, 2025. URLhttps://arxiv.org/abs/\n2512.10034.\nE. Holbrook, J. C. Verduzco, and A. Strachan. Evaluating llm-generated code for domain-specific\nlanguages: molecular dynamics with lammps, 2026. URL https://arxiv.org/abs/2603.\n20630.\nY . Huang, J. Luo, Y . Yu, Y . Zhang, F. Lei, Y . Wei, S. He, L. Huang, X. Liu, J. Zhao, and K. Liu.\nDa-code: Agent data science code generation benchmark for large language models, 2024. URL\nhttps://arxiv.org/abs/2410.07331.\nY . Lee, R. Nair, Q. Zhang, K. Lee, O. Khattab, and C. Finn. Meta-harness: End-to-end optimization\nof model harnesses, 2026. URLhttps://arxiv.org/abs/2603.28052."
+    },
+    "references": [
+      "S. Alber, B. Chen, E. Sun, A. Isakova, A. J. Wilk, and J. Zou. Cellvoyager: Ai compbio agent generates new insights by autonomously analyzing biological data.Nature Methods, pages 1\u201311, 2026. Y . W. Bekele. Geosim.ai: Ai assistants for numerical simulations in geomechanics, 2025. URL https://arxiv.org/abs/2501.14186",
+      "D. A. Boiko, R. MacKnight, B. Kline, and G. Gomes. Autonomous chemical research with large language models.Nature, 624:570\u2013578, 2023. doi: 10.1038/s41586-023-06792-0",
+      "A. M. Bran, S. Cox, O. Schilter, C. Baldassari, A. D. White, and P. Schwaller. Chemcrow: Augment- ing large-language models with chemistry tools, 2023. URL https://arxiv.org/abs/2304. 05376",
+      "X. Chen, M. Lin, N. Sch\u00e4rli, and D. Zhou. Teaching large language models to self-debug, 2023. URL https://arxiv.org/abs/2304.05128",
+      "Y . Chen, X. Zhu, H. Zhou, and Z. Ren. Metaopenfoam: an llm-based multi-agent framework for cfd, 2024a. URLhttps://arxiv.org/abs/2407.21320",
+      "Z. Chen, S. Chen, Y . Ning, Q. Zhang, B. Wang, B. Yu, Y . Li, Z. Liao, C. Wei, Z. Lu, V . Dey, M. Xue, F. N. Baker, B. Burns, D. Adu-Ampratwum, X. Huang, X. Ning, S. Gao, Y . Su, and H. Sun. Scienceagentbench: Toward rigorous assessment of language agents for data-driven scientific discovery, 2024b. URLhttps://arxiv.org/abs/2410.05080",
+      "Cursor Research, A. Chan, A. Shalaby, A. Wettig, A. Sanger, A. Zhai, A. Ajay, A. Nair, C. Snell, C. Lu, C. Shen, E. Jia, F. Cassano, H. Liu, H. Chen, H. Wildermuth, J. Jackson, J. Li, J. Katz, J. Yao, J. Hejna, J. Warner, J. Vering, K. Frans, L. Danilek, L. Wright, L. Cen, L. Melas-Kyriazi, M. Truell, M. de Jong, N. Jain, N. Schmidt, N. Wang, N. Muennighoff, O. Rybkin, P. Loh, P. Kravtsov, R. Yadav, S. Shah, S. Kottler, A. M. Rush, S. Zhang, S. Jain, S. Sankar, S. Heule, S. H. Sul, S. Asif, V . Rong, W. Zhu, W. Lin, Y . Wu, Y . V olkov, Y . Zemlyanskiy, Z. Holbrook, and Z. Zhang. Composer 2 technical report, 2026. URLhttps://arxiv.org/abs/2603.24477",
+      "C. Deng, T. Zhang, Z. He, Y . Xu, Q. Chen, Y . Shi, L. Fu, W. Zhang, X. Wang, C. Zhou, Z. Lin, and J. He. K2: A foundation language model for geoscience knowledge understanding and utilization, 2023. URLhttps://arxiv.org/abs/2306.05064",
+      "GEOS Development Team. GEOS: A multiphysics simulation framework for subsurface applications, 2024. URLhttps://github.com/GEOS-DEV/GEOS",
+      "S. Guilbert, C. Masschelein, J. Goumaz, B. Naida, and P. Schwaller. Dynamate: An autonomous agent for protein-ligand molecular dynamics simulations, 2025. URLhttps://arxiv.org/abs/ 2512.10034",
+      "E. Holbrook, J. C. Verduzco, and A. Strachan. Evaluating llm-generated code for domain-specific languages: molecular dynamics with lammps, 2026. URL https://arxiv.org/abs/2603. 20630",
+      "Y . Huang, J. Luo, Y . Yu, Y . Zhang, F. Lei, Y . Wei, S. He, L. Huang, X. Liu, J. Zhao, and K. Liu. Da-code: Agent data science code generation benchmark for large language models, 2024. URL https://arxiv.org/abs/2410.07331",
+      "Y . Lee, R. Nair, Q. Zhang, K. Lee, O. Khattab, and C. Finn. Meta-harness: End-to-end optimization of model harnesses, 2026. URLhttps://arxiv.org/abs/2603.28052",
+      "P. Lewis, E. Perez, A. Piktus, F. Petroni, V . Karpukhin, N. Goyal, H. K\u00fcttler, M. Lewis, W. tau Yih, T. Rockt\u00e4schel, S. Riedel, and D. Kiela. Retrieval-augmented generation for knowledge-intensive nlp tasks, 2021. URLhttps://arxiv.org/abs/2005.11401",
+      "Z. Li, H. Zhang, S. Han, S. Liu, J. Xie, Y . Zhang, Y . Choi, J. Zou, and P. Lu. In-the-flow agentic system optimization for effective planning and tool use. InInternational Conference on Learning Representations (ICLR), 2026",
+      "K.-A. Lie, O. M\u00f8yner, E. Svee, and J. Torben. Agentic scientific simulation: Execution-grounded model construction and reconstruction, 2026. URLhttps://arxiv.org/abs/2603.00214",
+      "J. Lin, S. Liu, C. Pan, L. Lin, S. Dou, Z. Xi, X. Huang, H. Yan, Z. Han, T. Gui, and Y .-G. Jiang. Agentic harness engineering: Observability-driven automatic evolution of coding-agent harnesses, 2026. URLhttps://arxiv.org/abs/2604.25850",
+      "Z. Lin, C. Deng, L. Zhou, T. Zhang, Y . Xu, Y . Xu, Z. He, Y . Shi, B. Dai, Y . Song, B. Zeng, Q. Chen, Y . Miao, B. Xue, S. Wang, L. Fu, W. Zhang, J. He, Y . Zhu, X. Wang, and C. Zhou. Geogalactica: A scientific large language model in geoscience, 2024. URL https://arxiv.org/abs/2401. 00434",
+      "C. Lu, C. Lu, R. T. Lange, J. Foerster, J. Clune, and D. Ha. The ai scientist: Towards fully automated open-ended scientific discovery, 2024. URLhttps://arxiv.org/abs/2408.06292",
+      "S. Narayanan, J. D. Braza, R.-R. Griffiths, M. Ponnapati, A. Bou, J. Laurent, O. Kabeli, G. Wellawatte, S. Cox, S. G. Rodriques, and A. D. White. Aviary: training language agents on challenging scientific tasks, 2024. URLhttps://arxiv.org/abs/2412.21154. B. Ni and M. J. Buehler. Mechagents: Large language model multi-agent collaborations can solve mechanics problems, generate new data, and integrate knowledge, 2023. URL https: //arxiv.org/abs/2311.08166",
+      "X. Ning, K. Tieu, D. Fu, T. Wei, Z. Li, Y . Bei, J. Zou, M. Ai, Z. Liu, T.-W. Li, L. Chen, Y . Zhao, K. Yang, B. Li, C. Qian, G. Li, X. Lin, Z. Zeng, R. Qiu, S. Chen, Y . Sun, X. Yang, R. Wang, R. Pan, C. Yang, D. Zhang, L. Fang, Z. Cui, Y . Cao, P. Chen, D. Sun, R. Chen, M. Srinivasan, N. Mathur, Y . Xia, H. Li, H. Yan, P. Lu, L. Zhang, T. Zhang, H. Tong, and J. He. Code as agent harness, 2026. URLhttps://arxiv.org/abs/2605.18747",
+      "S. Pandey, R. Xu, W. Wang, and X. Chu. Openfoamgpt: A retrieval-augmented large language model (llm) agent for openfoam-based computational fluid dynamics.Physics of Fluids, 37(3), Mar. 2025. ISSN 1089-7666. doi: 10.1063/5.0257555. URLhttp://dx.doi.org/10.1063/5.0257555",
+      "D. Park, H. Moon, and S. Ryu. A self-correcting multi-agent LLM framework for language-based physics simulation and explanation.npj Artificial Intelligence, 2(1):10, 2026. doi: 10.1038/ s44387-025-00057-z",
+      "Y . Ren, S. Yu, K. Chen, and J. Ma. Seismology modeling agent: A smart assistant for geophysical researchers, 2025. URLhttps://arxiv.org/abs/2512.14429",
+      "Z. Shi, H. A, Y . Shao, D. Huang, H. An, C. Xin, H. Shen, Z. Wang, Y . Na, G. Huang, and X. Jing. Mdagent2: Large language model for code generation and knowledge q&a in molecular dynamics, 2026. URLhttps://arxiv.org/abs/2601.02075",
+      "X. Tang, W. Xu, Y . Wang, Z. Guo, D. Shao, J. Chen, C. Zhang, Z. Wang, L. Zhang, G. Wan, W. Zhang, L. Bai, Z. Yin, P. Torr, H. Wang, and D. Jin. Eigen-1: Adaptive multi-agent refinement with monitor-based rag for scientific reasoning, 2025. URL https://arxiv.org/abs/2509.21193",
+      "X. Wang, B. Li, Y . Song, F. F. Xu, X. Tang, M. Zhuge, J. Pan, Y . Song, B. Li, J. Singh, H. H. Tran, F. Li, R. Ma, M. Zheng, B. Qian, Y . Shao, N. Muennighoff, Y . Zhang, B. Hui, J. Lin, R. Brennan, H. Peng, H. Ji, and G. Neubig. Openhands: An open platform for ai software developers as generalist agents, 2025. URLhttps://arxiv.org/abs/2407.16741",
+      "Y . Yamada, R. T. Lange, C. Lu, S. Hu, C. Lu, J. Foerster, J. Clune, and D. Ha. The ai scientist- v2: Workshop-level automated scientific discovery via agentic tree search, 2025. URL https: //arxiv.org/abs/2504.08066",
+      "J. Yang, C. E. Jimenez, A. Wettig, K. Lieret, S. Yao, K. Narasimhan, and O. Press. Swe-agent: Agent-computer interfaces enable automated software engineering, 2024a. URL https://arxiv. org/abs/2405.15793",
+      "L. Yang, Z. Yu, T. Zhang, S. Cao, M. Xu, W. Zhang, J. E. Gonzalez, and B. Cui. Buffer of thoughts: Thought-augmented reasoning with large language models, 2024b. URL https: //arxiv.org/abs/2406.04271",
+      "Y . Yang, Z. Gong, W. Huang, Q. Yang, Z. Zhou, Z. Huang, Y . Li, X. Gao, Q. Dai, B. Liu, K. Qiu, Y . Yang, D. Chen, X. Yang, and C. Luo. Skillopt: Executive strategy for self-evolving agent skills, 2026. URLhttps://arxiv.org/abs/2605.23904",
+      "L. Yue, N. Somasekharan, T. Zhang, Y . Cao, Z. Chen, S. Di, and S. Pan. Foam-agent: Towards automated intelligent cfd workflows, 2025a. URLhttps://arxiv.org/abs/2505.04997",
+      "L. Yue, N. Somasekharan, T. Zhang, Y . Cao, and S. Pan. Foam-agent 2.0: An end-to-end composable multi-agent framework for automating cfd simulation in openfoam, 2025b. URLhttps://arxiv. org/abs/2509.18178. T. Zhang and H. Sun. Scinav: A general agent framework for scientific coding tasks, 2026. URL https://arxiv.org/abs/2603.20256",
+      "T. Zhang, Z. Liu, Y . Xin, and Y . Jiao. Mooseagent: A llm based multi-agent framework for automating moose simulation, 2025. URLhttps://arxiv.org/abs/2504.08621",
+      "A. Zhao, A. Chandrasekhar, and A. B. Farimani. Polyjarvis: Llm agent for autonomous polymer md simulations, 2026. URLhttps://arxiv.org/abs/2604.02537. A Benchmark details",
+      "A.1 Task pool, splits, and hygiene The 46-task pool is mined from GEOS advanced examples and tutorial decks. Ten tasks are held out as the held-out-evaluation pool (the same ten re- ported as held-out-eval throughout; never used as in-context demonstrations dur- ing the main GEOS runs): AdvancedExampleCasedThermoElasticWellbore, AdvancedExamplePureThermalDiffusionWellbore,AdvancedExampleThermoPoroElasticWellbore, AdvancedExampleViscoExtendedDruckerPrager, ExampleIsothermalHystInjection, ExampleMCCWellbore, ExampleProppantTest, ExamplesingleFracCompression, ExampleVerticalPoroElastoPlasticWellbore,TutorialHydraulicFractureWithAdvancedXML. The remaining 36 are split by odd/even index (sorted by training-run TreeSim, failures-as-zero) into an 18-task distillation corpus and a 17-task validation-selection set (one task dropped). Ground-truth decks live at/data/shared/geophysics_agent_data/data/eval/experiments_gt/. A.2 Spec versions (v1 vs v2) Two instruction sets exist: v1 (original mined specs, used in pre-2026-04-21 deepseek runs) and v2 (cleaner, more self-contained rewrites, used in all post-D-004 runs). Mid-project comparisons that crossed the versions were contaminated; re-runs on v2 re-anchored the canonical baselines. All numbers in this paper use v2. B Bottleneck-analysis pipeline (full)",
+      "Stage 1 (LLM-free extractor).For each (cell, run, task), the extractor walks the recursive treesim_detail tree from the scorer and ranks subtrees by impact= (1\u2212score)\u00b7(n gt_children+1), returning the top-K. It also extracts trajectory features fromevents.jsonl: tool counts, file re-reads, xmllint MCP calls, edit churn, grep/glob query distributions. Stage 2 ( deepseek-v4-flash per-task classifier).The extractor\u2019s output, plus a focused GT-vs-generated XML excerpt for the worst-scoring section when its score is below 0.7, is sent to deepseek-v4-flash with a strict-JSON output schema. The model returns: failure_category \u2208 {missing_block , extra_block, hallucinated_extras, structural_mismatch, bad_attribute_value, partial_implementation, wrong_constitutive, no_failure}, a primary_failure_section, a one-sentence root_cause, a trajectory_evidence citation, and awould_have_helpedhypothesis. Stage 3 (deepseek-v4-pro synthesis).Per-cell category and section distributions, section \u201cfailure weight\u201d =P tasks(1\u2212TreeSim) grouped by primary failing section, and per-task baseline-vs-best deltas are sent todeepseek-v4-pro with an instruction to write a paper-grade synthesis anchored on a chosen baseline/best pair. Total cost across all evaluations was \u223c650 flash calls plus 4 pro narratives,\u223c$5\u20137in DeepSeek API spend. Code:scripts/bottleneck/{extract,llm_per_task,aggregate}.py. B.1 Bottleneck failure-category counts (full) Table 5: Failure-category counts per cell; categories with all-zero or unreported counts (no_failure, wrong_constitutive) are omitted. val panel uses n= 51 tasks per cell ( 3\u00d717); held-out-eval panel usesn= 29\u201330per cell (3\u00d710minus a small number of LLM-judge parse-failures). val (n= 51) held-out-eval (n= 30) Category Vanilla S+M X+M S+X SE Vanilla X+M S+X S+X+M SE-prose SE bad_attribute_value 12 12 11 15 9 5 7 5 8 0 0 extra_block 9 8 11 5 10 9 4 4 6 7 5 hallucinated_extras 4 8 7 - - 0 0 0 0 3 4 missing_block 6 4 3 2 - 4 5 7 7 7 4 partial_implementation 7 9 6 10 9 1 0 4 3 3 5 structural_mismatch 6 8 7 11 - 8 6 6 5 3 5 Table 6: Per-task held-out-eval TreeSim (mean across 3 runs), sorted ascending by Vanilla score. The aggregate +0.069 Vanilla\u2192SE gain is concentrated in the top two non-universal-failure tasks (rows 2\u20133); the remaining seven tasks show within-noise differences across cells. Task Vanilla X+M S+X S+X+M SE-prose SE TutorialHydraulicFractureWithAdvancedXML0.013 0.013 0.013 0.013 0.013 0.013 AdvancedExampleThermoPoroElasticWellbore0.355 0.680 0.681 0.708 0.7430.761 ExampleProppantTest0.541 0.810 0.809 0.799 0.8170.825 ExampleIsothermalHystInjection0.755 0.747 0.751 0.750 0.769 0.717 AdvancedExampleCasedThermoElasticWellbore0.847 0.807 0.923 0.919 0.877 0.886 ExamplesingleFracCompression0.891 0.887 0.904 0.931 0.929 0.928 ExampleVerticalPoroElastoPlasticWellbore0.909 0.903 0.906 0.891 0.834 0.944 ExampleMCCWellbore0.935 0.924 0.908 0.905 0.905 0.941 AdvancedExamplePureThermalDiffusionWellbore0.963 0.922 0.956 0.947 0.864 0.880 AdvancedExampleViscoExtendedDruckerPrager0.986 0.991 0.963 0.964 0.999 0.996 C Cross-model and cross-harness: full panels Setup.Cross-model: n= 1 run of Vanilla, X+M, SE on val with two backbones (minimax-m2.7, google/gemini-3-flash-preview) via OpenRouter, harness held at Claude Code, default-off harness env (GEOS_HOOK_POSTTOOLUSE unset, autocamp-experiment-state parity). Cross-harness: n= 3 runs of Vanilla and X+M on val withdeepseek-v4-flash, harness varied between Claude Code and OpenHands. Headline DSv4 numbers from Table 1 included for comparison. R-factor cross-model corroboration(older runs). On a 35-task superset that overlaps val, the retrieval plugin lifts +0.175 ondeepseek-v3.2 (paired 35 tasks) and +0.115 onminimax-m2.7 (paired 15 tasks). Retrieval thus helps on weaker backbones even though its val main effect on the near-ceilingdeepseek-v4-flash is slightly negative; we report these older runs only as cross-model corroboration and defer to the headline val results above. Harness-less floor.A one-shot direct-prompting baseline on minimax-m2.7 (scripts/harnessless_eval.py; deepseek-v4-flash not yet run in this configuration) Table 7: Full cross-model and cross-harness panel. Counts in parentheses are task failures out of 17. Harness Backbone Vanilla X+M SE CCdeepseek-v4-flash(n= 3)0.910\u00b10.024 0.921\u00b10.007 0.919\u00b10.020 CCminimax-m2.7(n= 1)0.821(1fail)0.867(0fails)0.861(0fails) CCgemini-3-flash-preview(n= 1)0.768(0fails)0.797(0fails)0.757(1fail) OHdeepseek-v4-flash(n= 3)0.856\u00b10.061 0.881\u00b10.023\u2013 reaches TreeSim = 0.333 on val. We treat this as a model-class lower bound rather than a per-model floor. Memory-as-retrieval negative result.An earlier version of our system exposed primer-like content via an MCPmemory_lookup tool with embedding top-k retrieval over the distilled corpus. Across every test-set run in which this tool was available (the A4, A4 \u2032, A5, M3-g conditions of the prior campaign), the agent called the tool zero times. The tool was verified functional. Delivering the same content through the always-on\u2013append-system-promptchannel (i.e., the M factor in this paper) is what produced any lift. We retain this as a clean negative result on retrieval-based memory for this task\u2013model class. D OpenFOAM transfer study Motivation.The main paper studies SIGA on GEOS, where the executable interface is a structured XML deck with an explicit XSD schema. To test whether the same adapter recipe transfers beyond GEOS and beyond XML-backed simulator interfaces, we ran an OpenFOAM case-authoring compan- ion study in a separate repository path (repo3_openfoam). The headline leaderboard is Table 3 in the main text; this"
+    ],
+    "keywords": [
+      "scientific code simulators",
+      "code simulators scientific",
+      "simulators scientific",
+      "scientific simulators",
+      "simulators scientific coding",
+      "scientific simulators expose",
+      "simulators expose specialized",
+      "simulator interface grounding",
+      "advanced scientific simulators",
+      "reliability distribution geos",
+      "geos deck",
+      "pushed scientific simulator",
+      "representative geos deck",
+      "decks schema driven",
+      "simulator interface failures",
+      "scientific simulator",
+      "assistants numerical simulations",
+      "schema driven adapters"
+    ],
+    "entities": {
+      "methods": [
+        "self - evolution",
+        "siga",
+        "configura - tion",
+        "openfoam",
+        "lammps",
+        "self - improvable grounding layers",
+        "cellvoyager",
+        "ai compbio agent",
+        "self - debug",
+        "metaopenfoam",
+        "multi - agent",
+        "scienceagentbench",
+        "dynamate",
+        "llm",
+        "meta - harness",
+        "co2 sequestration",
+        "molecular - dynamics engines",
+        "atomistic systems",
+        "force fields",
+        "time - integration",
+        "domain",
+        "custom planning",
+        "tool calling",
+        "retry logic",
+        "coding agent",
+        "interface grounding adapter",
+        "coding agents",
+        "full agent loop",
+        "self - evolution mechanism",
+        "swe -",
+        "self - debugging",
+        "molecular - dynamics",
+        "finite - element / mechanics",
+        "reservoir - simulation",
+        "llms",
+        "domain grounding",
+        "engineered coding harness",
+        "claude code",
+        "agent loop",
+        "foam - agent",
+        "self - evolving agents",
+        "meta - harness design",
+        "agentic harness engineering",
+        "adapter",
+        "self - revision",
+        "buffer of thoughts",
+        "druckerprager",
+        "extendeddruckerprager",
+        "druckerpragerhardening",
+        "andviscodruckerprager",
+        "treesim",
+        "claude"
+      ],
+      "datasets": [
+        "GEOS",
+        "OpenFOAM",
+        "LAMMPS",
+        "geos deck",
+        "geos 13",
+        "geosim. ai",
+        "nature",
+        "molecular dynamics",
+        "geos 1",
+        "openhands",
+        "science",
+        "geos -"
+      ],
+      "tasks": [
+        "in - trajectory validation",
+        "subsurface science",
+        "multi - physics",
+        "geomechanics",
+        "cfd",
+        "protein - ligand molecular dynamics",
+        "Scientific simulation",
+        "geophysics",
+        "agentic ai",
+        "design",
+        "hypothesis revision",
+        "domain reasoning",
+        "knowledge access",
+        "question answering",
+        "file navigation",
+        "iterative editing",
+        "shell use",
+        "code repair",
+        "ai - for - science",
+        "autonomous scientific discovery",
+        "single - cell analysis",
+        "ml",
+        "ai",
+        "coding",
+        "terminal navigation",
+        "math",
+        "rq1",
+        "deck - authoring"
+      ],
+      "metrics": [
+        "TreeSim"
+      ],
+      "institutions": [
+        "Simulator-Interface Grounding Adapter",
+        "SIGA",
+        "Cursor Research",
+        "J. Vering",
+        "GEOS Development Team",
+        "LAMMPS",
+        "XML",
+        "OpenHands",
+        "Wang",
+        "the Simulator-Interface Grounding Adapter",
+        "ChemCrow Bran et al",
+        "ML",
+        "AI",
+        "Buffer of Thoughts",
+        "Development Team",
+        "DruckerPrager",
+        "TreeSim"
+      ]
+    },
+    "analysis": {
+      "pos": {
+        "token_count": 4145,
+        "displayed_token_count": 250,
+        "pos_counts": {
+          "ADJ": 340,
+          "ADP": 271,
+          "ADV": 80,
+          "AUX": 89,
+          "CCONJ": 121,
+          "DET": 209,
+          "INTJ": 2,
+          "NOUN": 952,
+          "NUM": 120,
+          "PART": 34,
+          "PRON": 80,
+          "PROPN": 611,
+          "PUNCT": 835,
+          "SCONJ": 42,
+          "SYM": 3,
+          "VERB": 309,
+          "X": 47
+        },
+        "tokens": [
+          {
+            "text": "Advanced",
+            "lemma": "advanced",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 0,
+            "end": 8
+          },
+          {
+            "text": "scientific",
+            "lemma": "scientific",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 9,
+            "end": 19
+          },
+          {
+            "text": "simulators",
+            "lemma": "simulator",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 20,
+            "end": 30
+          },
+          {
+            "text": "expose",
+            "lemma": "expose",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 31,
+            "end": 37
+          },
+          {
+            "text": "specialized",
+            "lemma": "specialized",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 38,
+            "end": 49
+          },
+          {
+            "text": "input",
+            "lemma": "input",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 50,
+            "end": 55
+          },
+          {
+            "text": "languages",
+            "lemma": "language",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 56,
+            "end": 65
+          },
+          {
+            "text": "that",
+            "lemma": "that",
+            "pos": "PRON",
+            "tag": "WDT",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 66,
+            "end": 70
+          },
+          {
+            "text": "turn",
+            "lemma": "turn",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "relcl",
+            "section": "abstract",
+            "start": 71,
+            "end": 75
+          },
+          {
+            "text": "simula-",
+            "lemma": "simula-",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 76,
+            "end": 83
+          },
+          {
+            "text": "tion",
+            "lemma": "tion",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 84,
+            "end": 88
+          },
+          {
+            "text": "goals",
+            "lemma": "goal",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 89,
+            "end": 94
+          },
+          {
+            "text": "into",
+            "lemma": "into",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 95,
+            "end": 99
+          },
+          {
+            "text": "executable",
+            "lemma": "executable",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 100,
+            "end": 110
+          },
+          {
+            "text": "configurations",
+            "lemma": "configuration",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 111,
+            "end": 125
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 125,
+            "end": 126
+          },
+          {
+            "text": "but",
+            "lemma": "but",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 127,
+            "end": 130
+          },
+          {
+            "text": "learning",
+            "lemma": "learn",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "csubj",
+            "section": "abstract",
+            "start": 131,
+            "end": 139
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 140,
+            "end": 143
+          },
+          {
+            "text": "using",
+            "lemma": "use",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 144,
+            "end": 149
+          },
+          {
+            "text": "these",
+            "lemma": "these",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 150,
+            "end": 155
+          },
+          {
+            "text": "interfaces",
+            "lemma": "interface",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 156,
+            "end": 166
+          },
+          {
+            "text": "can",
+            "lemma": "can",
+            "pos": "AUX",
+            "tag": "MD",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 167,
+            "end": 170
+          },
+          {
+            "text": "cost",
+            "lemma": "cost",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 171,
+            "end": 175
+          },
+          {
+            "text": "domain",
+            "lemma": "domain",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 176,
+            "end": 182
+          },
+          {
+            "text": "scientists",
+            "lemma": "scientist",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dative",
+            "section": "abstract",
+            "start": 183,
+            "end": 193
+          },
+          {
+            "text": "hours",
+            "lemma": "hour",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 194,
+            "end": 199
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 200,
+            "end": 202
+          },
+          {
+            "text": "days",
+            "lemma": "day",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 203,
+            "end": 207
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 207,
+            "end": 208
+          },
+          {
+            "text": "We",
+            "lemma": "we",
+            "pos": "PRON",
+            "tag": "PRP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 209,
+            "end": 211
+          },
+          {
+            "text": "study",
+            "lemma": "study",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "ccomp",
+            "section": "abstract",
+            "start": 212,
+            "end": 217
+          },
+          {
+            "text": "simulator",
+            "lemma": "simulator",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 218,
+            "end": 227
+          },
+          {
+            "text": "setup",
+            "lemma": "setup",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 228,
+            "end": 233
+          },
+          {
+            "text": "as",
+            "lemma": "as",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 234,
+            "end": 236
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 237,
+            "end": 238
+          },
+          {
+            "text": "problem",
+            "lemma": "problem",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 239,
+            "end": 246
+          },
+          {
+            "text": "of",
+            "lemma": "of",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 247,
+            "end": 249
+          },
+          {
+            "text": "agent",
+            "lemma": "agent",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 250,
+            "end": 255
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 255,
+            "end": 256
+          },
+          {
+            "text": "tool",
+            "lemma": "tool",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 256,
+            "end": 260
+          },
+          {
+            "text": "interface",
+            "lemma": "interface",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 261,
+            "end": 270
+          },
+          {
+            "text": "grounding",
+            "lemma": "grounding",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 271,
+            "end": 280
+          },
+          {
+            "text": ":",
+            "lemma": ":",
+            "pos": "PUNCT",
+            "tag": ":",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 280,
+            "end": 281
+          },
+          {
+            "text": "what",
+            "lemma": "what",
+            "pos": "DET",
+            "tag": "WDT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 282,
+            "end": 286
+          },
+          {
+            "text": "minimal",
+            "lemma": "minimal",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 287,
+            "end": 294
+          },
+          {
+            "text": "simulator",
+            "lemma": "simulator",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "npadvmod",
+            "section": "abstract",
+            "start": 295,
+            "end": 304
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 304,
+            "end": 305
+          },
+          {
+            "text": "specific",
+            "lemma": "specific",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 305,
+            "end": 313
+          },
+          {
+            "text": "adaptations",
+            "lemma": "adaptation",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "nsubjpass",
+            "section": "abstract",
+            "start": 314,
+            "end": 325
+          },
+          {
+            "text": "are",
+            "lemma": "be",
+            "pos": "AUX",
+            "tag": "VBP",
+            "dependency": "auxpass",
+            "section": "abstract",
+            "start": 326,
+            "end": 329
+          },
+          {
+            "text": "needed",
+            "lemma": "need",
+            "pos": "VERB",
+            "tag": "VBN",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 330,
+            "end": 336
+          },
+          {
+            "text": "for",
+            "lemma": "for",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 337,
+            "end": 340
+          },
+          {
+            "text": "an",
+            "lemma": "an",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 341,
+            "end": 343
+          },
+          {
+            "text": "off",
+            "lemma": "off",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "nmod",
+            "section": "abstract",
+            "start": 344,
+            "end": 347
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 347,
+            "end": 348
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 348,
+            "end": 351
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 351,
+            "end": 352
+          },
+          {
+            "text": "shelf",
+            "lemma": "shelf",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 352,
+            "end": 357
+          },
+          {
+            "text": "coding",
+            "lemma": "cod",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 358,
+            "end": 364
+          },
+          {
+            "text": "agent",
+            "lemma": "agent",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 365,
+            "end": 370
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "PART",
+            "tag": "TO",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 371,
+            "end": 373
+          },
+          {
+            "text": "operate",
+            "lemma": "operate",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "advcl",
+            "section": "abstract",
+            "start": 374,
+            "end": 381
+          },
+          {
+            "text": "real",
+            "lemma": "real",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 382,
+            "end": 386
+          },
+          {
+            "text": "scientific",
+            "lemma": "scientific",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 387,
+            "end": 397
+          },
+          {
+            "text": "software",
+            "lemma": "software",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 398,
+            "end": 406
+          },
+          {
+            "text": "?",
+            "lemma": "?",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 406,
+            "end": 407
+          },
+          {
+            "text": "Our",
+            "lemma": "our",
+            "pos": "PRON",
+            "tag": "PRP$",
+            "dependency": "poss",
+            "section": "abstract",
+            "start": 408,
+            "end": 411
+          },
+          {
+            "text": "intuition",
+            "lemma": "intuition",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 412,
+            "end": 421
+          },
+          {
+            "text": "is",
+            "lemma": "be",
+            "pos": "AUX",
+            "tag": "VBZ",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 422,
+            "end": 424
+          },
+          {
+            "text": "that",
+            "lemma": "that",
+            "pos": "SCONJ",
+            "tag": "IN",
+            "dependency": "mark",
+            "section": "abstract",
+            "start": 425,
+            "end": 429
+          },
+          {
+            "text": "coding",
+            "lemma": "cod",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 430,
+            "end": 436
+          },
+          {
+            "text": "agents",
+            "lemma": "agent",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 437,
+            "end": 443
+          },
+          {
+            "text": "already",
+            "lemma": "already",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 444,
+            "end": 451
+          },
+          {
+            "text": "know",
+            "lemma": "know",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "ccomp",
+            "section": "abstract",
+            "start": 452,
+            "end": 456
+          },
+          {
+            "text": "how",
+            "lemma": "how",
+            "pos": "SCONJ",
+            "tag": "WRB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 457,
+            "end": 460
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "PART",
+            "tag": "TO",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 461,
+            "end": 463
+          },
+          {
+            "text": "navigate",
+            "lemma": "navigate",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "xcomp",
+            "section": "abstract",
+            "start": 464,
+            "end": 472
+          },
+          {
+            "text": "files",
+            "lemma": "file",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 473,
+            "end": 478
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 478,
+            "end": 479
+          },
+          {
+            "text": "edit",
+            "lemma": "edit",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 480,
+            "end": 484
+          },
+          {
+            "text": "code",
+            "lemma": "code",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 485,
+            "end": 489
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 489,
+            "end": 490
+          },
+          {
+            "text": "run",
+            "lemma": "run",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 491,
+            "end": 494
+          },
+          {
+            "text": "commands",
+            "lemma": "command",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 495,
+            "end": 503
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 503,
+            "end": 504
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 505,
+            "end": 508
+          },
+          {
+            "text": "repair",
+            "lemma": "repair",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 509,
+            "end": 515
+          },
+          {
+            "text": "outputs",
+            "lemma": "output",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 516,
+            "end": 523
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 523,
+            "end": 524
+          },
+          {
+            "text": "but",
+            "lemma": "but",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 525,
+            "end": 528
+          },
+          {
+            "text": "they",
+            "lemma": "they",
+            "pos": "PRON",
+            "tag": "PRP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 529,
+            "end": 533
+          },
+          {
+            "text": "lack",
+            "lemma": "lack",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 534,
+            "end": 538
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 539,
+            "end": 542
+          },
+          {
+            "text": "simulator",
+            "lemma": "simulator",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "poss",
+            "section": "abstract",
+            "start": 543,
+            "end": 552
+          },
+          {
+            "text": "\u2019s",
+            "lemma": "\u2019s",
+            "pos": "PART",
+            "tag": "POS",
+            "dependency": "case",
+            "section": "abstract",
+            "start": 552,
+            "end": 554
+          },
+          {
+            "text": "executable",
+            "lemma": "executable",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 555,
+            "end": 565
+          },
+          {
+            "text": "contract",
+            "lemma": "contract",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 566,
+            "end": 574
+          },
+          {
+            "text": ":",
+            "lemma": ":",
+            "pos": "PUNCT",
+            "tag": ":",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 574,
+            "end": 575
+          },
+          {
+            "text": "its",
+            "lemma": "its",
+            "pos": "PRON",
+            "tag": "PRP$",
+            "dependency": "poss",
+            "section": "abstract",
+            "start": 576,
+            "end": 579
+          },
+          {
+            "text": "vocabulary",
+            "lemma": "vocabulary",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "appos",
+            "section": "abstract",
+            "start": 580,
+            "end": 590
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 590,
+            "end": 591
+          },
+          {
+            "text": "structural",
+            "lemma": "structural",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 592,
+            "end": 602
+          },
+          {
+            "text": "constraints",
+            "lemma": "constraint",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "appos",
+            "section": "abstract",
+            "start": 603,
+            "end": 614
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 614,
+            "end": 615
+          },
+          {
+            "text": "validation",
+            "lemma": "validation",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 616,
+            "end": 626
+          },
+          {
+            "text": "rules",
+            "lemma": "rule",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 627,
+            "end": 632
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 632,
+            "end": 633
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 634,
+            "end": 637
+          },
+          {
+            "text": "termination",
+            "lemma": "termination",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 638,
+            "end": 649
+          },
+          {
+            "text": "conditions",
+            "lemma": "condition",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 650,
+            "end": 660
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 660,
+            "end": 661
+          },
+          {
+            "text": "We",
+            "lemma": "we",
+            "pos": "PRON",
+            "tag": "PRP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 662,
+            "end": 664
+          },
+          {
+            "text": "introduce",
+            "lemma": "introduce",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 665,
+            "end": 674
+          },
+          {
+            "text": "SIGA",
+            "lemma": "SIGA",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 675,
+            "end": 679
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 679,
+            "end": 680
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 681,
+            "end": 682
+          },
+          {
+            "text": "Simulator",
+            "lemma": "Simulator",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 683,
+            "end": 692
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 692,
+            "end": 693
+          },
+          {
+            "text": "Interface",
+            "lemma": "Interface",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 693,
+            "end": 702
+          },
+          {
+            "text": "Grounding",
+            "lemma": "Grounding",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 703,
+            "end": 712
+          },
+          {
+            "text": "Adapter",
+            "lemma": "Adapter",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "appos",
+            "section": "abstract",
+            "start": 713,
+            "end": 720
+          },
+          {
+            "text": "that",
+            "lemma": "that",
+            "pos": "PRON",
+            "tag": "WDT",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 721,
+            "end": 725
+          },
+          {
+            "text": "supplies",
+            "lemma": "supply",
+            "pos": "VERB",
+            "tag": "VBZ",
+            "dependency": "relcl",
+            "section": "abstract",
+            "start": 726,
+            "end": 734
+          },
+          {
+            "text": "this",
+            "lemma": "this",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 735,
+            "end": 739
+          },
+          {
+            "text": "con-",
+            "lemma": "con-",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 740,
+            "end": 744
+          },
+          {
+            "text": "tract",
+            "lemma": "tract",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 745,
+            "end": 750
+          },
+          {
+            "text": "through",
+            "lemma": "through",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 751,
+            "end": 758
+          },
+          {
+            "text": "retrieval",
+            "lemma": "retrieval",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 759,
+            "end": 768
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 768,
+            "end": 769
+          },
+          {
+            "text": "procedural",
+            "lemma": "procedural",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 770,
+            "end": 780
+          },
+          {
+            "text": "memory",
+            "lemma": "memory",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "appos",
+            "section": "abstract",
+            "start": 781,
+            "end": 787
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 787,
+            "end": 788
+          },
+          {
+            "text": "in",
+            "lemma": "in",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "nmod",
+            "section": "abstract",
+            "start": 789,
+            "end": 791
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 791,
+            "end": 792
+          },
+          {
+            "text": "trajectory",
+            "lemma": "trajectory",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 792,
+            "end": 802
+          },
+          {
+            "text": "validation",
+            "lemma": "validation",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 803,
+            "end": 813
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 813,
+            "end": 814
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 815,
+            "end": 818
+          },
+          {
+            "text": "validation-",
+            "lemma": "validation-",
+            "pos": "VERB",
+            "tag": "VBZ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 819,
+            "end": 830
+          },
+          {
+            "text": "enforced",
+            "lemma": "enforce",
+            "pos": "VERB",
+            "tag": "VBN",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 831,
+            "end": 839
+          },
+          {
+            "text": "termination",
+            "lemma": "termination",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 840,
+            "end": 851
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 851,
+            "end": 852
+          },
+          {
+            "text": "We",
+            "lemma": "we",
+            "pos": "PRON",
+            "tag": "PRP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 853,
+            "end": 855
+          },
+          {
+            "text": "primarily",
+            "lemma": "primarily",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 856,
+            "end": 865
+          },
+          {
+            "text": "evaluate",
+            "lemma": "evaluate",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 866,
+            "end": 874
+          },
+          {
+            "text": "SIGA",
+            "lemma": "SIGA",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 875,
+            "end": 879
+          },
+          {
+            "text": "on",
+            "lemma": "on",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 880,
+            "end": 882
+          },
+          {
+            "text": "GEOS",
+            "lemma": "GEOS",
+            "pos": "PROPN",
+            "tag": "NNPS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 883,
+            "end": 887
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 887,
+            "end": 888
+          },
+          {
+            "text": "an",
+            "lemma": "an",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 889,
+            "end": 891
+          },
+          {
+            "text": "open",
+            "lemma": "open",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 892,
+            "end": 896
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 896,
+            "end": 897
+          },
+          {
+            "text": "source",
+            "lemma": "source",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 897,
+            "end": 903
+          },
+          {
+            "text": "multiphysics",
+            "lemma": "multiphysic",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 904,
+            "end": 916
+          },
+          {
+            "text": "simulator",
+            "lemma": "simulator",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "appos",
+            "section": "abstract",
+            "start": 917,
+            "end": 926
+          },
+          {
+            "text": "used",
+            "lemma": "use",
+            "pos": "VERB",
+            "tag": "VBN",
+            "dependency": "acl",
+            "section": "abstract",
+            "start": 927,
+            "end": 931
+          },
+          {
+            "text": "in",
+            "lemma": "in",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 932,
+            "end": 934
+          },
+          {
+            "text": "subsurface",
+            "lemma": "subsurface",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 935,
+            "end": 945
+          },
+          {
+            "text": "science",
+            "lemma": "science",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 946,
+            "end": 953
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 953,
+            "end": 954
+          },
+          {
+            "text": "SIGA",
+            "lemma": "siga",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 955,
+            "end": 959
+          },
+          {
+            "text": "produces",
+            "lemma": "produce",
+            "pos": "VERB",
+            "tag": "VBZ",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 960,
+            "end": 968
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 969,
+            "end": 970
+          },
+          {
+            "text": "complete",
+            "lemma": "complete",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 971,
+            "end": 979
+          },
+          {
+            "text": "GEOS",
+            "lemma": "GEOS",
+            "pos": "PROPN",
+            "tag": "NNPS",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 980,
+            "end": 984
+          },
+          {
+            "text": "deck",
+            "lemma": "deck",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 985,
+            "end": 989
+          },
+          {
+            "text": "in",
+            "lemma": "in",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 990,
+            "end": 992
+          },
+          {
+            "text": "about",
+            "lemma": "about",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 993,
+            "end": 998
+          },
+          {
+            "text": "five",
+            "lemma": "five",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "abstract",
+            "start": 999,
+            "end": 1003
+          },
+          {
+            "text": "minutes",
+            "lemma": "minute",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1004,
+            "end": 1011
+          },
+          {
+            "text": "with",
+            "lemma": "with",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1012,
+            "end": 1016
+          },
+          {
+            "text": "TreeSim",
+            "lemma": "TreeSim",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1017,
+            "end": 1024
+          },
+          {
+            "text": "above",
+            "lemma": "above",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1025,
+            "end": 1030
+          },
+          {
+            "text": "0.90",
+            "lemma": "0.90",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1031,
+            "end": 1035
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1035,
+            "end": 1036
+          },
+          {
+            "text": "matching",
+            "lemma": "match",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "advcl",
+            "section": "abstract",
+            "start": 1037,
+            "end": 1045
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 1046,
+            "end": 1049
+          },
+          {
+            "text": "quality",
+            "lemma": "quality",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 1050,
+            "end": 1057
+          },
+          {
+            "text": "of",
+            "lemma": "of",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1058,
+            "end": 1060
+          },
+          {
+            "text": "an",
+            "lemma": "an",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 1061,
+            "end": 1063
+          },
+          {
+            "text": "extended",
+            "lemma": "extend",
+            "pos": "VERB",
+            "tag": "VBN",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1064,
+            "end": 1072
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1072,
+            "end": 1073
+          },
+          {
+            "text": "budget",
+            "lemma": "budget",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 1073,
+            "end": 1079
+          },
+          {
+            "text": "human",
+            "lemma": "human",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1080,
+            "end": 1085
+          },
+          {
+            "text": "expert",
+            "lemma": "expert",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1086,
+            "end": 1092
+          },
+          {
+            "text": "who",
+            "lemma": "who",
+            "pos": "PRON",
+            "tag": "WP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 1093,
+            "end": 1096
+          },
+          {
+            "text": "required",
+            "lemma": "require",
+            "pos": "VERB",
+            "tag": "VBD",
+            "dependency": "relcl",
+            "section": "abstract",
+            "start": 1097,
+            "end": 1105
+          },
+          {
+            "text": "about",
+            "lemma": "about",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 1106,
+            "end": 1111
+          },
+          {
+            "text": "three",
+            "lemma": "three",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "abstract",
+            "start": 1112,
+            "end": 1117
+          },
+          {
+            "text": "hours",
+            "lemma": "hour",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 1118,
+            "end": 1123
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1123,
+            "end": 1124
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 1125,
+            "end": 1126
+          },
+          {
+            "text": "roughly",
+            "lemma": "roughly",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 1127,
+            "end": 1134
+          },
+          {
+            "text": "36\u00d7",
+            "lemma": "36\u00d7",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "abstract",
+            "start": 1135,
+            "end": 1138
+          },
+          {
+            "text": "wall",
+            "lemma": "wall",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 1139,
+            "end": 1143
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1143,
+            "end": 1144
+          },
+          {
+            "text": "clock",
+            "lemma": "clock",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 1144,
+            "end": 1149
+          },
+          {
+            "text": "speedup",
+            "lemma": "speedup",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "appos",
+            "section": "abstract",
+            "start": 1150,
+            "end": 1157
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1157,
+            "end": 1158
+          },
+          {
+            "text": "On",
+            "lemma": "on",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1159,
+            "end": 1161
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 1162,
+            "end": 1163
+          },
+          {
+            "text": "harder",
+            "lemma": "hard",
+            "pos": "ADV",
+            "tag": "RBR",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1164,
+            "end": 1170
+          },
+          {
+            "text": "held",
+            "lemma": "hold",
+            "pos": "VERB",
+            "tag": "VBN",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1171,
+            "end": 1175
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1175,
+            "end": 1176
+          },
+          {
+            "text": "out",
+            "lemma": "out",
+            "pos": "ADP",
+            "tag": "RP",
+            "dependency": "prt",
+            "section": "abstract",
+            "start": 1176,
+            "end": 1179
+          },
+          {
+            "text": "set",
+            "lemma": "set",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1180,
+            "end": 1183
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1183,
+            "end": 1184
+          },
+          {
+            "text": "grounding",
+            "lemma": "ground",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 1185,
+            "end": 1194
+          },
+          {
+            "text": "raises",
+            "lemma": "raise",
+            "pos": "VERB",
+            "tag": "VBZ",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 1195,
+            "end": 1201
+          },
+          {
+            "text": "TreeSim",
+            "lemma": "TreeSim",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 1202,
+            "end": 1209
+          },
+          {
+            "text": "from",
+            "lemma": "from",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1210,
+            "end": 1214
+          },
+          {
+            "text": "0.720",
+            "lemma": "0.720",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1215,
+            "end": 1220
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1221,
+            "end": 1223
+          },
+          {
+            "text": "0.789",
+            "lemma": "0.789",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1224,
+            "end": 1229
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1229,
+            "end": 1230
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 1231,
+            "end": 1232
+          },
+          {
+            "text": "roughly",
+            "lemma": "roughly",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 1233,
+            "end": 1240
+          },
+          {
+            "text": "10",
+            "lemma": "10",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "abstract",
+            "start": 1241,
+            "end": 1243
+          },
+          {
+            "text": "%",
+            "lemma": "%",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "nmod",
+            "section": "abstract",
+            "start": 1243,
+            "end": 1244
+          },
+          {
+            "text": "relative",
+            "lemma": "relative",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1245,
+            "end": 1253
+          },
+          {
+            "text": "gain",
+            "lemma": "gain",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 1254,
+            "end": 1258
+          },
+          {
+            "text": "over",
+            "lemma": "over",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1259,
+            "end": 1263
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 1264,
+            "end": 1267
+          },
+          {
+            "text": "bare",
+            "lemma": "bare",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1268,
+            "end": 1272
+          },
+          {
+            "text": "agent",
+            "lemma": "agent",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1273,
+            "end": 1278
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1278,
+            "end": 1279
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 1280,
+            "end": 1283
+          },
+          {
+            "text": "can",
+            "lemma": "can",
+            "pos": "AUX",
+            "tag": "MD",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 1284,
+            "end": 1287
+          },
+          {
+            "text": "reduce",
+            "lemma": "reduce",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 1288,
+            "end": 1294
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 1295,
+            "end": 1298
+          },
+          {
+            "text": "across",
+            "lemma": "across",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "nmod",
+            "section": "abstract",
+            "start": 1299,
+            "end": 1305
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1305,
+            "end": 1306
+          },
+          {
+            "text": "seed",
+            "lemma": "seed",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1306,
+            "end": 1310
+          },
+          {
+            "text": "standard",
+            "lemma": "standard",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1311,
+            "end": 1319
+          },
+          {
+            "text": "deviation",
+            "lemma": "deviation",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 1320,
+            "end": 1329
+          },
+          {
+            "text": "by",
+            "lemma": "by",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1330,
+            "end": 1332
+          },
+          {
+            "text": "16\u00d7.",
+            "lemma": "16\u00d7.",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "abstract",
+            "start": 1333,
+            "end": 1337
+          },
+          {
+            "text": "Self",
+            "lemma": "self",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 1338,
+            "end": 1342
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 1342,
+            "end": 1343
+          },
+          {
+            "text": "evolution",
+            "lemma": "evolution",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 1343,
+            "end": 1352
+          },
+          {
+            "text": "further",
+            "lemma": "far",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 1353,
+            "end": 1360
+          },
+          {
+            "text": "improves",
+            "lemma": "improve",
+            "pos": "VERB",
+            "tag": "VBZ",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 1361,
+            "end": 1369
+          },
+          {
+            "text": "SIGA",
+            "lemma": "SIGA",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 1370,
+            "end": 1374
+          },
+          {
+            "text": "by",
+            "lemma": "by",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1375,
+            "end": 1377
+          },
+          {
+            "text": "rewriting",
+            "lemma": "rewrite",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "pcomp",
+            "section": "abstract",
+            "start": 1378,
+            "end": 1387
+          },
+          {
+            "text": "adapter",
+            "lemma": "adapter",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 1388,
+            "end": 1395
+          },
+          {
+            "text": "contents",
+            "lemma": "content",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 1396,
+            "end": 1404
+          },
+          {
+            "text": "from",
+            "lemma": "from",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 1405,
+            "end": 1409
+          },
+          {
+            "text": "prior",
+            "lemma": "prior",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 1410,
+            "end": 1415
+          }
+        ],
+        "noun_chunks": [
+          {
+            "text": "Advanced scientific simulators",
+            "section": "abstract",
+            "start": 0,
+            "end": 30
+          },
+          {
+            "text": "specialized input languages",
+            "section": "abstract",
+            "start": 38,
+            "end": 65
+          },
+          {
+            "text": "that",
+            "section": "abstract",
+            "start": 66,
+            "end": 70
+          },
+          {
+            "text": "simula- tion goals",
+            "section": "abstract",
+            "start": 76,
+            "end": 94
+          },
+          {
+            "text": "executable configurations",
+            "section": "abstract",
+            "start": 100,
+            "end": 125
+          },
+          {
+            "text": "these interfaces",
+            "section": "abstract",
+            "start": 150,
+            "end": 166
+          },
+          {
+            "text": "domain scientists",
+            "section": "abstract",
+            "start": 176,
+            "end": 193
+          },
+          {
+            "text": "hours",
+            "section": "abstract",
+            "start": 194,
+            "end": 199
+          },
+          {
+            "text": "days",
+            "section": "abstract",
+            "start": 203,
+            "end": 207
+          },
+          {
+            "text": "We",
+            "section": "abstract",
+            "start": 209,
+            "end": 211
+          },
+          {
+            "text": "simulator setup",
+            "section": "abstract",
+            "start": 218,
+            "end": 233
+          },
+          {
+            "text": "a problem",
+            "section": "abstract",
+            "start": 237,
+            "end": 246
+          },
+          {
+            "text": "agent-tool interface grounding",
+            "section": "abstract",
+            "start": 250,
+            "end": 280
+          },
+          {
+            "text": "what minimal simulator-specific adaptations",
+            "section": "abstract",
+            "start": 282,
+            "end": 325
+          },
+          {
+            "text": "the-shelf",
+            "section": "abstract",
+            "start": 348,
+            "end": 357
+          },
+          {
+            "text": "real scientific software",
+            "section": "abstract",
+            "start": 382,
+            "end": 406
+          },
+          {
+            "text": "Our intuition",
+            "section": "abstract",
+            "start": 408,
+            "end": 421
+          },
+          {
+            "text": "coding agents",
+            "section": "abstract",
+            "start": 430,
+            "end": 443
+          },
+          {
+            "text": "files",
+            "section": "abstract",
+            "start": 473,
+            "end": 478
+          },
+          {
+            "text": "edit code",
+            "section": "abstract",
+            "start": 480,
+            "end": 489
+          },
+          {
+            "text": "commands",
+            "section": "abstract",
+            "start": 495,
+            "end": 503
+          },
+          {
+            "text": "outputs",
+            "section": "abstract",
+            "start": 516,
+            "end": 523
+          },
+          {
+            "text": "they",
+            "section": "abstract",
+            "start": 529,
+            "end": 533
+          },
+          {
+            "text": "the simulator\u2019s executable contract",
+            "section": "abstract",
+            "start": 539,
+            "end": 574
+          },
+          {
+            "text": "its vocabulary",
+            "section": "abstract",
+            "start": 576,
+            "end": 590
+          },
+          {
+            "text": "structural constraints",
+            "section": "abstract",
+            "start": 592,
+            "end": 614
+          },
+          {
+            "text": "validation rules",
+            "section": "abstract",
+            "start": 616,
+            "end": 632
+          },
+          {
+            "text": "termination conditions",
+            "section": "abstract",
+            "start": 638,
+            "end": 660
+          },
+          {
+            "text": "We",
+            "section": "abstract",
+            "start": 662,
+            "end": 664
+          },
+          {
+            "text": "SIGA",
+            "section": "abstract",
+            "start": 675,
+            "end": 679
+          },
+          {
+            "text": "a Simulator-Interface Grounding Adapter",
+            "section": "abstract",
+            "start": 681,
+            "end": 720
+          },
+          {
+            "text": "that",
+            "section": "abstract",
+            "start": 721,
+            "end": 725
+          },
+          {
+            "text": "this con-",
+            "section": "abstract",
+            "start": 735,
+            "end": 744
+          },
+          {
+            "text": "retrieval",
+            "section": "abstract",
+            "start": 759,
+            "end": 768
+          },
+          {
+            "text": "procedural memory",
+            "section": "abstract",
+            "start": 770,
+            "end": 787
+          },
+          {
+            "text": "trajectory",
+            "section": "abstract",
+            "start": 792,
+            "end": 802
+          },
+          {
+            "text": "validation- enforced termination",
+            "section": "abstract",
+            "start": 819,
+            "end": 851
+          },
+          {
+            "text": "We",
+            "section": "abstract",
+            "start": 853,
+            "end": 855
+          },
+          {
+            "text": "SIGA",
+            "section": "abstract",
+            "start": 875,
+            "end": 879
+          },
+          {
+            "text": "GEOS",
+            "section": "abstract",
+            "start": 883,
+            "end": 887
+          },
+          {
+            "text": "an open-source multiphysics simulator",
+            "section": "abstract",
+            "start": 889,
+            "end": 926
+          },
+          {
+            "text": "subsurface science",
+            "section": "abstract",
+            "start": 935,
+            "end": 953
+          },
+          {
+            "text": "SIGA",
+            "section": "abstract",
+            "start": 955,
+            "end": 959
+          },
+          {
+            "text": "a complete GEOS deck",
+            "section": "abstract",
+            "start": 969,
+            "end": 989
+          },
+          {
+            "text": "about five minutes",
+            "section": "abstract",
+            "start": 993,
+            "end": 1011
+          },
+          {
+            "text": "TreeSim",
+            "section": "abstract",
+            "start": 1017,
+            "end": 1024
+          },
+          {
+            "text": "the quality",
+            "section": "abstract",
+            "start": 1046,
+            "end": 1057
+          },
+          {
+            "text": "an extended-budget human expert",
+            "section": "abstract",
+            "start": 1061,
+            "end": 1092
+          },
+          {
+            "text": "who",
+            "section": "abstract",
+            "start": 1093,
+            "end": 1096
+          },
+          {
+            "text": "about three hours",
+            "section": "abstract",
+            "start": 1106,
+            "end": 1123
+          },
+          {
+            "text": "a roughly 36\u00d7 wall-clock speedup",
+            "section": "abstract",
+            "start": 1125,
+            "end": 1157
+          },
+          {
+            "text": "a harder held-out set",
+            "section": "abstract",
+            "start": 1162,
+            "end": 1183
+          },
+          {
+            "text": "TreeSim",
+            "section": "abstract",
+            "start": 1202,
+            "end": 1209
+          },
+          {
+            "text": "a roughly 10% relative gain",
+            "section": "abstract",
+            "start": 1231,
+            "end": 1258
+          },
+          {
+            "text": "the bare agent",
+            "section": "abstract",
+            "start": 1264,
+            "end": 1278
+          },
+          {
+            "text": "-seed",
+            "section": "abstract",
+            "start": 1305,
+            "end": 1310
+          },
+          {
+            "text": "16\u00d7. Self-evolution",
+            "section": "abstract",
+            "start": 1333,
+            "end": 1352
+          },
+          {
+            "text": "SIGA",
+            "section": "abstract",
+            "start": 1370,
+            "end": 1374
+          },
+          {
+            "text": "adapter contents",
+            "section": "abstract",
+            "start": 1388,
+            "end": 1404
+          },
+          {
+            "text": "prior trajectories",
+            "section": "abstract",
+            "start": 1410,
+            "end": 1428
+          },
+          {
+            "text": "highest held-out GEOS",
+            "section": "abstract",
+            "start": 1443,
+            "end": 1464
+          },
+          {
+            "text": "the strongest hand-designed configura- tion",
+            "section": "abstract",
+            "start": 1500,
+            "end": 1543
+          },
+          {
+            "text": "Transfers",
+            "section": "abstract",
+            "start": 1545,
+            "end": 1554
+          },
+          {
+            "text": "OpenFOAM",
+            "section": "abstract",
+            "start": 1558,
+            "end": 1566
+          },
+          {
+            "text": "LAMMPS",
+            "section": "abstract",
+            "start": 1571,
+            "end": 1577
+          },
+          {
+            "text": "the dominant mechanism shifts",
+            "section": "abstract",
+            "start": 1588,
+            "end": 1617
+          },
+          {
+            "text": "interface",
+            "section": "abstract",
+            "start": 1621,
+            "end": 1630
+          },
+          {
+            "text": "validation",
+            "section": "abstract",
+            "start": 1632,
+            "end": 1642
+          },
+          {
+            "text": "structural completeness",
+            "section": "abstract",
+            "start": 1661,
+            "end": 1684
+          },
+          {
+            "text": "the bottleneck",
+            "section": "abstract",
+            "start": 1688,
+            "end": 1702
+          },
+          {
+            "text": "memory",
+            "section": "abstract",
+            "start": 1710,
+            "end": 1716
+          },
+          {
+            "text": "retrieval",
+            "section": "abstract",
+            "start": 1721,
+            "end": 1730
+          },
+          {
+            "text": "domain correctness",
+            "section": "abstract",
+            "start": 1748,
+            "end": 1766
+          },
+          {
+            "text": "the bottleneck",
+            "section": "abstract",
+            "start": 1770,
+            "end": 1784
+          },
+          {
+            "text": "these results",
+            "section": "abstract",
+            "start": 1796,
+            "end": 1809
+          },
+          {
+            "text": "layers",
+            "section": "abstract",
+            "start": 1862,
+            "end": 1868
+          },
+          {
+            "text": "general coding agents",
+            "section": "abstract",
+            "start": 1878,
+            "end": 1899
+          },
+          {
+            "text": "practical operators",
+            "section": "abstract",
+            "start": 1905,
+            "end": 1924
+          },
+          {
+            "text": "scientific software",
+            "section": "abstract",
+            "start": 1928,
+            "end": 1947
+          },
+          {
+            "text": "Scientific simulation",
+            "section": "introduction",
+            "start": 0,
+            "end": 21
+          },
+          {
+            "text": "the central computational workflows",
+            "section": "introduction",
+            "start": 32,
+            "end": 67
+          },
+          {
+            "text": "modern science",
+            "section": "introduction",
+            "start": 71,
+            "end": 85
+          },
+          {
+            "text": "Researchers",
+            "section": "introduction",
+            "start": 87,
+            "end": 98
+          },
+          {
+            "text": "simulators",
+            "section": "introduction",
+            "start": 103,
+            "end": 113
+          },
+          {
+            "text": "physical, chemical, biological, and engineering processes",
+            "section": "introduction",
+            "start": 123,
+            "end": 180
+          },
+          {
+            "text": "that",
+            "section": "introduction",
+            "start": 181,
+            "end": 185
+          },
+          {
+            "text": "the laboratory",
+            "section": "introduction",
+            "start": 260,
+            "end": 274
+          },
+          {
+            "text": "geophysics",
+            "section": "introduction",
+            "start": 279,
+            "end": 289
+          },
+          {
+            "text": "simulators",
+            "section": "introduction",
+            "start": 291,
+            "end": 301
+          },
+          {
+            "text": "the GEOS",
+            "section": "introduction",
+            "start": 310,
+            "end": 318
+          },
+          {
+            "text": "[GEOS Development Team",
+            "section": "introduction",
+            "start": 321,
+            "end": 343
+          },
+          {
+            "text": "model CO2 sequestration",
+            "section": "introduction",
+            "start": 351,
+            "end": 374
+          },
+          {
+            "text": "reservoir\nflow",
+            "section": "introduction",
+            "start": 376,
+            "end": 390
+          },
+          {
+            "text": "hydraulic fracture",
+            "section": "introduction",
+            "start": 392,
+            "end": 410
+          },
+          {
+            "text": "wellbore behavior",
+            "section": "introduction",
+            "start": 412,
+            "end": 429
+          },
+          {
+            "text": "induced seismicity",
+            "section": "introduction",
+            "start": 435,
+            "end": 453
+          },
+          {
+            "text": "molecular science",
+            "section": "introduction",
+            "start": 458,
+            "end": 475
+          },
+          {
+            "text": "LAMMPS",
+            "section": "introduction",
+            "start": 513,
+            "end": 519
+          },
+          {
+            "text": "encode atomistic systems",
+            "section": "introduction",
+            "start": 544,
+            "end": 568
+          },
+          {
+            "text": "force fields",
+            "section": "introduction",
+            "start": 570,
+            "end": 582
+          },
+          {
+            "text": "time-integration protocols",
+            "section": "introduction",
+            "start": 588,
+            "end": 614
+          },
+          {
+            "text": "these domains",
+            "section": "introduction",
+            "start": 623,
+            "end": 636
+          },
+          {
+            "text": "the scientific goal",
+            "section": "introduction",
+            "start": 638,
+            "end": 657
+          },
+          {
+            "text": "natural\nlanguage",
+            "section": "introduction",
+            "start": 678,
+            "end": 694
+          },
+          {
+            "text": "the executable simulation",
+            "section": "introduction",
+            "start": 700,
+            "end": 725
+          },
+          {
+            "text": "a simulator-specific input language",
+            "section": "introduction",
+            "start": 745,
+            "end": 780
+          },
+          {
+            "text": "This translation",
+            "section": "introduction",
+            "start": 782,
+            "end": 798
+          },
+          {
+            "text": "scientific intent",
+            "section": "introduction",
+            "start": 804,
+            "end": 821
+          },
+          {
+            "text": "runnable simulator configuration",
+            "section": "introduction",
+            "start": 825,
+            "end": 857
+          },
+          {
+            "text": "a persistent bottleneck",
+            "section": "introduction",
+            "start": 861,
+            "end": 884
+          },
+          {
+            "text": "simulation-driven research",
+            "section": "introduction",
+            "start": 888,
+            "end": 914
+          },
+          {
+            "text": "Advanced simulators",
+            "section": "introduction",
+            "start": 916,
+            "end": 935
+          },
+          {
+            "text": "simple tools",
+            "section": "introduction",
+            "start": 944,
+            "end": 956
+          },
+          {
+            "text": "a few stable arguments",
+            "section": "introduction",
+            "start": 962,
+            "end": 984
+          },
+          {
+            "text": "They",
+            "section": "introduction",
+            "start": 986,
+            "end": 990
+          },
+          {
+            "text": "large domain-specific language",
+            "section": "introduction",
+            "start": 998,
+            "end": 1028
+          },
+          {
+            "text": "(DSL",
+            "section": "introduction",
+            "start": 1029,
+            "end": 1033
+          },
+          {
+            "text": "whose tokens",
+            "section": "introduction",
+            "start": 1035,
+            "end": 1047
+          },
+          {
+            "text": "solver classes",
+            "section": "introduction",
+            "start": 1053,
+            "end": 1067
+          },
+          {
+            "text": "material\n1https://github.com/GEOS-DEV/GEOS\nPreprint",
+            "section": "introduction",
+            "start": 1069,
+            "end": 1120
+          },
+          {
+            "text": "arXiv:2606.09774v1",
+            "section": "introduction",
+            "start": 1122,
+            "end": 1140
+          },
+          {
+            "text": "AI",
+            "section": "introduction",
+            "start": 1146,
+            "end": 1148
+          },
+          {
+            "text": "Jun 2026\nFigure",
+            "section": "introduction",
+            "start": 1153,
+            "end": 1168
+          },
+          {
+            "text": "Illustrative example",
+            "section": "introduction",
+            "start": 1172,
+            "end": 1192
+          },
+          {
+            "text": "advanced tooling usage bottleneck",
+            "section": "introduction",
+            "start": 1196,
+            "end": 1229
+          },
+          {
+            "text": "the geophysics domain",
+            "section": "introduction",
+            "start": 1234,
+            "end": 1255
+          },
+          {
+            "text": "the GEOS simulator\u2019s extensive documentation",
+            "section": "introduction",
+            "start": 1263,
+            "end": 1307
+          },
+          {
+            "text": "a translation guide",
+            "section": "introduction",
+            "start": 1317,
+            "end": 1336
+          },
+          {
+            "text": "its elaborate\nconfiguration",
+            "section": "introduction",
+            "start": 1341,
+            "end": 1368
+          },
+          {
+            "text": "that",
+            "section": "introduction",
+            "start": 1369,
+            "end": 1373
+          },
+          {
+            "text": "a custom XML",
+            "section": "introduction",
+            "start": 1377,
+            "end": 1389
+          },
+          {
+            "text": "specific language",
+            "section": "introduction",
+            "start": 1398,
+            "end": 1415
+          },
+          {
+            "text": "results",
+            "section": "introduction",
+            "start": 1432,
+            "end": 1439
+          },
+          {
+            "text": "simu-\nlating carbon sequestration",
+            "section": "introduction",
+            "start": 1448,
+            "end": 1481
+          },
+          {
+            "text": "deep saline formations",
+            "section": "introduction",
+            "start": 1485,
+            "end": 1507
+          },
+          {
+            "text": "reservoir flow",
+            "section": "introduction",
+            "start": 1523,
+            "end": 1537
+          },
+          {
+            "text": "heterogeneous\nhydrocarbon (bottom right",
+            "section": "introduction",
+            "start": 1541,
+            "end": 1580
+          },
+          {
+            "text": "models",
+            "section": "introduction",
+            "start": 1583,
+            "end": 1589
+          },
+          {
+            "text": "mesh regions",
+            "section": "introduction",
+            "start": 1591,
+            "end": 1603
+          },
+          {
+            "text": "boundary conditions",
+            "section": "introduction",
+            "start": 1605,
+            "end": 1624
+          },
+          {
+            "text": "event schedules",
+            "section": "introduction",
+            "start": 1626,
+            "end": 1641
+          },
+          {
+            "text": "numerical schemes",
+            "section": "introduction",
+            "start": 1643,
+            "end": 1660
+          },
+          {
+            "text": "output requests",
+            "section": "introduction",
+            "start": 1666,
+            "end": 1681
+          },
+          {
+            "text": "A valid input deck",
+            "section": "introduction",
+            "start": 1683,
+            "end": 1701
+          },
+          {
+            "text": "syntax constraints",
+            "section": "introduction",
+            "start": 1715,
+            "end": 1733
+          },
+          {
+            "text": "schema constraints",
+            "section": "introduction",
+            "start": 1735,
+            "end": 1753
+          },
+          {
+            "text": "physical or domain-\nconventional constraints",
+            "section": "introduction",
+            "start": 1759,
+            "end": 1803
+          },
+          {
+            "text": "consistent names",
+            "section": "introduction",
+            "start": 1823,
+            "end": 1839
+          },
+          {
+            "text": "references",
+            "section": "introduction",
+            "start": 1844,
+            "end": 1854
+          },
+          {
+            "text": "sections",
+            "section": "introduction",
+            "start": 1862,
+            "end": 1870
+          }
+        ]
+      },
+      "entity_mentions": [
+        {
+          "text": "Simulator-Interface Grounding Adapter",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "abstract",
+          "start": 683,
+          "end": 720
+        },
+        {
+          "text": "in - trajectory validation",
+          "type": "Task",
+          "score": 0.715568,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 789,
+          "end": 813
+        },
+        {
+          "text": "GEOS",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "abstract",
+          "start": 883,
+          "end": 887
+        },
+        {
+          "text": "subsurface science",
+          "type": "Task",
+          "score": 0.779129,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 935,
+          "end": 953
+        },
+        {
+          "text": "TreeSim",
+          "type": "Metric",
+          "score": 1.0,
+          "source": "metric_regex",
+          "section": "abstract",
+          "start": 1017,
+          "end": 1024
+        },
+        {
+          "text": "self - evolution",
+          "type": "Method",
+          "score": 0.970226,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1338,
+          "end": 1352
+        },
+        {
+          "text": "SIGA",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "abstract",
+          "start": 1370,
+          "end": 1374
+        },
+        {
+          "text": "siga",
+          "type": "Method",
+          "score": 0.998065,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1370,
+          "end": 1374
+        },
+        {
+          "text": "configura - tion",
+          "type": "Method",
+          "score": 0.982778,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1528,
+          "end": 1543
+        },
+        {
+          "text": "OpenFOAM",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "abstract",
+          "start": 1558,
+          "end": 1566
+        },
+        {
+          "text": "openfoam",
+          "type": "Method",
+          "score": 0.942123,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1558,
+          "end": 1566
+        },
+        {
+          "text": "LAMMPS",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "abstract",
+          "start": 1571,
+          "end": 1577
+        },
+        {
+          "text": "lammps",
+          "type": "Method",
+          "score": 0.969514,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1571,
+          "end": 1577
+        },
+        {
+          "text": "self - improvable grounding layers",
+          "type": "Method",
+          "score": 0.788414,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 1836,
+          "end": 1868
+        },
+        {
+          "text": "GEOS",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "conclusion",
+          "start": 134,
+          "end": 138
+        },
+        {
+          "text": "geos deck",
+          "type": "Dataset",
+          "score": 0.803743,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 134,
+          "end": 143
+        },
+        {
+          "text": "multi - physics",
+          "type": "Task",
+          "score": 0.768511,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 284,
+          "end": 297
+        },
+        {
+          "text": "TreeSim",
+          "type": "Metric",
+          "score": 1.0,
+          "source": "metric_regex",
+          "section": "conclusion",
+          "start": 327,
+          "end": 334
+        },
+        {
+          "text": "OpenFOAM",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "conclusion",
+          "start": 605,
+          "end": 613
+        },
+        {
+          "text": "SIGA",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 631,
+          "end": 635
+        },
+        {
+          "text": "siga",
+          "type": "Method",
+          "score": 0.992813,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 631,
+          "end": 635
+        },
+        {
+          "text": "LAMMPS",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "conclusion",
+          "start": 694,
+          "end": 700
+        },
+        {
+          "text": "lammps",
+          "type": "Method",
+          "score": 0.945263,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 694,
+          "end": 700
+        },
+        {
+          "text": "geos 13",
+          "type": "Dataset",
+          "score": 0.96899,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 967,
+          "end": 974
+        },
+        {
+          "text": "cellvoyager",
+          "type": "Method",
+          "score": 0.773847,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 1559,
+          "end": 1570
+        },
+        {
+          "text": "ai compbio agent",
+          "type": "Method",
+          "score": 0.976346,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 1572,
+          "end": 1588
+        },
+        {
+          "text": "geosim. ai",
+          "type": "Dataset",
+          "score": 0.816021,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 1703,
+          "end": 1712
+        },
+        {
+          "text": "geomechanics",
+          "type": "Task",
+          "score": 0.817527,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 1757,
+          "end": 1769
+        },
+        {
+          "text": "nature",
+          "type": "Dataset",
+          "score": 0.701901,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 1922,
+          "end": 1928
+        },
+        {
+          "text": "self - debug",
+          "type": "Method",
+          "score": 0.75079,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2249,
+          "end": 2259
+        },
+        {
+          "text": "metaopenfoam",
+          "type": "Method",
+          "score": 0.990375,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2344,
+          "end": 2356
+        },
+        {
+          "text": "multi - agent",
+          "type": "Method",
+          "score": 0.72918,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2371,
+          "end": 2382
+        },
+        {
+          "text": "cfd",
+          "type": "Task",
+          "score": 0.770382,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2397,
+          "end": 2400
+        },
+        {
+          "text": "scienceagentbench",
+          "type": "Method",
+          "score": 0.880637,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 2637,
+          "end": 2654
+        },
+        {
+          "text": "Cursor Research",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 2784,
+          "end": 2799
+        },
+        {
+          "text": "J. Vering",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 3006,
+          "end": 3015
+        },
+        {
+          "text": "GEOS Development Team",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 3680,
+          "end": 3701
+        },
+        {
+          "text": "dynamate",
+          "type": "Method",
+          "score": 0.885372,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 3885,
+          "end": 3893
+        },
+        {
+          "text": "protein - ligand molecular dynamics",
+          "type": "Task",
+          "score": 0.748992,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 3919,
+          "end": 3952
+        },
+        {
+          "text": "llm",
+          "type": "Method",
+          "score": 0.880999,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 4067,
+          "end": 4070
+        },
+        {
+          "text": "molecular dynamics",
+          "type": "Dataset",
+          "score": 0.895359,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 4117,
+          "end": 4135
+        },
+        {
+          "text": "meta - harness",
+          "type": "Method",
+          "score": 0.94682,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 4481,
+          "end": 4493
+        },
+        {
+          "text": "Scientific simulation",
+          "type": "Task",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "introduction",
+          "start": 0,
+          "end": 21
+        },
+        {
+          "text": "geophysics",
+          "type": "Task",
+          "score": 0.73612,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 279,
+          "end": 289
+        },
+        {
+          "text": "GEOS",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "introduction",
+          "start": 314,
+          "end": 318
+        },
+        {
+          "text": "geos 1",
+          "type": "Dataset",
+          "score": 0.948234,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 314,
+          "end": 320
+        },
+        {
+          "text": "GEOS Development Team",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 322,
+          "end": 343
+        },
+        {
+          "text": "co2 sequestration",
+          "type": "Method",
+          "score": 0.82839,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 357,
+          "end": 374
+        },
+        {
+          "text": "molecular - dynamics engines",
+          "type": "Method",
+          "score": 0.814147,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 477,
+          "end": 504
+        },
+        {
+          "text": "LAMMPS",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "introduction",
+          "start": 513,
+          "end": 519
+        },
+        {
+          "text": "LAMMPS",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 513,
+          "end": 519
+        },
+        {
+          "text": "lammps",
+          "type": "Method",
+          "score": 0.992186,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 513,
+          "end": 519
+        },
+        {
+          "text": "atomistic systems",
+          "type": "Method",
+          "score": 0.918536,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 551,
+          "end": 568
+        },
+        {
+          "text": "force fields",
+          "type": "Method",
+          "score": 0.899288,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 570,
+          "end": 582
+        },
+        {
+          "text": "time - integration",
+          "type": "Method",
+          "score": 0.950409,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 588,
+          "end": 604
+        },
+        {
+          "text": "domain",
+          "type": "Method",
+          "score": 0.761719,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 1004,
+          "end": 1010
+        },
+        {
+          "text": "XML",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 1386,
+          "end": 1389
+        },
+        {
+          "text": "agentic ai",
+          "type": "Task",
+          "score": 0.884137,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2151,
+          "end": 2161
+        },
+        {
+          "text": "design",
+          "type": "Task",
+          "score": 0.741419,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2746,
+          "end": 2752
+        },
+        {
+          "text": "hypothesis revision",
+          "type": "Task",
+          "score": 0.891446,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2754,
+          "end": 2773
+        },
+        {
+          "text": "domain reasoning",
+          "type": "Task",
+          "score": 0.919168,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2779,
+          "end": 2795
+        },
+        {
+          "text": "knowledge access",
+          "type": "Task",
+          "score": 0.710567,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3484,
+          "end": 3500
+        },
+        {
+          "text": "question answering",
+          "type": "Task",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "introduction",
+          "start": 3505,
+          "end": 3523
+        },
+        {
+          "text": "custom planning",
+          "type": "Method",
+          "score": 0.786081,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3786,
+          "end": 3801
+        },
+        {
+          "text": "tool calling",
+          "type": "Method",
+          "score": 0.703467,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3803,
+          "end": 3815
+        },
+        {
+          "text": "retry logic",
+          "type": "Method",
+          "score": 0.866493,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3817,
+          "end": 3828
+        },
+        {
+          "text": "openhands",
+          "type": "Dataset",
+          "score": 0.911639,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4003,
+          "end": 4012
+        },
+        {
+          "text": "OpenHands",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 4003,
+          "end": 4012
+        },
+        {
+          "text": "Wang",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 4014,
+          "end": 4018
+        },
+        {
+          "text": "coding agent",
+          "type": "Method",
+          "score": 0.775375,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4095,
+          "end": 4107
+        },
+        {
+          "text": "file navigation",
+          "type": "Task",
+          "score": 0.955246,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4172,
+          "end": 4187
+        },
+        {
+          "text": "iterative editing",
+          "type": "Task",
+          "score": 0.953847,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4189,
+          "end": 4206
+        },
+        {
+          "text": "shell use",
+          "type": "Task",
+          "score": 0.96491,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4208,
+          "end": 4217
+        },
+        {
+          "text": "code repair",
+          "type": "Task",
+          "score": 0.968336,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4223,
+          "end": 4234
+        },
+        {
+          "text": "Cursor Research",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 4408,
+          "end": 4423
+        },
+        {
+          "text": "the Simulator-Interface Grounding Adapter",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 4885,
+          "end": 4926
+        },
+        {
+          "text": "interface grounding adapter",
+          "type": "Method",
+          "score": 0.894515,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4899,
+          "end": 4926
+        },
+        {
+          "text": "coding agents",
+          "type": "Method",
+          "score": 0.745957,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 5038,
+          "end": 5051
+        },
+        {
+          "text": "siga",
+          "type": "Method",
+          "score": 0.997852,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 5720,
+          "end": 5724
+        },
+        {
+          "text": "OpenFOAM",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "introduction",
+          "start": 6371,
+          "end": 6379
+        },
+        {
+          "text": "full agent loop",
+          "type": "Method",
+          "score": 0.890971,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 6526,
+          "end": 6541
+        },
+        {
+          "text": "ai - for - science",
+          "type": "Task",
+          "score": 0.773081,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7978,
+          "end": 7992
+        },
+        {
+          "text": "autonomous scientific discovery",
+          "type": "Task",
+          "score": 0.916374,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 8201,
+          "end": 8232
+        },
+        {
+          "text": "self - evolution mechanism",
+          "type": "Method",
+          "score": 0.819951,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 8537,
+          "end": 8561
+        },
+        {
+          "text": "llm",
+          "type": "Method",
+          "score": 0.919398,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 8680,
+          "end": 8683
+        },
+        {
+          "text": "science",
+          "type": "Dataset",
+          "score": 0.718303,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 8786,
+          "end": 8793
+        },
+        {
+          "text": "swe -",
+          "type": "Method",
+          "score": 0.907493,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 8906,
+          "end": 8910
+        },
+        {
+          "text": "self - debugging",
+          "type": "Method",
+          "score": 0.828736,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 8958,
+          "end": 8972
+        },
+        {
+          "text": "ChemCrow Bran et al",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 9098,
+          "end": 9117
+        },
+        {
+          "text": "single - cell analysis",
+          "type": "Task",
+          "score": 0.766761,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 9214,
+          "end": 9234
+        },
+        {
+          "text": "ML",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 9311,
+          "end": 9313
+        },
+        {
+          "text": "ml",
+          "type": "Task",
+          "score": 0.925228,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 9311,
+          "end": 9313
+        },
+        {
+          "text": "openfoam",
+          "type": "Method",
+          "score": 0.971363,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 9384,
+          "end": 9392
+        },
+        {
+          "text": "molecular - dynamics",
+          "type": "Method",
+          "score": 0.836022,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 9503,
+          "end": 9521
+        },
+        {
+          "text": "finite - element / mechanics",
+          "type": "Method",
+          "score": 0.905709,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 9592,
+          "end": 9616
+        },
+        {
+          "text": "reservoir - simulation",
+          "type": "Method",
+          "score": 0.929376,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 9672,
+          "end": 9692
+        },
+        {
+          "text": "llms",
+          "type": "Method",
+          "score": 0.99492,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 9768,
+          "end": 9772
+        },
+        {
+          "text": "domain grounding",
+          "type": "Method",
+          "score": 0.760419,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 9842,
+          "end": 9858
+        },
+        {
+          "text": "engineered coding harness",
+          "type": "Method",
+          "score": 0.819017,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 9979,
+          "end": 10004
+        },
+        {
+          "text": "claude code",
+          "type": "Method",
+          "score": 0.792508,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 10006,
+          "end": 10017
+        },
+        {
+          "text": "agent loop",
+          "type": "Method",
+          "score": 0.766898,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 10042,
+          "end": 10052
+        },
+        {
+          "text": "foam - agent",
+          "type": "Method",
+          "score": 0.970013,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 10067,
+          "end": 10077
+        },
+        {
+          "text": "metaopenfoam",
+          "type": "Method",
+          "score": 0.963121,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 10105,
+          "end": 10117
+        },
+        {
+          "text": "self - evolving agents",
+          "type": "Method",
+          "score": 0.823419,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 10290,
+          "end": 10310
+        },
+        {
+          "text": "meta - harness design",
+          "type": "Method",
+          "score": 0.809543,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 10819,
+          "end": 10838
+        },
+        {
+          "text": "agentic harness engineering",
+          "type": "Method",
+          "score": 0.915281,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 10894,
+          "end": 10921
+        },
+        {
+          "text": "AI",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 11021,
+          "end": 11023
+        },
+        {
+          "text": "ai",
+          "type": "Task",
+          "score": 0.816679,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 11021,
+          "end": 11023
+        },
+        {
+          "text": "coding",
+          "type": "Task",
+          "score": 0.952249,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 11036,
+          "end": 11042
+        },
+        {
+          "text": "terminal navigation",
+          "type": "Task",
+          "score": 0.96952,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 11044,
+          "end": 11063
+        },
+        {
+          "text": "math",
+          "type": "Task",
+          "score": 0.740697,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 11065,
+          "end": 11069
+        },
+        {
+          "text": "adapter",
+          "type": "Method",
+          "score": 0.910406,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 11184,
+          "end": 11191
+        },
+        {
+          "text": "self - revision",
+          "type": "Method",
+          "score": 0.711781,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 11268,
+          "end": 11281
+        },
+        {
+          "text": "Buffer of Thoughts",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 11480,
+          "end": 11498
+        },
+        {
+          "text": "buffer of thoughts",
+          "type": "Method",
+          "score": 0.883786,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 11480,
+          "end": 11498
+        },
+        {
+          "text": "Development Team",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 11570,
+          "end": 11586
+        },
+        {
+          "text": "DruckerPrager",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 12637,
+          "end": 12650
+        },
+        {
+          "text": "druckerprager",
+          "type": "Method",
+          "score": 0.911659,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 12637,
+          "end": 12650
+        },
+        {
+          "text": "extendeddruckerprager",
+          "type": "Method",
+          "score": 0.946697,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 12652,
+          "end": 12673
+        },
+        {
+          "text": "druckerpragerhardening",
+          "type": "Method",
+          "score": 0.925949,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 12675,
+          "end": 12697
+        },
+        {
+          "text": "andviscodruckerprager",
+          "type": "Method",
+          "score": 0.854649,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 12699,
+          "end": 12720
+        },
+        {
+          "text": "GEOS",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "results",
+          "start": 342,
+          "end": 346
+        },
+        {
+          "text": "OpenFOAM",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "results",
+          "start": 621,
+          "end": 629
+        },
+        {
+          "text": "LAMMPS",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "results",
+          "start": 634,
+          "end": 640
+        },
+        {
+          "text": "LAMMPS",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "results",
+          "start": 634,
+          "end": 640
+        },
+        {
+          "text": "geos -",
+          "type": "Dataset",
+          "score": 0.906394,
+          "source": "nadiyah_scier_distilbert",
+          "section": "results",
+          "start": 685,
+          "end": 690
+        },
+        {
+          "text": "rq1",
+          "type": "Task",
+          "score": 0.808121,
+          "source": "nadiyah_scier_distilbert",
+          "section": "results",
+          "start": 743,
+          "end": 746
+        },
+        {
+          "text": "TreeSim",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "results",
+          "start": 790,
+          "end": 797
+        },
+        {
+          "text": "treesim",
+          "type": "Method",
+          "score": 0.960619,
+          "source": "nadiyah_scier_distilbert",
+          "section": "results",
+          "start": 790,
+          "end": 797
+        },
+        {
+          "text": "TreeSim",
+          "type": "Metric",
+          "score": 1.0,
+          "source": "metric_regex",
+          "section": "results",
+          "start": 790,
+          "end": 797
+        },
+        {
+          "text": "deck - authoring",
+          "type": "Task",
+          "score": 0.809929,
+          "source": "nadiyah_scier_distilbert",
+          "section": "results",
+          "start": 1053,
+          "end": 1067
+        },
+        {
+          "text": "lammps",
+          "type": "Method",
+          "score": 0.834169,
+          "source": "nadiyah_scier_distilbert",
+          "section": "results",
+          "start": 1314,
+          "end": 1320
+        },
+        {
+          "text": "claude",
+          "type": "Method",
+          "score": 0.80665,
+          "source": "nadiyah_scier_distilbert",
+          "section": "results",
+          "start": 1517,
+          "end": 1523
+        },
+        {
+          "text": "SIGA",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "results",
+          "start": 1586,
+          "end": 1590
+        },
+        {
+          "text": "siga",
+          "type": "Method",
+          "score": 0.997939,
+          "source": "nadiyah_scier_distilbert",
+          "section": "results",
+          "start": 1586,
+          "end": 1590
+        }
+      ],
+      "keyphrases": [
+        {
+          "text": "scientific code simulators",
+          "score": 0.6635,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "code simulators scientific",
+          "score": 0.6507,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "simulators scientific",
+          "score": 0.6453,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "scientific simulators",
+          "score": 0.6432,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "simulators scientific coding",
+          "score": 0.6412,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "scientific simulators expose",
+          "score": 0.5964,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "simulators expose specialized",
+          "score": 0.5939,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "simulator interface grounding",
+          "score": 0.5921,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "advanced scientific simulators",
+          "score": 0.5885,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "reliability distribution geos",
+          "score": 0.498,
+          "section": "results",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "geos deck",
+          "score": 0.4823,
+          "section": "results",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "pushed scientific simulator",
+          "score": 0.4806,
+          "section": "conclusion",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "representative geos deck",
+          "score": 0.4768,
+          "section": "results",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "decks schema driven",
+          "score": 0.4712,
+          "section": "conclusion",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "simulator interface failures",
+          "score": 0.4563,
+          "section": "results",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "scientific simulator",
+          "score": 0.4201,
+          "section": "conclusion",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "assistants numerical simulations",
+          "score": 0.415,
+          "section": "conclusion",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "schema driven adapters",
+          "score": 0.4111,
+          "section": "conclusion",
+          "source": "nadiyah_keybert_minilm"
+        }
+      ],
+      "extractive_summary": {
+        "text": "[Bran et al., 2023, Boiko et al., 2023],\nmolecular dynamics [Shi et al., 2026, Zhao et al., 2026, Guilbert et al., 2025], computational fluid\ndynamics [Zhang et al., 2025, Park et al., 2026, Ni and Buehler, 2023], reservoir simulation [Lie\net al., 2026], and other simulator-centered workflows. [Bran et al., 2023, Boiko et al., 2023, Alber et al., 2026,\nLu et al., 2024, Zhang and Sun, 2026, Li et al., 2026, Tang et al., 2025, Narayanan et al., 2024]. [2026], harness-as-code Ning et al.",
+        "sentences": [
+          {
+            "text": "[Bran et al., 2023, Boiko et al., 2023],\nmolecular dynamics",
+            "section": "introduction",
+            "source": "extractive_textrank"
+          },
+          {
+            "text": "[Shi et al., 2026, Zhao et al., 2026, Guilbert et al., 2025], computational fluid\ndynamics",
+            "section": "introduction",
+            "source": "extractive_textrank"
+          },
+          {
+            "text": "[Zhang et al., 2025, Park et al., 2026, Ni and Buehler, 2023], reservoir simulation [Lie\net al., 2026], and other simulator-centered workflows.",
+            "section": "introduction",
+            "source": "extractive_textrank"
+          },
+          {
+            "text": "[Bran et al., 2023, Boiko et al., 2023, Alber et al., 2026,\nLu et al., 2024, Zhang and Sun, 2026, Li et al., 2026, Tang et al., 2025, Narayanan et al., 2024].",
+            "section": "introduction",
+            "source": "extractive_textrank"
+          },
+          {
+            "text": "[2026], harness-as-code Ning et al.",
+            "section": "introduction",
+            "source": "extractive_textrank"
+          }
+        ],
+        "candidate_sentence_count": 151,
+        "source_traceable": true
+      },
+      "structural_checks": [
+        {
+          "code": "missing_or_weak_method",
+          "severity": "high",
+          "message": "Method section is missing or very short.",
+          "evidence": ""
+        },
+        {
+          "code": "no_explicit_limitations",
+          "severity": "low",
+          "message": "No explicit limitations section was detected.",
+          "evidence": ""
+        },
+        {
+          "code": "weak_related_work_signal",
+          "severity": "low",
+          "message": "No explicit related-work section was detected.",
+          "evidence": ""
+        }
+      ],
+      "timings_seconds": {
+        "pos": 0.886883,
+        "ner": 3.994602,
+        "keyphrases": 2.742304,
+        "extractive_summary": 0.806229,
+        "structural_checks": 5.8e-05
+      },
+      "provenance": {
+        "pos": "spaCy en_core_web_sm from team runtime archive",
+        "ner": "Nadiyah fine-tuned SciER DistilBERT at threshold 0.7, plus regex/spaCy completion",
+        "keyphrases": "Nadiyah KeyBERT approach with local all-MiniLM-L6-v2",
+        "summary": "deterministic extractive TextRank",
+        "structural_checks": "deterministic project rules",
+        "bart_status": "historical comparison only; not production"
+      }
+    }
+  },
+  "debug_summary": {
+    "page_count": 31,
+    "headings": [
+      "1 Introduction",
+      "2 Related work",
+      "3 Background: GEOS as a domain-specific simulator language",
+      "4 Method",
+      "4.1 Overview",
+      "4\nFigure 2:The SIGA method.A natural-language simulation brief feeds into the base coding agent",
+      "4.2 The grounding adapter",
+      "5\nThree grounding interfaces.Write the base harness as H0 = (c0,T 0,stop 0): an initial system",
+      "4.3 Self-evolving the adapter",
+      "5 Experiments",
+      "5.1 Experimental Design",
+      "5.2 Ablation design and bottleneck analysis",
+      "5.3 GEOS benchmark and evaluation protocol",
+      "6 Results",
+      "8\nTable 1: Cell-level TreeSim (failures-as-zero) ondeepseek-v4-flash, n= 3 runs (mean \u00b1 sample",
+      "6.1 Reliability is SIGA\u2019s biggest gain (RQ1)",
+      "6.2 Schema-aware adapters fix block-level omissions (RQ2)",
+      "6.3 Human baseline: SIGA reaches expert deck quality faster (RQ3)",
+      "6.4 Exploring agent autonomy: human consultation is under-utilized in hard settings (RQ4)",
+      "11\nTable 3: OpenFOAM transfer study on the 30-taskn30_hybrid benchmark (deepseek-v4-flash,",
+      "6.5 Transfer to OpenFOAM: SIGA produces complete cases where native agents fail (RQ5)",
+      "12\nTable 4: LAMMPS transfer headline (9 tasks, single run, LLM-judge mean in[0,10] ). Two backbones;",
+      "6.6 Transfer to LAMMPS: the dominant component shifts to knowledge injection (RQ5)",
+      "7 Broader impact",
+      "8 Conclusion",
+      "14\nP. Lewis, E. Perez, A. Piktus, F. Petroni, V . Karpukhin, N. Goyal, H. K\u00fcttler, M. Lewis, W. tau Yih,",
+      "15\nJ. Yang, C. E. Jimenez, A. Wettig, K. Lieret, S. Yao, K. Narasimhan, and O. Press. Swe-agent:",
+      "17\nTable 7: Full cross-model and cross-harness panel. Counts in parentheses are task failures out of 17.",
+      "19\nTable 8: Per-cell LAMMPS LLM-judge scores (0\u201310), 9 tasks, single run, two backbones. Structural",
+      "23\nTable 9: V olume of specification dropped at each difficulty level. T1=software defaults, T2=standard",
+      "24\nJ Human baseline: protocol and browser-history breakdown",
+      "25\nAgent-side counterpart.Cross-run file-access analysis of 7 vanilla-Claude-Code runs on the"
+    ],
+    "warnings": []
+  }
+}

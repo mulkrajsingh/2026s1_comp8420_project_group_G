@@ -1,0 +1,430 @@
+[
+  {
+    "query": "natural language processing text classification",
+    "relevant_ids": [
+      "1004.3183",
+      "1108.3848",
+      "1106.0411",
+      "1105.4318",
+      "1203.2498"
+    ],
+    "citation_validated_ids": [],
+    "relevant_ids_v2": [
+      "1004.3183",
+      "1105.4318",
+      "1106.0411",
+      "1108.3848",
+      "1203.2498"
+    ],
+    "provenance": {
+      "1004.3183": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "embedding_specter2_base",
+          "section_aware",
+          "hybrid_ensemble"
+        ]
+      },
+      "1108.3848": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25"
+        ]
+      },
+      "1106.0411": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "hybrid_ensemble"
+        ]
+      },
+      "1105.4318": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25"
+        ]
+      },
+      "1203.2498": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25"
+        ]
+      }
+    }
+  },
+  {
+    "query": "reinforcement learning policy reward agent",
+    "relevant_ids": [
+      "1104.5687",
+      "1107.0048",
+      "1009.2566",
+      "1012.1552",
+      "1205.4839"
+    ],
+    "citation_validated_ids": [
+      "1106.1796",
+      "1106.3651"
+    ],
+    "relevant_ids_v2": [
+      "1009.2566",
+      "1012.1552",
+      "1104.5687",
+      "1106.1796",
+      "1106.3651",
+      "1107.0048",
+      "1205.4839"
+    ],
+    "provenance": {
+      "1104.5687": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "hybrid_ensemble"
+        ]
+      },
+      "1107.0048": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf"
+        ]
+      },
+      "1009.2566": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "embedding_specter2_base",
+          "section_aware",
+          "hybrid_ensemble"
+        ]
+      },
+      "1012.1552": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "hybrid_ensemble"
+        ]
+      },
+      "1205.4839": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "hybrid_ensemble"
+        ]
+      },
+      "1106.1796": {
+        "label": "citation_validated",
+        "linked_seeds": [
+          "1107.0048"
+        ],
+        "pool_sources": [
+          "tfidf"
+        ]
+      },
+      "1106.3651": {
+        "label": "citation_validated",
+        "linked_seeds": [
+          "1104.5687"
+        ],
+        "pool_sources": [
+          "tfidf",
+          "bm25"
+        ]
+      }
+    }
+  },
+  {
+    "query": "support vector machine kernel classification",
+    "relevant_ids": [
+      "1101.2987",
+      "0804.0188",
+      "0912.0874",
+      "0906.4391",
+      "1010.0535"
+    ],
+    "citation_validated_ids": [
+      "0708.1838",
+      "0911.5367",
+      "1203.4354"
+    ],
+    "relevant_ids_v2": [
+      "0708.1838",
+      "0804.0188",
+      "0906.4391",
+      "0911.5367",
+      "0912.0874",
+      "1010.0535",
+      "1101.2987",
+      "1203.4354"
+    ],
+    "provenance": {
+      "1101.2987": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "embedding_specter2_base",
+          "section_aware",
+          "hybrid_ensemble"
+        ]
+      },
+      "0804.0188": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "embedding_specter2_base",
+          "section_aware",
+          "hybrid_ensemble"
+        ]
+      },
+      "0912.0874": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "hybrid_ensemble"
+        ]
+      },
+      "0906.4391": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "embedding_specter2_base",
+          "section_aware",
+          "hybrid_ensemble"
+        ]
+      },
+      "1010.0535": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "section_aware",
+          "hybrid_ensemble"
+        ]
+      },
+      "0708.1838": {
+        "label": "citation_validated",
+        "linked_seeds": [
+          "1010.0535"
+        ],
+        "pool_sources": [
+          "section_aware"
+        ]
+      },
+      "0911.5367": {
+        "label": "citation_validated",
+        "linked_seeds": [
+          "0804.0188"
+        ],
+        "pool_sources": [
+          "section_aware"
+        ]
+      },
+      "1203.4354": {
+        "label": "citation_validated",
+        "linked_seeds": [
+          "0912.0874",
+          "1010.0535"
+        ],
+        "pool_sources": [
+          "bm25"
+        ]
+      }
+    }
+  },
+  {
+    "query": "neural network deep learning representation",
+    "relevant_ids": [
+      "1202.2770",
+      "1111.4930",
+      "0804.3269",
+      "1105.0972",
+      "0912.1007"
+    ],
+    "citation_validated_ids": [
+      "1102.4240"
+    ],
+    "relevant_ids_v2": [
+      "0804.3269",
+      "0912.1007",
+      "1102.4240",
+      "1105.0972",
+      "1111.4930",
+      "1202.2770"
+    ],
+    "provenance": {
+      "1202.2770": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "hybrid_ensemble"
+        ]
+      },
+      "1111.4930": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "embedding_specter2_base",
+          "hybrid_ensemble"
+        ]
+      },
+      "0804.3269": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf"
+        ]
+      },
+      "1105.0972": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "embedding_specter2_base",
+          "hybrid_ensemble"
+        ]
+      },
+      "0912.1007": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf"
+        ]
+      },
+      "1102.4240": {
+        "label": "citation_validated",
+        "linked_seeds": [
+          "1202.2770"
+        ],
+        "pool_sources": [
+          "bm25",
+          "embedding_specter2_base",
+          "section_aware",
+          "hybrid_ensemble"
+        ]
+      }
+    }
+  },
+  {
+    "query": "bayesian probabilistic graphical model",
+    "relevant_ids": [
+      "1111.6925",
+      "0706.2040",
+      "1106.1799",
+      "1011.0935",
+      "1004.2304"
+    ],
+    "citation_validated_ids": [],
+    "relevant_ids_v2": [
+      "0706.2040",
+      "1004.2304",
+      "1011.0935",
+      "1106.1799",
+      "1111.6925"
+    ],
+    "provenance": {
+      "1111.6925": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "embedding_specter2_base",
+          "section_aware",
+          "hybrid_ensemble"
+        ]
+      },
+      "0706.2040": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "section_aware",
+          "hybrid_ensemble"
+        ]
+      },
+      "1106.1799": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25"
+        ]
+      },
+      "1011.0935": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "bm25",
+          "embedding_specter2_base",
+          "section_aware",
+          "hybrid_ensemble"
+        ]
+      },
+      "1004.2304": {
+        "label": "seed",
+        "linked_seeds": [],
+        "pool_sources": [
+          "seed",
+          "tfidf",
+          "hybrid_ensemble"
+        ]
+      }
+    }
+  }
+]

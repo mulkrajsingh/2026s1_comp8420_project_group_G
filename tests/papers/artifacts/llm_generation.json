@@ -1,0 +1,105 @@
+{
+  "input_contract": "rag_evidence_pack",
+  "evidence_path": "/Users/kyojin/work/uni/nlp_comp8420/major proj/comp8420_NLP_project/tests/papers/artifacts/drq_v2_rag_pack.json",
+  "retrieval_used": true,
+  "external_evidence_used": true,
+  "requested_style": "technical",
+  "resolved_style": "technical",
+  "query_analysis": {
+    "intent": "request_explanation",
+    "emotion": "neutral",
+    "topic_expertise": "intermediate",
+    "verbosity": "normal",
+    "style": "technical",
+    "confidence": 0.2516,
+    "cosine_confidence": 0.2623,
+    "style_source": "explicit_override",
+    "style_scores": {
+      "concise": 0.2863,
+      "beginner": 0.1848,
+      "reviewer": 0.0386,
+      "technical": 0.1087
+    },
+    "field_confidences": {
+      "intent": 0.3421,
+      "emotion": 0.2516,
+      "topic_expertise": 0.2516,
+      "verbosity": 0.2516,
+      "style": 1.0
+    },
+    "field_sources": {
+      "intent": "tinybert_fallback",
+      "emotion": "tinybert_fallback",
+      "topic_expertise": "tinybert_fallback",
+      "verbosity": "tinybert_fallback",
+      "style": "explicit_override"
+    },
+    "similarity_scores": {
+      "intent": {
+        "paper_recommendation": 0.2623,
+        "chit_chat": 0.1292,
+        "debugging": 0.0256,
+        "critique": 0.0973,
+        "request_explanation": 0.0988,
+        "question": 0.0194
+      },
+      "emotion": {
+        "frustrated": 0.1833,
+        "confused": 0.0424,
+        "positive": 0.094,
+        "neutral": 0.2863
+      },
+      "topic_expertise": {
+        "advanced": 0.0887,
+        "beginner": 0.189,
+        "intermediate": 0.2863
+      },
+      "verbosity": {
+        "concise": 0.1535,
+        "detailed": 0.027,
+        "normal": 0.2863
+      },
+      "style": {
+        "concise": 0.2863,
+        "beginner": 0.1848,
+        "reviewer": 0.0386,
+        "technical": 0.1087
+      }
+    },
+    "fallback_used": true,
+    "fallback_fields": [
+      "intent",
+      "emotion",
+      "topic_expertise",
+      "verbosity"
+    ],
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "fallback_model": "cross-encoder/stsb-TinyBERT-L4"
+  },
+  "text": "{\n  \"summary\": \"The query focuses on improving data-augmented reinforcement learning for visual continuous control. The retrieved papers cover reinforcement learning for robotics, Bayesian methods in machine learning, transformer models for translation, and a general theory of AI. However, none of the papers directly address the specific topic of visual continuous control or data-augmented reinforcement learning.\",\n  \"key_findings\": [\n    \"An RL method for robotic control is introduced and evaluated [2102.00002].\",\n    \"Bayesian inference techniques for ML models are studied [2103.00003].\",\n    \"A new transformer model outperforms prior work on WMT [2101.00001].\",\n    \"A unifying framework for AI reasoning systems is proposed [2104.00004].\"\n  ],\n  \"research_gaps\": [\n    \"None of the retrieved papers directly address the topic of visual continuous control or data-augmented reinforcement learning.\",\n    \"The evidence lacks specific findings on the integration of data augmentation with reinforcement learning for visual tasks.\"\n  ]\n}",
+  "backend": "ollama",
+  "model": "qwen3:8b",
+  "prompt_id": "topic_synthesis",
+  "task": "topic_search_synthesis",
+  "strategy": "zero_shot",
+  "latency_seconds": 32.3085,
+  "error": null,
+  "evidence_ids_used": [],
+  "run_metadata": {
+    "host": "http://127.0.0.1:11434",
+    "keep_alive": "5m",
+    "temperature": 0.2,
+    "top_p": 0.9,
+    "thinking_fallback_used": false,
+    "thinking_enabled": false,
+    "thinking_policy_reason": "structured_direct:topic_search_synthesis",
+    "context_window": 16384,
+    "max_new_tokens": 2048,
+    "timeout_seconds": 600,
+    "ollama_load_duration_ms": 3434.2209,
+    "ollama_prompt_eval_count": 2984,
+    "ollama_prompt_eval_duration_ms": 16429.178,
+    "ollama_eval_count": 236,
+    "ollama_eval_duration_ms": 12346.099
+  }
+}

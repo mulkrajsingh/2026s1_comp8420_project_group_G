@@ -1,0 +1,24 @@
+{
+  "release": "research_lora_adapter_20260609_114209.zip",
+  "train": {
+    "loss": 0.9326353669166565,
+    "perplexity": 2.5412,
+    "eval_samples": 500,
+    "split_size": 13838,
+    "mean_token_accuracy": 0.79101433801651
+  },
+  "validation": {
+    "loss": 0.9388251900672913,
+    "perplexity": 2.5570,
+    "eval_samples": 500,
+    "split_size": 1729,
+    "mean_token_accuracy": 0.7899830725193023
+  },
+  "test": {
+    "loss": 0.9445774555206299,
+    "perplexity": 2.5717,
+    "eval_samples": 500,
+    "split_size": 1731,
+    "mean_token_accuracy": 0.788206844329834
+  }
+}

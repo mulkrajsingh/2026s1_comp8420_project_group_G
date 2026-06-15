@@ -1,0 +1,52 @@
+[
+  {
+    "query": "What papers should I read on text classification and natural language processing?",
+    "relevant_ids": ["1004.3183", "1108.3848", "1106.0411", "1105.4318", "1203.2498"],
+    "provenance": {"label": "manual", "mapped_from": "keyword_eval_query_1", "reviewed_on": "2026-06-15"}
+  },
+  {
+    "query": "Find research on reinforcement learning agents, policies, and reward design.",
+    "relevant_ids": ["1104.5687", "1107.0048", "1009.2566", "1012.1552", "1205.4839"],
+    "provenance": {"label": "manual", "mapped_from": "keyword_eval_query_2", "reviewed_on": "2026-06-15"}
+  },
+  {
+    "query": "Recommend papers about support vector machines and kernel methods for classification.",
+    "relevant_ids": ["1101.2987", "0804.0188", "0912.0874", "0906.4391", "1010.0535"],
+    "provenance": {"label": "manual", "mapped_from": "keyword_eval_query_3", "reviewed_on": "2026-06-15"}
+  },
+  {
+    "query": "What work exists on deep neural networks and representation learning?",
+    "relevant_ids": ["1202.2770", "1111.4930", "0804.3269", "1105.0972", "0912.1007"],
+    "provenance": {"label": "manual", "mapped_from": "keyword_eval_query_4", "reviewed_on": "2026-06-15"}
+  },
+  {
+    "query": "Suggest papers on bayesian methods and probabilistic graphical models.",
+    "relevant_ids": ["1111.6925", "0706.2040", "1106.1799", "1011.0935", "1004.2304"],
+    "provenance": {"label": "manual", "mapped_from": "keyword_eval_query_5", "reviewed_on": "2026-06-15"}
+  },
+  {
+    "query": "Recommend papers about retrieval augmented generation for scientific literature.",
+    "relevant_ids": ["2504.00187", "2403.11366", "2401.06954", "2401.15391", "2510.14377"],
+    "provenance": {"label": "manual", "source": "production_session_and_title_review", "reviewed_on": "2026-06-15"}
+  },
+  {
+    "query": "What papers discuss learning control policies directly from pixel observations?",
+    "relevant_ids": ["2204.10685", "2101.01774", "2505.16741", "2209.10003", "2603.09427"],
+    "provenance": {"label": "manual", "source": "hybrid_pool_title_review", "reviewed_on": "2026-06-15"}
+  },
+  {
+    "query": "Find papers on transformer self-attention mechanisms.",
+    "relevant_ids": ["2111.11707", "2104.04692", "2505.24333", "2412.05496", "2502.09503"],
+    "provenance": {"label": "manual", "source": "hybrid_pool_title_review", "reviewed_on": "2026-06-15"}
+  },
+  {
+    "query": "Suggest recent work on contrastive learning for unsupervised representation learning.",
+    "relevant_ids": ["2202.13093", "2010.04592", "2106.03631", "2108.08643", "2401.03312"],
+    "provenance": {"label": "manual", "source": "hybrid_pool_title_review", "reviewed_on": "2026-06-15"}
+  },
+  {
+    "query": "What are good papers on variational autoencoders and generative modeling?",
+    "relevant_ids": ["2102.13156", "2109.03204", "2109.07169", "2206.02067", "2101.00828"],
+    "provenance": {"label": "manual", "source": "hybrid_pool_title_review", "reviewed_on": "2026-06-15"}
+  }
+]

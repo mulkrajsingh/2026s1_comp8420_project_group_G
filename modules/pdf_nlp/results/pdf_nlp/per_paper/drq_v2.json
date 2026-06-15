@@ -1,0 +1,5380 @@
+{
+  "input": {
+    "paper_id": "drq_v2",
+    "pdf_sha256": "7a9b7d03a6cbdf09767b132fa474620abed861197632352d236be61faa09a0fd",
+    "source_url": "https://arxiv.org/pdf/2107.09645v1"
+  },
+  "parsed_paper": {
+    "metadata": {
+      "paper_id": "2107.09645v1_fd56aa5c6a",
+      "title": "Mastering Visual Continuous Control: Improved Data-Augmented Reinforcement Learning",
+      "abstract": "We present DrQ-v2, a model-free reinforcement learning (RL) algorithm for visual continuous control. DrQ-v2 builds on DrQ, an off-policy actor-critic approach that uses data augmentation to learn directly from pixels. We introduce several improvements that yield state-of-the-art results on the DeepMind Control Suite. Notably, DrQ-v2 is able to solve complex humanoid locomotion tasks directly from pixel observations, previously unattained by model-free RL. DrQ-v2 is conceptually simple, easy to implement, and provides signi\ufb01cantly better computational footprint compared to prior work, with the majority of tasks taking just 8 hours to train on a single GPU. Finally, we publicly release DrQ-v2\u2019s implementation to provide RL practitioners with a strong and computationally ef\ufb01cient baseline.",
+      "authors": [
+        "Denis Yarats",
+        "Rob Fergus",
+        "Alessandro Lazaric",
+        "Lerrel Pinto"
+      ],
+      "categories": [],
+      "published_date": null,
+      "venue": null,
+      "doi": null,
+      "arxiv_id": "2107.09645v1",
+      "url": "https://arxiv.org/abs/2107.09645v1",
+      "source": "uploaded_pdf"
+    },
+    "sections": {
+      "abstract": "We present DrQ-v2, a model-free reinforcement learning (RL) algorithm for visual continuous control. DrQ-v2 builds on DrQ, an off-policy actor-critic approach that uses data augmentation to learn directly from pixels. We introduce several improvements that yield state-of-the-art results on the DeepMind Control Suite. Notably, DrQ-v2 is able to solve complex humanoid locomotion tasks directly from pixel observations, previously unattained by model-free RL. DrQ-v2 is conceptually simple, easy to implement, and provides signi\ufb01cantly better computational footprint compared to prior work, with the majority of tasks taking just 8 hours to train on a single GPU. Finally, we publicly release DrQ-v2\u2019s implementation to provide RL practitioners with a strong and computationally ef\ufb01cient baseline.",
+      "introduction": "Creating sample-ef\ufb01cient continuous control methods that observe high-dimensional images has\nbeen a long standing challenge in reinforcement learning (RL) . Over the last three years, the RL\ncommunity has made signi\ufb01cant headway on this problem, improving sample-ef\ufb01ciency signi\ufb01cantly.\nThe key insight to solving visual control is the learning of better low-dimensional representations,\neither through autoencoders [Yarats et al., 2019, Finn et al., 2015], variational inference [Hafner\net al., 2018, 2019, Lee et al., 2019], contrastive learning [Srinivas et al., 2020, Yarats et al., 2021a],\nself-prediction [Schwarzer et al., 2020b], or data augmentations [Yarats et al., 2021b, Laskin et al.,\n2020]. However, current state-of-the-art model-free methods are still limited in three ways. First, they\nare unable to solve the more challenging visual control problems such as quadruped and humanoid\nlocomotion. Second, they often require signi\ufb01cant computational resources, i.e. lengthy training\ntimes using distributed multi-GPU infrastructure. Lastly, it is often unclear how different design\nchoices affect overall system performance.\nIn this paper we present DrQ-v2, a simple model-free algorithm that builds on the idea of using\ndata augmentations [Yarats et al., 2021b, Laskin et al., 2020] to solve hard visual control problems.\nMost notably, it is the \ufb01rst model-free method that solves complex humanoid tasks directly from\npixels. Compared to previous state-of-the-art model-free methods, DrQ-v2 provides signi\ufb01cant\nimprovements in sample ef\ufb01ciency across tasks from the DeepMind Control Suite [Tassa et al., 2018].\nConceptually simple, DrQ-v2 is also computationally ef\ufb01cient, which allows solving most tasks in\nDeepMind Control Suite in just 8 hours on a single GPU (see Figure 1). Recently, a model-based\nmethod, DreamerV2 [Hafner et al., 2020] was also shown to solve visual continuous control problems\nand it was \ufb01rst to solve the humanoid locomotion problem from pixels. While our model-free\nDrQ-v2 matches DreamerV2 in terms sample ef\ufb01ciency and performance, it does so 4\u00d7 faster in\nterms of wall-clock time to train. We believe this makes DrQ-v2 a more accessible approach to\nsupport research in visual continuous control and it reinforces the question on whether model-free or\nmodel-based is the more suitable approach to solve this type of tasks.\nDrQ-v2, which is detailed in Section 3, improves upon DrQ [Yarats et al., 2021b] by making\nseveral algorithmic changes: (i) switching the base RL algorithm from SAC [Haarnoja et al., 2018b]\nto DDPG [Lillicrap et al., 2015a], (ii) this allows us straightforwardly incorporating multi-step\nreturn, (iii) adding bilinear interpolation to the random shift image augmentation, (iv) introducing an\nexploration schedule, (v) selecting better hyper-parameters including a larger capacity of the replay\nbuffer. A careful ablation study of these design choices is presented in Section 4.4. Furthermore, we\nre-examine the original implementation of DrQ and identify several computational bottlenecks such\n2\nas replay buffer management, data augmentation processing, batch size, and frequency of learning\nupdates (see Section 3.2). To remedy these, we have developed a new implementation that both\nachieves better performance and trains around 3.5 times faster with respect to wall-clock time than\nthe previous implementation on the same hardware with an increase in environment frame throughput\n(FPS) from 28 to 96 (i.e., it takes 106/96/3600 \u2248 2.9 hours to train for 1M environment steps).\n\nVisual Reinforcement Learning Successes of visual representation learning in computer vi-\nsion [Vincent et al., 2008, Doersch et al., 2015, Wang and Gupta, 2015, Noroozi and Favaro, 2016,\nZhang et al., 2017, Gidaris et al., 2018] has inspired successes in visual RL, where coherent repre-\nsentations are learned alongside RL. Works such as SAC-AE [Yarats et al., 2019], PlaNet [Hafner\net al., 2018], and SLAC [Lee et al., 2019], demonstrated how auto-encoders [Finn et al., 2015] could\nimprove visual RL. Following this, other self-supervised objectives such as contrastive learning\nin CURL [Srinivas et al., 2020] and ATC [Stooke et al., 2020], self-prediction in SPR [Schwarzer\net al., 2020a], contrastive cluster assignment in Proto-RL [Yarats et al., 2021a], and augmented\ndata in DrQ [Yarats et al., 2021b] and RAD [Laskin et al., 2020], have signi\ufb01cantly bridged the\n10\n0 2 4 6 8 10\nHours (for 1 \u00d7 106 Frames)\n0\n200\n400\n600\n800Episode Return\n2.9 hours\nCartpole Swingup\nDreamer-v2\nDrQ-v2\n0 2 4 6 8 10\nHours (for 1 \u00d7 106 Frames)\n0\n200\n400\n600\n800Episode Return 2.9 hours\nFinger Spin\n0 2 4 6 8 10\nHours (for 1 \u00d7 106 Frames)\n0\n200\n400\n600\n800\n1000Episode Return\n2.9 hours\nWalker Stand\n0 10 20 30\nHours (for 3 \u00d7 106 Frames)\n0\n200\n400\n600Episode Return\n8.6 hours\nAcrobot Swingup\n0 10 20 30\nHours (for 3 \u00d7 106 Frames)\n0\n200\n400\n600\n800Episode Return\n8.6 hours\nCheetah Run\n0 10 20 30\nHours (for 3 \u00d7 106 Frames)\n0\n200\n400\n600\n800\n1000Episode Return\n8.6 hours\nFinger Turn Hard\n0 10 20 30\nHours (for 3 \u00d7 106 Frames)\n0\n100\n200\n300\n400\n500Episode Return\n8.6 hours\nHopper Hop\n0 10 20 30\nHours (for 3 \u00d7 106 Frames)\n0\n200\n400\n600\n800\n1000Episode Return\n8.6 hours\nQuadruped Walk\n0 10 20 30\nHours (for 3 \u00d7 106 Frames)\n0\n200\n400\n600\n800\n1000Episode Return\n8.6 hours\nQuadruped Run\n0 10 20 30\nHours (for 3 \u00d7 106 Frames)\n0\n200\n400\n600\n800\n1000Episode Return 8.6 hours\nReacher Hard\n0 10 20 30\nHours (for 3 \u00d7 106 Frames)\n0\n200\n400\n600\n800Episode Return 8.6 hours\nWalker Run\n0 100 200 300\nHours (for 30 \u00d7 106 Frames)\n0\n200\n400\n600\n800Episode Return 86 hours\nHumanoid Walk\nFigure 8: Model-based Dreamer-v2 performs more computations than model-free DrQ-v2. This\nallows DrQ-v2 to train faster in terms of wall-clock time and outperform Dreamer-v2 in this aspect.\ngap between state-based and image-based RL. Future prediction objectives [Hafner et al., 2018,\n2019, Yan et al., 2020, Finn et al., 2015, Pinto et al., 2016, Agrawal et al., 2016] and other auxiliary\nobjectives [Jaderberg et al., 2016, Zhan et al., 2020, Young et al., 2020, Chen et al., 2020] have shown\nimprovements on a variety of problems ranging from gameplay, continuous control, and robotics. In\nthe context of visual control settings, clever use of augmented data [Yarats et al., 2021b, Laskin et al.,\n2020] currently produces state-of-the-art results on visual tasks from DMC [Tassa et al., 2018].\nHumanoid Control The humanoid control problem \ufb01rst presented in Tassa et al. [2012], has been\nstudied as one of the hardest control problems due to its large state and action spaces. The earliest\nsolutions to this problem use ideas in model-based optimal control to generate policies given an\naccurate model of the humanoid . Subsequent works in RL have shown that model-free policies can\nsolve the humanoid control problem given access to proprioceptive state observations. However,\nsolving such a problem from visual observations has been a challenging problem, with leading RL\nalgorithms making little progress to solve the task [Tassa et al., 2018]. Recently, Hafner et al. [2020]\nwas able to solve this problem through a model-based technique in around 30M environment steps\nand 340 hours of training on a single GPU machine. DrQ-v2, presented in this paper, marks the \ufb01rst\nmodel-free RL method that can solve humanoid control from visual observations, taking also around\n30M steps and 86 hours of training on the same hardware.\n11\n0.0 0.5 1.0 1.5 2.0 2.5 3.0\nFrames (\u00d7106)\n0\n50\n100\n150\n200Episode Return\nAcrobot Swingup\nDrQ:SAC\nDrQ:DDPG\n0.0 0.5 1.0 1.5 2.0 2.5 3.0\nFrames (\u00d7106)\n0\n200\n400\n600\n800Episode Return\nQuadruped Walk\n0.0 0.5 1.0 1.5 2.0 2.5 3.0\nFrames (\u00d7106)\n0\n100\n200\n300\n400\n500\n600Episode Return\nReacher Hard\n(a) DrQ (dotted silver) relies on SAC as a base RL algorithm. Replacing SAC with DDPG results in a signi\ufb01cant\nperformance gain (blue).\n0.0 0.5 1.0 1.5 2.0 2.5 3.0\nFrames (\u00d7106)\n0\n100\n200\n300\n400\n500Episode Return\nAcrobot Swingup\nDrQ:DDPG,nstep=1\nDrQ:DDPG,nstep=3\nDrQ:DDPG,nstep=5\n0.0 0.5 1.0 1.5 2.0 2.5 3.0\nFrames (\u00d7106)\n0\n200\n400\n600\n800Episode Return\nQuadruped Walk\n0.0 0.5 1.0 1.5 2.0 2.5 3.0\nFrames (\u00d7106)\n0\n100\n200\n300\n400\n500\n600Episode Return\nReacher Hard\n(b) DDPG straightforwardly incorporates n-step returns, a critical tool for exploration. We observe that the 3\n(blue) and 5 (red) steps variants provide additional improvements to the previous version that uses single step\nTD-targets (silver). Going forward, we adopt 3-step returns (blue).\n0.0 0.5 1.0 1.5 2.0 2.5 3.0\nFrames (\u00d7106)\n0\n100\n200\n300\n400\n500Episode Return\nAcrobot Swingup\nDrQ:DDPG,nstep=3,buffer=100k\nDrQ:DDPG,nstep=3,buffer=500k\nDrQ:DDPG,nstep=3,buffer=1M\n0.0 0.5 1.0 1.5 2.0 2.5 3.0\nFrames (\u00d7106)\n0\n200\n400\n600\n800Episode Return\nQuadruped Walk\n0.0 0.5 1.0 1.5 2.0 2.5 3.0\nFrames (\u00d7106)\n0\n200\n400\n600\n800\n1000Episode Return\nReacher Hard\n(c) Increasing the size of the replay buffer improves performance, over the original 100k used by DrQ (silver).\nGoing forward, we use a buffer size of 1M (red).\n0.0 0.5 1.0 1.5 2.0 2.5 3.0\nFrames (\u00d7106)\n0\n100\n200\n300\n400\n500Episode Return\nAcrobot Swingup\nDrQ:DDPG,nstep=3,buffer=1M,noise=fixed\nDrQ:DDPG,nstep=3,buffer=1M,noise=decay\n0.0 0.5 1.0 1.5 2.0 2.5 3.0\nFrames (\u00d7106)\n0\n200\n400\n600\n800Episode Return\nQuadruped Walk\n0.0 0.5 1.0 1.5 2.0 2.5 3.0\nFrames (\u00d7106)\n0\n200\n400\n600\n800\n1000Episode Return\nReacher Hard\n(d) Finally, a decaying schedule for the variance of the exploration noise (blue) helps on hard exploration tasks,\nversus the \ufb01xed variance variant (silver).\nFigure 9: An ablation study that led us to the \ufb01nal version of DrQ-v2. We incrementally show each\nof the four key improvements to DrQ that collectively form DrQ-v2. The silver dotted curves in the\n\ufb01rst row show the original DrQ. In subsequent rows they show progressive improvements, using\nthe optimal choice from the previous rows (i.e., the silver curve in the third row shows DrQ with a\nDDPG base RL algorithm and 3-step returns). The red and blue curves show the effect of individual\nmodi\ufb01cations. In the last row the blue curve corresponds to DrQ-v2.\n12",
+      "method": "Image Augmentation As in DrQ we apply random shifts image augmentation to pixel observations\nof the environment. In the settings of visual continuous control by DMC, this augmentation can be\n1Here, \u2206(X ) denotes a distribution over the state space X .\n\nInputs:\nf\u03be,\u03c0\u03c6,Q\u03b81,Q\u03b82: parametric networks for encoder, policy, and Q-functions respectively.\naug: random shifts image augmentation.\n\u03c3(t): scheduled standard deviation for the exploration noise de\ufb01ned in Equation (3).\nT ,B,\u03b1,\u03c4,c: training steps, mini-batch size, learning rate, target update rate, clip value.\nTraining routine:\nfor each timestept = 1..T do\n\u03c3t \u2190\u03c3(t) \u22bf Compute stddev for the exploration noise\nat \u2190\u03c0\u03c6(f\u03be(xt)) +\u03f5 and\u03f5 \u223c N (0,\u03c3 2\nt ) \u22bf Add noise to the deterministic action\nxt+1 \u223cP (\u00b7|xt, at) \u22bf Run transition function for one step\nD \u2190 D \u222a (xt, at,R (xt, at), xt+1) \u22bf Add a transition to the replay buffer\nUPDATE CRITIC (D,\u03c3t)\nUPDATE ACTOR (D,\u03c3t)\nend for\nprocedure UPDATE CRITIC (D,\u03c3 )\n{(xt, at,rt:t+n\u22121, xt+n)} \u223c D \u22bf Sample a mini batch ofB transitions\nht, ht+n \u2190f\u03be(aug(xt)),f\u03be(aug(xt+n)) \u22bf Apply data augmentation and encode\nat+n \u2190\u03c0\u03c6(ht+n) +\u03f5 and\u03f5 \u223c clip(N (0,\u03c3 2)) \u22bf Sample action\nCompute L\u03b81,\u03be and L\u03b82,\u03be using Equation (1) \u22bf Compute critic losses\n\u03be \u2190\u03be \u2212\u03b1\u2207\u03be(L\u03b81,\u03be + L\u03b82,\u03be) \u22bf Update encoder weights\n\u03b8k \u2190\u03b8k \u2212\u03b1\u2207\u03b8k L\u03b8k,\u03be \u2200k \u2208 {1, 2} \u22bf Update critic weights\n\u00af\u03b8k \u2190 (1 \u2212\u03c4)\u00af\u03b8k +\u03c4\u03b8k \u2200k \u2208 {1, 2} \u22bf Update critic target weights\nend procedure\nprocedure UPDATE ACTOR (D,\u03c3 )\n{(xt)} \u223c D \u22bf Sample a mini batch ofB observations\nht \u2190f\u03be(aug(xt)) \u22bf Apply data augmentation and encode\nat \u2190\u03c0\u03c6(ht) +\u03f5 and\u03f5 \u223c clip(N (0,\u03c3 2)) \u22bf Sample action\nCompute L\u03c6 using Equation (2) \u22bf Compute actor loss\n\u03c6 \u2190\u03c6 \u2212\u03b1\u2207\u03c6L\u03c6 \u22bf Update actor\u2019s weights only\nend procedure\ninstantiated by \ufb01rst padding each side of 84 \u00d7 84 observation rendering by 4 pixels (by repeating\nboundary pixels), and then selecting a random 84 \u00d7 84 crop, yielding the original image shifted by\n\u00b14 pixels. We also \ufb01nd it useful to apply bilinear interpolation on top of the shifted image (i.e, we\nreplace each pixel value with the average of the four nearest pixel values). In our experience, this\nmodi\ufb01cation provides an additional performance boost across the board.\nImage Encoder The augmented image observation is then embedded into a low-dimensional latent\nvector by applying a convolutional encoder. We use the same encoder architecture as in DrQ, which\n\ufb01rst was introduced introduced in SAC-AE [Yarats et al., 2019]. This process can be succinctly\nsummarized as h =f\u03be(aug(x)), wheref\u03be is the encoder, aug is the random shifts augmentation,\nand x is the original image observation.\nActor-Critic Algorithm We use DDPG [Lillicrap et al., 2015a] as a backbone actor-critic RL\nalgorithm and, similarly to Barth-Maron et al. [2018], augment it withn-step returns to estimate TD\nerror. This results into faster reward propagation and overall learning progress [Mnih et al., 2016a].\nWhile some methods [Hafner et al., 2020] employ more sophisticated techniques such as TD(\u03bb) or\nRetrace(\u03bb) [Munos et al., 2016], they are often computationally demanding whenn is large. We \ufb01nd\nthat using simplen-step returns, without an importance sampling correction, strikes a good balance\nbetween performance and ef\ufb01ciency. We also employ clipped double Q-learning [Fujimoto et al.,\n2018] to reduce overestimation bias in the target value. Practically, this requires training two Q-\nfunctionsQ\u03b81 andQ\u03b82. For this, we sample a mini-batch of transitions\u03c4 = (xt, at,rt:t+n\u22121, xt+n)\nfrom the replay buffer D and compute the following two losses:\nL\u03b8k,\u03be(D) = E\u03c4\u223cD\n[\n(Q\u03b8k(ht, at) \u2212y)2]\n\u2200k \u2208 {1, 2}, (1)\n4\nwith the TD targety de\ufb01ned as:\ny =\nn\u22121\u2211\ni=0\n\u03b3irt+i +\u03b3n min\nk=1,2\nQ\u00af\u03b8k(ht+n, at+n),\nwhere ht =f\u03be(aug(xt)), ht+n =f\u03be(aug(xt+n)), at+n =\u03c0\u03c6(ht+n) +\u03f5, and \u00af\u03b81,\u00af\u03b82 are the slow-\nmoving weights for the Q target networks. We note, that in contrast to DrQ, we do not employ a\ntarget network for the encoderf\u03be and always use the most recent weights\u03be to embed xt and xt+n.\nThe exploration noise\u03f5 is sampled from clip(N (0,\u03c3 2), \u2212c,c ) similar to TD3 [Fujimoto et al., 2018],\nwith the exception of decaying\u03c3, which we describe below. Finally, we train the deterministic actor\n\u03c0\u03c6 using DPG with the following loss:\nL\u03c6(D) = \u2212Ext\u223cD\n[\nmin\nk=1,2\nQ\u03b8k(ht, at)\n]\n, (2)\nwhere ht =f\u03be(aug(xt)), at =\u03c0\u03c6(ht) +\u03f5, and\u03f5 \u223c clip(N (0,\u03c3 2), \u2212c,c ). Similar to DrQ, we do\nnot use actor\u2019s gradients to update the encoder\u2019s parameters\u03be.\nScheduled Exploration Noise Empirically, we observe that it is helpful to have different levels of\nexploration at different stages of learning. At the beginning of training we want the agent to be more\nstochastic and explore the environment more effectively, while at the later stages of training, when\nthe agent has already identi\ufb01ed promising behaviors, it is better to be more deterministic and master\nthose behaviors. Similar to Amos et al. [2020], we instantiate this idea by using linear decay \u03c3(t) for\nthe variance\u03c32 of the exploration noise de\ufb01ned as:\n\u03c3(t) =\u03c3init + (1 \u2212 min(t\nT, 1))(\u03c3\ufb01nal \u2212\u03c3init), (3)\nwhere\u03c3init and\u03c3\ufb01nal are the initial and \ufb01nal values for standard deviation, andT is the decay horizon.\nKey Hyper-Parameter Changes We also conduct an extensive hyper-parameter search and identify\nseveral useful hyper-parameter modi\ufb01cations compared to DrQ. The three most important hyper-\nparameters are: (i) the size of the replay buffer, (ii) mini-batch size, and (iii) learning rate. Speci\ufb01cally,\nwe use a 10 times larger replay buffer than DrQ. We also use a smaller mini-batch size of256 without\nany noticeable performance degradation. This is in contrast to CURL [Srinivas et al., 2020] and\nDrQ [Yarats et al., 2021b] that both use a larger batch size of 512 to attain more stable training in the\nexpense of computational ef\ufb01ciency. Finally, we \ufb01nd that using smaller learning rate of1 \u00d7 10\u22124,\nrather than DrQ\u2019s learning rate of 1 \u00d7 10\u22123, results into more stable training without any loss in\nlearning speed.",
+      "results": "In this section we provide empirical evaluation of DrQ-v2 on an extensive set of visual continuous\ncontrol tasks from DMC [Tassa et al., 2018]. We \ufb01rst present comparison to prior methods, both\nmodel-free and model-based, in terms of sample ef\ufb01ciency and wall-clock time. We then present a\nlarge scale ablation study that guided the \ufb01nal version of DrQ-v2.\n5\n0 5 10 15 20 25 30\nFrames (\u00d7106)\n0\n200\n400\n600\n800Episode Return\nHumanoid Stand\nSAC\nCURL\nDrQ\nDrQ-v2\n0 5 10 15 20 25 30\nFrames (\u00d7106)\n0\n200\n400\n600\n800Episode Return\nHumanoid Walk\n0 5 10 15 20 25 30\nFrames (\u00d7106)\n0\n50\n100\n150\n200\n250Episode Return\nHumanoid Run\nFigure 3: The hard benchmark consists of three humanoid locomotion tasks: stand, walk, and\nrun. These three represent particularly hard exploration challenges, being previously unsolvable by\nmodel-free methods. The training speed of DrQ-v2 was key to solving the task, since it allowed for\nextensive investigation of different variations, resulting in the discovery of effective strategies.",
+      "conclusion": "We have introduced a conceptually simple model-free actor-critic RL algorithm for image-based\ncontinuous control \u2013 DrQ-v2. Our method provides signi\ufb01cantly better computational footprint\nand masters tasks from DMC [Tassa et al., 2018] directly from pixels, most notably the humanoid\nlocomotion tasks that were previously unsolved by model-free approaches. Additionally, we have\nprovided an ef\ufb01cient PyTorch implementation of DrQ-v2 that is publicly available at https://\ngithub.com/facebookresearch/drqv2. We hope that our algorithm will help to inspire and\ndemocratize further research in visual RL."
+    },
+    "references": [
+      "Pulkit Agrawal, Ashvin Nair, Pieter Abbeel, Jitendra Malik, and Sergey Levine. Learning to poke by poking: experiential learning of intuitive physics. In Proceedings of the 30th International Conference on Neural Information Processing Systems , pages 5092\u20135100, 2016",
+      "Brandon Amos, Samuel Stanton, Denis Yarats, and Andrew Gordon Wilson. On the model-based stochastic value gradient for continuous reinforcement learning. CoRR, 2020",
+      "Gabriel Barth-Maron, Matthew W. Hoffman, David Budden, Will Dabney, Dan Horgan, Dhruva TB, Alistair Muldal, Nicolas Heess, and Timothy Lillicrap. Distributional policy gradients. In International Conference on Learning Representations , 2018",
+      "Richard Bellman. A markovian decision process. Indiana Univ. Math. J., 1957",
+      "Bryan Chen, Alexander Sax, Gene Lewis, Iro Armeni, Silvio Savarese, Amir Roshan Zamir, Jitendra Malik, and Lerrel Pinto. Robust policies via mid-level visual representations: An experimental study in manipulation and navigation. CoRR, 2020",
+      "Carl Doersch, Abhinav Gupta, and Alexei A Efros. Unsupervised visual representation learning by context prediction. In Proceedings of the IEEE International Conference on Computer Vision , pages 1422\u20131430, 2015",
+      "Jing eng and Ronald J. Williams. Incremental multi-step q-learning. Machine Learning, 1996",
+      "William Fedus, Prajit Ramachandran, Rishabh Agarwal, Yoshua Bengio, Hugo Larochelle, Mark Rowland, and Will Dabney. Revisiting fundamentals of experience replay. CoRR, 2020",
+      "Chelsea Finn, Xin Yu Tan, Yan Duan, Trevor Darrell, Sergey Levine, and Pieter Abbeel. Learning visual feature spaces for robotic manipulation with deep spatial autoencoders. CoRR, 2015",
+      "Scott Fujimoto, Herke van Hoof, and David Meger. Addressing function approximation error in actor-critic methods. In Proceedings of the 35th International Conference on Machine Learning, ICML 2018, Stockholmsmassan, Stockholm, Sweden, July 10-15, 2018 , 2018",
+      "Spyros Gidaris, Praveer Singh, and Nikos Komodakis. Unsupervised representation learning by predicting image rotations, 2018",
+      "Tuomas Haarnoja, Aurick Zhou, Kristian Hartikainen, George Tucker, Sehoon Ha, Jie Tan, Vikash Kumar, Henry Zhu, Abhishek Gupta a nd Pieter Abbeel, and Sergey Levine. Soft actor-critic algorithms and applications. CoRR, 2018a",
+      "Tuomas Haarnoja, Aurick Zhou, Kristian Hartikainen, George Tucker, Sehoon Ha, Jie Tan, Vikash Kumar, Henry Zhu, Abhishek Gupta, Pieter Abbeel, et al. Soft actor-critic algorithms and applications. arXiv preprint arXiv:1812.05905, 2018b",
+      "Danijar Hafner, Timothy Lillicrap, Ian Fischer, Ruben Villegas, David Ha, Honglak Lee, and James Davidson. Learning latent dynamics for planning from pixels. arXiv preprint arXiv:1811.04551, 2018",
+      "Danijar Hafner, Timothy Lillicrap, Jimmy Ba, and Mohammad Norouzi. Dream to control: Learning behaviors by latent imagination. arXiv preprint arXiv:1912.01603, 2019",
+      "Danijar Hafner, Timothy P. Lillicrap, Mohammad Norouzi, and Jimmy Ba. Mastering atari with discrete world models. CoRR, 2020",
+      "Nicklas Hansen and Xiaolong Wang. Generalization in reinforcement learning by soft data augmen- tation. In International Conference on Robotics and Automation , 2021",
+      "Matteo Hessel, Joseph Modayil, Hado van Hasselt, Tom Schaul, Georg Ostrovski, Will Dabney, Daniel Horgan, Bilal Piot, Mohammad Gheshlaghi Azar, and David Silver. Rainbow: Combining improvements in deep reinforcement learning. arXiv preprint arXiv:1710.02298, 2017",
+      "Matt Hoffman, Bobak Shahriari, John Aslanides, Gabriel Barth-Maron, Feryal Behbahani, Tamara Norman, Abbas Abdolmaleki, Albin Cassirer, Fan Yang, Kate Baumli, Sarah Henderson, Alex Novikov, Sergio G\u00f3mez Colmenarejo, Serkan Cabi, Caglar Gulcehre, Tom Le Paine, Andrew Cowie, Ziyu Wang, Bilal Piot, and Nando de Freitas. Acme: A research framework for distributed reinforcement learning, 2020",
+      "Max Jaderberg, V olodymyr Mnih, Wojciech Marian Czarnecki, Tom Schaul, Joel Z Leibo, David Silver, and Koray Kavukcuoglu. Reinforcement learning with unsupervised auxiliary tasks, 2016",
+      "Michael Laskin, Kimin Lee, Adam Stooke, Lerrel Pinto, Pieter Abbeel, and Aravind Srinivas. Reinforcement learning with augmented data, 2020",
+      "A. X. Lee, A. Nagabandi, P. Abbeel, and S. Levine. Stochastic latent actor-critic: Deep reinforcement learning with a latent variable model. arXiv e-prints, 2019",
+      "Alex X Lee, Anusha Nagabandi, Pieter Abbeel, and Sergey Levine. Stochastic latent actor-critic: Deep reinforcement learning with a latent variable model. arXiv preprint arXiv:1907.00953, 2019",
+      "Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez, Yuval Tassa, David Silver, and Daan Wierstra. Continuous control with deep reinforcement learning. CoRR, 2015a",
+      "Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Manfred Otto Heess, Tom Erez, Yuval Tassa, David Silver, and Daan Wierstra. Continuous control with deep reinforcement learning. CoRR, abs/1509.02971, 2015b",
+      "V olodymyr Mnih, Koray Kavukcuoglu, David Silver, Alex Graves, Ioannis Antonoglou, Daan Wierstra, and Martin Riedmiller. Playing atari with deep reinforcement learning. arXiv e-prints, 2013",
+      "V olodymyr Mnih, Adria Puigdomenech Badia, Mehdi Mirza, Alex Graves, Timothy P. Lillicrap, Tim Harley, David Silver, and Koray Kavukcuoglu. Asynchronous methods for deep reinforcement learning. CoRR, 2016a",
+      "V olodymyr Mnih, Adri\u00e0 Puigdom\u00e8nech Badia, Mehdi Mirza, Alex Graves, Timothy P. Lillicrap, Tim Harley, David Silver, and Koray Kavukcuoglu. Asynchronous methods for deep reinforcement learning, 2016b",
+      "R\u00e9mi Munos, Tom Stepleton, Anna Harutyunyan, and Marc G. Bellemare. Safe and ef\ufb01cient off-policy reinforcement learning. CoRR, 2016",
+      "Mehdi Noroozi and Paolo Favaro. Unsupervised learning of visual representations by solving jigsaw puzzles. In European Conference on Computer Vision, pages 69\u201384. Springer, 2016",
+      "Lerrel Pinto, Dhiraj Gandhi, Yuanfeng Han, Yong-Lae Park, and Abhinav Gupta. The curious robot: Learning visual representations via physical interactions. CoRR, 2016",
+      "Roberta Raileanu, Max Goldstein, Denis Yarats, Ilya Kostrikov, and Rob Fergus. Automatic data augmentation for generalization in deep reinforcement learning. CoRR, 2020",
+      "Max Schwarzer, Ankesh Anand, Rishab Goel, R Devon Hjelm, Aaron Courville, and Philip Bachman. Data-ef\ufb01cient reinforcement learning with momentum predictive representations.arXiv preprint arXiv:2007.05929, 2020a",
+      "Max Schwarzer, Ankesh Anand, Rishab Goel, R. Devon Hjelm, Aaron C. Courville, and Philip Bachman. Data-ef\ufb01cient reinforcement learning with momentum predictive representations.CoRR, 2020b",
+      "David Silver, Guy Lever, Nicolas Heess, Thomas Degris, Daan Wierstra, and Martin Riedmiller. Deterministic policy gradient algorithms. In Proceedings of the 31st International Conference on Machine Learning, 2014",
+      "Aravind Srinivas, Michael Laskin, and Pieter Abbeel. Curl: Contrastive unsupervised representations for reinforcement learning. arXiv preprint arXiv:2004.04136, 2020",
+      "Adam Stooke, Kimin Lee, Pieter Abbeel, and Michael Laskin. Decoupling representation learning from reinforcement learning. arXiv preprint arXiv, 2020",
+      "Yuval Tassa, Tom Erez, and Emanuel Todorov. Synthesis and stabilization of complex behaviors through online trajectory optimization. In 2012 IEEE/RSJ International Conference on Intelligent",
+      "Robots and Systems, 2012",
+      "Yuval Tassa, Yotam Doron, Alistair Muldal, Tom Erez, Yazhe Li, Diego de Las Casas, David Budden, Abbas Abdolmaleki, Josh Merel, Andrew Lefrancq, et al. Deepmind control suite. arXiv preprint arXiv:1801.00690, 2018",
+      "Emanuel Todorov, Tom Erez, and Yuval Tassa. Mujoco: A physics engine for model-based control. In 2012 IEEE/RSJ International Conference on Intelligent Robots and Systems , 2012",
+      "Pascal Vincent, Hugo Larochelle, Yoshua Bengio, and Pierre-Antoine Manzagol. Extracting and composing robust features with denoising autoencoders. In Proceedings of the 25th international conference on Machine learning, pages 1096\u20131103. ACM, 2008",
+      "Xiaolong Wang and Abhinav Gupta. Unsupervised learning of visual representations using videos. In ICCV, 2015",
+      "Christopher J. C. H. Watkins and Peter Dayan. Q-learning. Machine Learning, 1992",
+      "Christopher John Cornish Hellaby Watkins. Learning from Delayed Rewards. PhD thesis, King\u2019s College, 1989",
+      "Wilson Yan, Ashwin Vangipuram, Pieter Abbeel, and Lerrel Pinto. Learning predictive representations for deformable objects using contrastive estimation. arXiv preprint arXiv:2003.05436, 2020",
+      "Denis Yarats, Amy Zhang, Ilya Kostrikov, Brandon Amos, Joelle Pineau, and Rob Fergus. Im- proving sample ef\ufb01ciency in model-free reinforcement learning from images. arXiv preprint arXiv:1910.01741, 2019",
+      "Denis Yarats, Rob Fergus, Alessandro Lazaric, and Lerrel Pinto. Reinforcement learning with prototypical representations. CoRR, 2021a",
+      "Denis Yarats, Ilya Kostrikov, and Rob Fergus. Image augmentation is all you need: Regularizing deep reinforcement learning from pixels. In 9th International Conference on Learning Representations, ICLR 2021, 2021b",
+      "Sarah Young, Dhiraj Gandhi, Shubham Tulsiani, Abhinav Gupta, Pieter Abbeel, and Lerrel Pinto. Visual imitation made easy. CoRR, 2020",
+      "Albert Zhan, Philip Zhao, Lerrel Pinto, Pieter Abbeel, and Michael Laskin. A framework for ef\ufb01cient robotic manipulation. CoRR, 2020",
+      "Richard Zhang, Phillip Isola, and Alexei A Efros. Split-brain autoencoders: Unsupervised learning by cross-channel prediction. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pages 1058\u20131067, 2017"
+    ],
+    "keywords": [
+      "critic rl algorithm",
+      "visual control learning",
+      "benchmark consists humanoid",
+      "deepmind control",
+      "humanoid locomotion tasks",
+      "reinforcement learning rl",
+      "deepmind control suite",
+      "visual continuous control",
+      "control learning better",
+      "results deepmind control",
+      "continuous control drq",
+      "challenging visual control",
+      "visual reinforcement learning",
+      "humanoid run",
+      "free reinforcement learning",
+      "humanoid run figure",
+      "humanoid walk",
+      "compute stddev exploration",
+      "critic rl",
+      "stochastic explore"
+    ],
+    "entities": {
+      "methods": [
+        "model - free reinforcement learning",
+        "reinforcement learning",
+        "rl",
+        "drq",
+        "actor-critic",
+        "data augmentation",
+        "deepmind control",
+        "model - free rl",
+        "drq - v2",
+        "model - free actor - critic rl",
+        "image - based continuous control",
+        "drqv2",
+        "- ef",
+        "##nt continuous control",
+        "autoencoders",
+        "data augmentations",
+        "\ufb01rst model - free",
+        "dreamerv2",
+        "multi - step return",
+        "bilinear interpolation",
+        "random shift image augmentation",
+        "replay buffer management",
+        "data augmentation processing",
+        "computer vi - sion",
+        "contrastive learning",
+        "curl",
+        "spr",
+        "proto - rl",
+        "##pole swingup dreamer - v2 drq - v2",
+        "dreamer - v2",
+        "image - based rl",
+        "model - based optimal control",
+        "\ufb01rst model - free rl",
+        "200episode return acrobot swingup drq",
+        "sac drq",
+        "800episode return quadruped walk",
+        "600episode return reacher hard",
+        "a ) drq",
+        "dotted silver",
+        "sac",
+        "ddpg",
+        "##de return acrobot swingup drq",
+        "nstep =",
+        "nstep = 3 drq",
+        "nstep",
+        "##de return quadruped walk",
+        "step td - targets",
+        "3 - step returns",
+        "ns",
+        "ddpg base rl",
+        "image augmentation",
+        "visual continuous control",
+        "dmc",
+        "encoder",
+        "policy",
+        "q -",
+        "random shifts image augmentation",
+        "stddev",
+        "replay buffer update critic",
+        "convolutional encoder",
+        "random shifts augmentation",
+        "Actor-Critic",
+        "actor - critic",
+        "actor - critic rl",
+        "##n - step",
+        "td ( \u03bb",
+        "retrace ( \u03bb",
+        "##n",
+        "clipped double q - learning",
+        "q - functionsq\u03b81",
+        "##q\u03b82",
+        "xt",
+        "clip",
+        "td3",
+        "dpg",
+        "linear decay",
+        "\u03c3init +",
+        "drq drq - v2"
+      ],
+      "datasets": [
+        "DeepMind Control Suite",
+        "dmc",
+        "slac",
+        "atc",
+        "drq",
+        "rad",
+        "sac - ae"
+      ],
+      "tasks": [
+        "visual continuous control",
+        "complex humanoid locomotion tasks",
+        "rl",
+        "humanoid locomotion",
+        "visual rl",
+        "self - prediction",
+        "visual control",
+        "visual representation",
+        "contrastive cluster assignment",
+        "control",
+        "humanoid control problem",
+        "humanoid control",
+        "solve humanoid control",
+        "exploration"
+      ],
+      "metrics": [
+        "wall-clock time"
+      ],
+      "institutions": [
+        "RL",
+        "GPU",
+        "DMC",
+        "Tassa",
+        "PyTorch",
+        "SAC",
+        "DDPG",
+        "Lillicrap et al.",
+        "DrQ",
+        "FPS",
+        "Doersch",
+        "Wang",
+        "Noroozi",
+        "SAC-AE",
+        "CURL",
+        "RAD",
+        "Humanoid Control",
+        "\u03c3(t",
+        "Equation",
+        "N",
+        "D \u2190 D \u222a",
+        "Compute",
+        "L\u03b82,\u03be",
+        "Apply",
+        "Compute L\u03c6 using Equation",
+        "Barth-Maron et al",
+        "TD",
+        "TD3",
+        "DPG"
+      ]
+    },
+    "analysis": {
+      "pos": {
+        "token_count": 3963,
+        "displayed_token_count": 250,
+        "pos_counts": {
+          "ADJ": 275,
+          "ADP": 271,
+          "ADV": 92,
+          "AUX": 62,
+          "CCONJ": 56,
+          "DET": 174,
+          "INTJ": 3,
+          "NOUN": 714,
+          "NUM": 482,
+          "PART": 35,
+          "PRON": 91,
+          "PROPN": 660,
+          "PUNCT": 718,
+          "SCONJ": 20,
+          "SYM": 2,
+          "VERB": 244,
+          "X": 64
+        },
+        "tokens": [
+          {
+            "text": "We",
+            "lemma": "we",
+            "pos": "PRON",
+            "tag": "PRP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 0,
+            "end": 2
+          },
+          {
+            "text": "present",
+            "lemma": "present",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 3,
+            "end": 10
+          },
+          {
+            "text": "DrQ",
+            "lemma": "DrQ",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 11,
+            "end": 14
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 14,
+            "end": 15
+          },
+          {
+            "text": "v2",
+            "lemma": "v2",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 15,
+            "end": 17
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 17,
+            "end": 18
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 19,
+            "end": 20
+          },
+          {
+            "text": "model",
+            "lemma": "model",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "npadvmod",
+            "section": "abstract",
+            "start": 21,
+            "end": 26
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 26,
+            "end": 27
+          },
+          {
+            "text": "free",
+            "lemma": "free",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 27,
+            "end": 31
+          },
+          {
+            "text": "reinforcement",
+            "lemma": "reinforcement",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 32,
+            "end": 45
+          },
+          {
+            "text": "learning",
+            "lemma": "learning",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "appos",
+            "section": "abstract",
+            "start": 46,
+            "end": 54
+          },
+          {
+            "text": "(",
+            "lemma": "(",
+            "pos": "PUNCT",
+            "tag": "-LRB-",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 55,
+            "end": 56
+          },
+          {
+            "text": "RL",
+            "lemma": "RL",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "appos",
+            "section": "abstract",
+            "start": 56,
+            "end": 58
+          },
+          {
+            "text": ")",
+            "lemma": ")",
+            "pos": "PUNCT",
+            "tag": "-RRB-",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 58,
+            "end": 59
+          },
+          {
+            "text": "algorithm",
+            "lemma": "algorithm",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "appos",
+            "section": "abstract",
+            "start": 60,
+            "end": 69
+          },
+          {
+            "text": "for",
+            "lemma": "for",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 70,
+            "end": 73
+          },
+          {
+            "text": "visual",
+            "lemma": "visual",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 74,
+            "end": 80
+          },
+          {
+            "text": "continuous",
+            "lemma": "continuous",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 81,
+            "end": 91
+          },
+          {
+            "text": "control",
+            "lemma": "control",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 92,
+            "end": 99
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 99,
+            "end": 100
+          },
+          {
+            "text": "DrQ",
+            "lemma": "DrQ",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 101,
+            "end": 104
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 104,
+            "end": 105
+          },
+          {
+            "text": "v2",
+            "lemma": "v2",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 105,
+            "end": 107
+          },
+          {
+            "text": "builds",
+            "lemma": "build",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 108,
+            "end": 114
+          },
+          {
+            "text": "on",
+            "lemma": "on",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 115,
+            "end": 117
+          },
+          {
+            "text": "DrQ",
+            "lemma": "DrQ",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 118,
+            "end": 121
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 121,
+            "end": 122
+          },
+          {
+            "text": "an",
+            "lemma": "an",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 123,
+            "end": 125
+          },
+          {
+            "text": "off",
+            "lemma": "off",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 126,
+            "end": 129
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 129,
+            "end": 130
+          },
+          {
+            "text": "policy",
+            "lemma": "policy",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 130,
+            "end": 136
+          },
+          {
+            "text": "actor",
+            "lemma": "actor",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 137,
+            "end": 142
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 142,
+            "end": 143
+          },
+          {
+            "text": "critic",
+            "lemma": "critic",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 143,
+            "end": 149
+          },
+          {
+            "text": "approach",
+            "lemma": "approach",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "appos",
+            "section": "abstract",
+            "start": 150,
+            "end": 158
+          },
+          {
+            "text": "that",
+            "lemma": "that",
+            "pos": "PRON",
+            "tag": "WDT",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 159,
+            "end": 163
+          },
+          {
+            "text": "uses",
+            "lemma": "use",
+            "pos": "VERB",
+            "tag": "VBZ",
+            "dependency": "relcl",
+            "section": "abstract",
+            "start": 164,
+            "end": 168
+          },
+          {
+            "text": "data",
+            "lemma": "datum",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 169,
+            "end": 173
+          },
+          {
+            "text": "augmentation",
+            "lemma": "augmentation",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 174,
+            "end": 186
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "PART",
+            "tag": "TO",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 187,
+            "end": 189
+          },
+          {
+            "text": "learn",
+            "lemma": "learn",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "xcomp",
+            "section": "abstract",
+            "start": 190,
+            "end": 195
+          },
+          {
+            "text": "directly",
+            "lemma": "directly",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 196,
+            "end": 204
+          },
+          {
+            "text": "from",
+            "lemma": "from",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 205,
+            "end": 209
+          },
+          {
+            "text": "pixels",
+            "lemma": "pixel",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 210,
+            "end": 216
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 216,
+            "end": 217
+          },
+          {
+            "text": "We",
+            "lemma": "we",
+            "pos": "PRON",
+            "tag": "PRP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 218,
+            "end": 220
+          },
+          {
+            "text": "introduce",
+            "lemma": "introduce",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 221,
+            "end": 230
+          },
+          {
+            "text": "several",
+            "lemma": "several",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 231,
+            "end": 238
+          },
+          {
+            "text": "improvements",
+            "lemma": "improvement",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 239,
+            "end": 251
+          },
+          {
+            "text": "that",
+            "lemma": "that",
+            "pos": "PRON",
+            "tag": "WDT",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 252,
+            "end": 256
+          },
+          {
+            "text": "yield",
+            "lemma": "yield",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "relcl",
+            "section": "abstract",
+            "start": 257,
+            "end": 262
+          },
+          {
+            "text": "state",
+            "lemma": "state",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "nmod",
+            "section": "abstract",
+            "start": 263,
+            "end": 268
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 268,
+            "end": 269
+          },
+          {
+            "text": "of",
+            "lemma": "of",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 269,
+            "end": 271
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 271,
+            "end": 272
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 272,
+            "end": 275
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 275,
+            "end": 276
+          },
+          {
+            "text": "art",
+            "lemma": "art",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 276,
+            "end": 279
+          },
+          {
+            "text": "results",
+            "lemma": "result",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 280,
+            "end": 287
+          },
+          {
+            "text": "on",
+            "lemma": "on",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 288,
+            "end": 290
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 291,
+            "end": 294
+          },
+          {
+            "text": "DeepMind",
+            "lemma": "DeepMind",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 295,
+            "end": 303
+          },
+          {
+            "text": "Control",
+            "lemma": "Control",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 304,
+            "end": 311
+          },
+          {
+            "text": "Suite",
+            "lemma": "Suite",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 312,
+            "end": 317
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 317,
+            "end": 318
+          },
+          {
+            "text": "Notably",
+            "lemma": "notably",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 319,
+            "end": 326
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 326,
+            "end": 327
+          },
+          {
+            "text": "DrQ",
+            "lemma": "DrQ",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 328,
+            "end": 331
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 331,
+            "end": 332
+          },
+          {
+            "text": "v2",
+            "lemma": "v2",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 332,
+            "end": 334
+          },
+          {
+            "text": "is",
+            "lemma": "be",
+            "pos": "AUX",
+            "tag": "VBZ",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 335,
+            "end": 337
+          },
+          {
+            "text": "able",
+            "lemma": "able",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "acomp",
+            "section": "abstract",
+            "start": 338,
+            "end": 342
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "PART",
+            "tag": "TO",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 343,
+            "end": 345
+          },
+          {
+            "text": "solve",
+            "lemma": "solve",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "xcomp",
+            "section": "abstract",
+            "start": 346,
+            "end": 351
+          },
+          {
+            "text": "complex",
+            "lemma": "complex",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 352,
+            "end": 359
+          },
+          {
+            "text": "humanoid",
+            "lemma": "humanoid",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 360,
+            "end": 368
+          },
+          {
+            "text": "locomotion",
+            "lemma": "locomotion",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 369,
+            "end": 379
+          },
+          {
+            "text": "tasks",
+            "lemma": "task",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 380,
+            "end": 385
+          },
+          {
+            "text": "directly",
+            "lemma": "directly",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 386,
+            "end": 394
+          },
+          {
+            "text": "from",
+            "lemma": "from",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 395,
+            "end": 399
+          },
+          {
+            "text": "pixel",
+            "lemma": "pixel",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 400,
+            "end": 405
+          },
+          {
+            "text": "observations",
+            "lemma": "observation",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 406,
+            "end": 418
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 418,
+            "end": 419
+          },
+          {
+            "text": "previously",
+            "lemma": "previously",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 420,
+            "end": 430
+          },
+          {
+            "text": "unattained",
+            "lemma": "unattaine",
+            "pos": "VERB",
+            "tag": "VBN",
+            "dependency": "advcl",
+            "section": "abstract",
+            "start": 431,
+            "end": 441
+          },
+          {
+            "text": "by",
+            "lemma": "by",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "agent",
+            "section": "abstract",
+            "start": 442,
+            "end": 444
+          },
+          {
+            "text": "model",
+            "lemma": "model",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "npadvmod",
+            "section": "abstract",
+            "start": 445,
+            "end": 450
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 450,
+            "end": 451
+          },
+          {
+            "text": "free",
+            "lemma": "free",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 451,
+            "end": 455
+          },
+          {
+            "text": "RL",
+            "lemma": "RL",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 456,
+            "end": 458
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 458,
+            "end": 459
+          },
+          {
+            "text": "DrQ",
+            "lemma": "DrQ",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 460,
+            "end": 463
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 463,
+            "end": 464
+          },
+          {
+            "text": "v2",
+            "lemma": "v2",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 464,
+            "end": 466
+          },
+          {
+            "text": "is",
+            "lemma": "be",
+            "pos": "AUX",
+            "tag": "VBZ",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 467,
+            "end": 469
+          },
+          {
+            "text": "conceptually",
+            "lemma": "conceptually",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 470,
+            "end": 482
+          },
+          {
+            "text": "simple",
+            "lemma": "simple",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "acomp",
+            "section": "abstract",
+            "start": 483,
+            "end": 489
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 489,
+            "end": 490
+          },
+          {
+            "text": "easy",
+            "lemma": "easy",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 491,
+            "end": 495
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "PART",
+            "tag": "TO",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 496,
+            "end": 498
+          },
+          {
+            "text": "implement",
+            "lemma": "implement",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "xcomp",
+            "section": "abstract",
+            "start": 499,
+            "end": 508
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 508,
+            "end": 509
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 510,
+            "end": 513
+          },
+          {
+            "text": "provides",
+            "lemma": "provide",
+            "pos": "VERB",
+            "tag": "VBZ",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 514,
+            "end": 522
+          },
+          {
+            "text": "signi\ufb01cantly",
+            "lemma": "signi\ufb01cantly",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 523,
+            "end": 535
+          },
+          {
+            "text": "better",
+            "lemma": "well",
+            "pos": "ADJ",
+            "tag": "JJR",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 536,
+            "end": 542
+          },
+          {
+            "text": "computational",
+            "lemma": "computational",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 543,
+            "end": 556
+          },
+          {
+            "text": "footprint",
+            "lemma": "footprint",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 557,
+            "end": 566
+          },
+          {
+            "text": "compared",
+            "lemma": "compare",
+            "pos": "VERB",
+            "tag": "VBN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 567,
+            "end": 575
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 576,
+            "end": 578
+          },
+          {
+            "text": "prior",
+            "lemma": "prior",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 579,
+            "end": 584
+          },
+          {
+            "text": "work",
+            "lemma": "work",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 585,
+            "end": 589
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 589,
+            "end": 590
+          },
+          {
+            "text": "with",
+            "lemma": "with",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 591,
+            "end": 595
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 596,
+            "end": 599
+          },
+          {
+            "text": "majority",
+            "lemma": "majority",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 600,
+            "end": 608
+          },
+          {
+            "text": "of",
+            "lemma": "of",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 609,
+            "end": 611
+          },
+          {
+            "text": "tasks",
+            "lemma": "task",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 612,
+            "end": 617
+          },
+          {
+            "text": "taking",
+            "lemma": "take",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "pcomp",
+            "section": "abstract",
+            "start": 618,
+            "end": 624
+          },
+          {
+            "text": "just",
+            "lemma": "just",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 625,
+            "end": 629
+          },
+          {
+            "text": "8",
+            "lemma": "8",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "abstract",
+            "start": 630,
+            "end": 631
+          },
+          {
+            "text": "hours",
+            "lemma": "hour",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 632,
+            "end": 637
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "PART",
+            "tag": "TO",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 638,
+            "end": 640
+          },
+          {
+            "text": "train",
+            "lemma": "train",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "advcl",
+            "section": "abstract",
+            "start": 641,
+            "end": 646
+          },
+          {
+            "text": "on",
+            "lemma": "on",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 647,
+            "end": 649
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 650,
+            "end": 651
+          },
+          {
+            "text": "single",
+            "lemma": "single",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 652,
+            "end": 658
+          },
+          {
+            "text": "GPU",
+            "lemma": "GPU",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 659,
+            "end": 662
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 662,
+            "end": 663
+          },
+          {
+            "text": "Finally",
+            "lemma": "finally",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 664,
+            "end": 671
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 671,
+            "end": 672
+          },
+          {
+            "text": "we",
+            "lemma": "we",
+            "pos": "PRON",
+            "tag": "PRP",
+            "dependency": "nsubj",
+            "section": "abstract",
+            "start": 673,
+            "end": 675
+          },
+          {
+            "text": "publicly",
+            "lemma": "publicly",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 676,
+            "end": 684
+          },
+          {
+            "text": "release",
+            "lemma": "release",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "ROOT",
+            "section": "abstract",
+            "start": 685,
+            "end": 692
+          },
+          {
+            "text": "DrQ",
+            "lemma": "DrQ",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 693,
+            "end": 696
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 696,
+            "end": 697
+          },
+          {
+            "text": "v2",
+            "lemma": "v2",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "nmod",
+            "section": "abstract",
+            "start": 697,
+            "end": 699
+          },
+          {
+            "text": "\u2019s",
+            "lemma": "\u2019s",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 699,
+            "end": 701
+          },
+          {
+            "text": "implementation",
+            "lemma": "implementation",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 702,
+            "end": 716
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "PART",
+            "tag": "TO",
+            "dependency": "aux",
+            "section": "abstract",
+            "start": 717,
+            "end": 719
+          },
+          {
+            "text": "provide",
+            "lemma": "provide",
+            "pos": "VERB",
+            "tag": "VB",
+            "dependency": "advcl",
+            "section": "abstract",
+            "start": 720,
+            "end": 727
+          },
+          {
+            "text": "RL",
+            "lemma": "RL",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "abstract",
+            "start": 728,
+            "end": 730
+          },
+          {
+            "text": "practitioners",
+            "lemma": "practitioner",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "abstract",
+            "start": 731,
+            "end": 744
+          },
+          {
+            "text": "with",
+            "lemma": "with",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "abstract",
+            "start": 745,
+            "end": 749
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "abstract",
+            "start": 750,
+            "end": 751
+          },
+          {
+            "text": "strong",
+            "lemma": "strong",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "abstract",
+            "start": 752,
+            "end": 758
+          },
+          {
+            "text": "and",
+            "lemma": "and",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "cc",
+            "section": "abstract",
+            "start": 759,
+            "end": 762
+          },
+          {
+            "text": "computationally",
+            "lemma": "computationally",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "abstract",
+            "start": 763,
+            "end": 778
+          },
+          {
+            "text": "ef\ufb01cient",
+            "lemma": "ef\ufb01cient",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "conj",
+            "section": "abstract",
+            "start": 779,
+            "end": 787
+          },
+          {
+            "text": "baseline",
+            "lemma": "baseline",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "abstract",
+            "start": 788,
+            "end": 796
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "abstract",
+            "start": 796,
+            "end": 797
+          },
+          {
+            "text": "Creating",
+            "lemma": "create",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "csubj",
+            "section": "introduction",
+            "start": 0,
+            "end": 8
+          },
+          {
+            "text": "sample",
+            "lemma": "sample",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 9,
+            "end": 15
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 15,
+            "end": 16
+          },
+          {
+            "text": "ef\ufb01cient",
+            "lemma": "ef\ufb01cient",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "nmod",
+            "section": "introduction",
+            "start": 16,
+            "end": 24
+          },
+          {
+            "text": "continuous",
+            "lemma": "continuous",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 25,
+            "end": 35
+          },
+          {
+            "text": "control",
+            "lemma": "control",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "introduction",
+            "start": 36,
+            "end": 43
+          },
+          {
+            "text": "methods",
+            "lemma": "method",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "introduction",
+            "start": 44,
+            "end": 51
+          },
+          {
+            "text": "that",
+            "lemma": "that",
+            "pos": "PRON",
+            "tag": "WDT",
+            "dependency": "nsubj",
+            "section": "introduction",
+            "start": 52,
+            "end": 56
+          },
+          {
+            "text": "observe",
+            "lemma": "observe",
+            "pos": "VERB",
+            "tag": "VBP",
+            "dependency": "relcl",
+            "section": "introduction",
+            "start": 57,
+            "end": 64
+          },
+          {
+            "text": "high",
+            "lemma": "high",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 65,
+            "end": 69
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 69,
+            "end": 70
+          },
+          {
+            "text": "dimensional",
+            "lemma": "dimensional",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 70,
+            "end": 81
+          },
+          {
+            "text": "images",
+            "lemma": "image",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "dobj",
+            "section": "introduction",
+            "start": 82,
+            "end": 88
+          },
+          {
+            "text": "has",
+            "lemma": "have",
+            "pos": "AUX",
+            "tag": "VBZ",
+            "dependency": "aux",
+            "section": "introduction",
+            "start": 89,
+            "end": 92
+          },
+          {
+            "text": "been",
+            "lemma": "be",
+            "pos": "AUX",
+            "tag": "VBN",
+            "dependency": "ROOT",
+            "section": "introduction",
+            "start": 93,
+            "end": 97
+          },
+          {
+            "text": "a",
+            "lemma": "a",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "introduction",
+            "start": 98,
+            "end": 99
+          },
+          {
+            "text": "long",
+            "lemma": "long",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 100,
+            "end": 104
+          },
+          {
+            "text": "standing",
+            "lemma": "stand",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 105,
+            "end": 113
+          },
+          {
+            "text": "challenge",
+            "lemma": "challenge",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "attr",
+            "section": "introduction",
+            "start": 114,
+            "end": 123
+          },
+          {
+            "text": "in",
+            "lemma": "in",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "introduction",
+            "start": 124,
+            "end": 126
+          },
+          {
+            "text": "reinforcement",
+            "lemma": "reinforcement",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "introduction",
+            "start": 127,
+            "end": 140
+          },
+          {
+            "text": "learning",
+            "lemma": "learning",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "introduction",
+            "start": 141,
+            "end": 149
+          },
+          {
+            "text": "(",
+            "lemma": "(",
+            "pos": "PUNCT",
+            "tag": "-LRB-",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 150,
+            "end": 151
+          },
+          {
+            "text": "RL",
+            "lemma": "RL",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "appos",
+            "section": "introduction",
+            "start": 151,
+            "end": 153
+          },
+          {
+            "text": ")",
+            "lemma": ")",
+            "pos": "PUNCT",
+            "tag": "-RRB-",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 153,
+            "end": 154
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 155,
+            "end": 156
+          },
+          {
+            "text": "Over",
+            "lemma": "over",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "introduction",
+            "start": 157,
+            "end": 161
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "introduction",
+            "start": 162,
+            "end": 165
+          },
+          {
+            "text": "last",
+            "lemma": "last",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 166,
+            "end": 170
+          },
+          {
+            "text": "three",
+            "lemma": "three",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "nummod",
+            "section": "introduction",
+            "start": 171,
+            "end": 176
+          },
+          {
+            "text": "years",
+            "lemma": "year",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "introduction",
+            "start": 177,
+            "end": 182
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 182,
+            "end": 183
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "introduction",
+            "start": 184,
+            "end": 187
+          },
+          {
+            "text": "RL",
+            "lemma": "RL",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "introduction",
+            "start": 188,
+            "end": 190
+          },
+          {
+            "text": "community",
+            "lemma": "community",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "nsubj",
+            "section": "introduction",
+            "start": 191,
+            "end": 200
+          },
+          {
+            "text": "has",
+            "lemma": "have",
+            "pos": "AUX",
+            "tag": "VBZ",
+            "dependency": "aux",
+            "section": "introduction",
+            "start": 201,
+            "end": 204
+          },
+          {
+            "text": "made",
+            "lemma": "make",
+            "pos": "VERB",
+            "tag": "VBN",
+            "dependency": "ROOT",
+            "section": "introduction",
+            "start": 205,
+            "end": 209
+          },
+          {
+            "text": "signi\ufb01cant",
+            "lemma": "signi\ufb01cant",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 210,
+            "end": 220
+          },
+          {
+            "text": "headway",
+            "lemma": "headway",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "introduction",
+            "start": 221,
+            "end": 228
+          },
+          {
+            "text": "on",
+            "lemma": "on",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "introduction",
+            "start": 229,
+            "end": 231
+          },
+          {
+            "text": "this",
+            "lemma": "this",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "introduction",
+            "start": 232,
+            "end": 236
+          },
+          {
+            "text": "problem",
+            "lemma": "problem",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "pobj",
+            "section": "introduction",
+            "start": 237,
+            "end": 244
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 244,
+            "end": 245
+          },
+          {
+            "text": "improving",
+            "lemma": "improve",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "advcl",
+            "section": "introduction",
+            "start": 246,
+            "end": 255
+          },
+          {
+            "text": "sample",
+            "lemma": "sample",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "compound",
+            "section": "introduction",
+            "start": 256,
+            "end": 262
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 262,
+            "end": 263
+          },
+          {
+            "text": "ef\ufb01ciency",
+            "lemma": "ef\ufb01ciency",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "introduction",
+            "start": 263,
+            "end": 272
+          },
+          {
+            "text": "signi\ufb01cantly",
+            "lemma": "signi\ufb01cantly",
+            "pos": "ADV",
+            "tag": "RB",
+            "dependency": "advmod",
+            "section": "introduction",
+            "start": 273,
+            "end": 285
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PUNCT",
+            "tag": ".",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 285,
+            "end": 286
+          },
+          {
+            "text": "The",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "introduction",
+            "start": 287,
+            "end": 290
+          },
+          {
+            "text": "key",
+            "lemma": "key",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 291,
+            "end": 294
+          },
+          {
+            "text": "insight",
+            "lemma": "insight",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "nsubj",
+            "section": "introduction",
+            "start": 295,
+            "end": 302
+          },
+          {
+            "text": "to",
+            "lemma": "to",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "introduction",
+            "start": 303,
+            "end": 305
+          },
+          {
+            "text": "solving",
+            "lemma": "solve",
+            "pos": "VERB",
+            "tag": "VBG",
+            "dependency": "pcomp",
+            "section": "introduction",
+            "start": 306,
+            "end": 313
+          },
+          {
+            "text": "visual",
+            "lemma": "visual",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 314,
+            "end": 320
+          },
+          {
+            "text": "control",
+            "lemma": "control",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "dobj",
+            "section": "introduction",
+            "start": 321,
+            "end": 328
+          },
+          {
+            "text": "is",
+            "lemma": "be",
+            "pos": "AUX",
+            "tag": "VBZ",
+            "dependency": "ROOT",
+            "section": "introduction",
+            "start": 329,
+            "end": 331
+          },
+          {
+            "text": "the",
+            "lemma": "the",
+            "pos": "DET",
+            "tag": "DT",
+            "dependency": "det",
+            "section": "introduction",
+            "start": 332,
+            "end": 335
+          },
+          {
+            "text": "learning",
+            "lemma": "learning",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "attr",
+            "section": "introduction",
+            "start": 336,
+            "end": 344
+          },
+          {
+            "text": "of",
+            "lemma": "of",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "introduction",
+            "start": 345,
+            "end": 347
+          },
+          {
+            "text": "better",
+            "lemma": "well",
+            "pos": "ADJ",
+            "tag": "JJR",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 348,
+            "end": 354
+          },
+          {
+            "text": "low",
+            "lemma": "low",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 355,
+            "end": 358
+          },
+          {
+            "text": "-",
+            "lemma": "-",
+            "pos": "PUNCT",
+            "tag": "HYPH",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 358,
+            "end": 359
+          },
+          {
+            "text": "dimensional",
+            "lemma": "dimensional",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 359,
+            "end": 370
+          },
+          {
+            "text": "representations",
+            "lemma": "representation",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "introduction",
+            "start": 371,
+            "end": 386
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 386,
+            "end": 387
+          },
+          {
+            "text": "either",
+            "lemma": "either",
+            "pos": "CCONJ",
+            "tag": "CC",
+            "dependency": "preconj",
+            "section": "introduction",
+            "start": 388,
+            "end": 394
+          },
+          {
+            "text": "through",
+            "lemma": "through",
+            "pos": "ADP",
+            "tag": "IN",
+            "dependency": "prep",
+            "section": "introduction",
+            "start": 395,
+            "end": 402
+          },
+          {
+            "text": "autoencoders",
+            "lemma": "autoencoder",
+            "pos": "NOUN",
+            "tag": "NNS",
+            "dependency": "pobj",
+            "section": "introduction",
+            "start": 403,
+            "end": 415
+          },
+          {
+            "text": "[",
+            "lemma": "[",
+            "pos": "X",
+            "tag": "XX",
+            "dependency": "dep",
+            "section": "introduction",
+            "start": 416,
+            "end": 417
+          },
+          {
+            "text": "Yarats",
+            "lemma": "Yarats",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "dep",
+            "section": "introduction",
+            "start": 417,
+            "end": 423
+          },
+          {
+            "text": "et",
+            "lemma": "et",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "npadvmod",
+            "section": "introduction",
+            "start": 424,
+            "end": 426
+          },
+          {
+            "text": "al",
+            "lemma": "al",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "conj",
+            "section": "introduction",
+            "start": 427,
+            "end": 429
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "conj",
+            "section": "introduction",
+            "start": 429,
+            "end": 430
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 430,
+            "end": 431
+          },
+          {
+            "text": "2019",
+            "lemma": "2019",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "appos",
+            "section": "introduction",
+            "start": 432,
+            "end": 436
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 436,
+            "end": 437
+          },
+          {
+            "text": "Finn",
+            "lemma": "Finn",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "introduction",
+            "start": 438,
+            "end": 442
+          },
+          {
+            "text": "et",
+            "lemma": "et",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "introduction",
+            "start": 443,
+            "end": 445
+          },
+          {
+            "text": "al",
+            "lemma": "al",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "pobj",
+            "section": "introduction",
+            "start": 446,
+            "end": 448
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "pobj",
+            "section": "introduction",
+            "start": 448,
+            "end": 449
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 449,
+            "end": 450
+          },
+          {
+            "text": "2015",
+            "lemma": "2015",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "appos",
+            "section": "introduction",
+            "start": 451,
+            "end": 455
+          },
+          {
+            "text": "]",
+            "lemma": "]",
+            "pos": "PUNCT",
+            "tag": "-RRB-",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 455,
+            "end": 456
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 456,
+            "end": 457
+          },
+          {
+            "text": "variational",
+            "lemma": "variational",
+            "pos": "ADJ",
+            "tag": "JJ",
+            "dependency": "amod",
+            "section": "introduction",
+            "start": 458,
+            "end": 469
+          },
+          {
+            "text": "inference",
+            "lemma": "inference",
+            "pos": "NOUN",
+            "tag": "NN",
+            "dependency": "appos",
+            "section": "introduction",
+            "start": 470,
+            "end": 479
+          },
+          {
+            "text": "[",
+            "lemma": "[",
+            "pos": "X",
+            "tag": "XX",
+            "dependency": "dep",
+            "section": "introduction",
+            "start": 480,
+            "end": 481
+          },
+          {
+            "text": "Hafner",
+            "lemma": "Hafner",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "dobj",
+            "section": "introduction",
+            "start": 481,
+            "end": 487
+          },
+          {
+            "text": "et",
+            "lemma": "et",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "npadvmod",
+            "section": "introduction",
+            "start": 488,
+            "end": 490
+          },
+          {
+            "text": "al",
+            "lemma": "al",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "npadvmod",
+            "section": "introduction",
+            "start": 491,
+            "end": 493
+          },
+          {
+            "text": ".",
+            "lemma": ".",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "appos",
+            "section": "introduction",
+            "start": 493,
+            "end": 494
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 494,
+            "end": 495
+          },
+          {
+            "text": "2018",
+            "lemma": "2018",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "appos",
+            "section": "introduction",
+            "start": 496,
+            "end": 500
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 500,
+            "end": 501
+          },
+          {
+            "text": "2019",
+            "lemma": "2019",
+            "pos": "NUM",
+            "tag": "CD",
+            "dependency": "appos",
+            "section": "introduction",
+            "start": 502,
+            "end": 506
+          },
+          {
+            "text": ",",
+            "lemma": ",",
+            "pos": "PUNCT",
+            "tag": ",",
+            "dependency": "punct",
+            "section": "introduction",
+            "start": 506,
+            "end": 507
+          },
+          {
+            "text": "Lee",
+            "lemma": "Lee",
+            "pos": "PROPN",
+            "tag": "NNP",
+            "dependency": "compound",
+            "section": "introduction",
+            "start": 508,
+            "end": 511
+          }
+        ],
+        "noun_chunks": [
+          {
+            "text": "We",
+            "section": "abstract",
+            "start": 0,
+            "end": 2
+          },
+          {
+            "text": "DrQ-v2",
+            "section": "abstract",
+            "start": 11,
+            "end": 17
+          },
+          {
+            "text": "a model-free reinforcement learning",
+            "section": "abstract",
+            "start": 19,
+            "end": 54
+          },
+          {
+            "text": "RL",
+            "section": "abstract",
+            "start": 56,
+            "end": 58
+          },
+          {
+            "text": "algorithm",
+            "section": "abstract",
+            "start": 60,
+            "end": 69
+          },
+          {
+            "text": "visual continuous control",
+            "section": "abstract",
+            "start": 74,
+            "end": 99
+          },
+          {
+            "text": "DrQ-v2 builds",
+            "section": "abstract",
+            "start": 101,
+            "end": 114
+          },
+          {
+            "text": "DrQ",
+            "section": "abstract",
+            "start": 118,
+            "end": 121
+          },
+          {
+            "text": "an off-policy actor-critic approach",
+            "section": "abstract",
+            "start": 123,
+            "end": 158
+          },
+          {
+            "text": "that",
+            "section": "abstract",
+            "start": 159,
+            "end": 163
+          },
+          {
+            "text": "data augmentation",
+            "section": "abstract",
+            "start": 169,
+            "end": 186
+          },
+          {
+            "text": "pixels",
+            "section": "abstract",
+            "start": 210,
+            "end": 216
+          },
+          {
+            "text": "We",
+            "section": "abstract",
+            "start": 218,
+            "end": 220
+          },
+          {
+            "text": "several improvements",
+            "section": "abstract",
+            "start": 231,
+            "end": 251
+          },
+          {
+            "text": "that",
+            "section": "abstract",
+            "start": 252,
+            "end": 256
+          },
+          {
+            "text": "the-art",
+            "section": "abstract",
+            "start": 272,
+            "end": 279
+          },
+          {
+            "text": "the DeepMind Control Suite",
+            "section": "abstract",
+            "start": 291,
+            "end": 317
+          },
+          {
+            "text": "DrQ-v2",
+            "section": "abstract",
+            "start": 328,
+            "end": 334
+          },
+          {
+            "text": "complex humanoid locomotion tasks",
+            "section": "abstract",
+            "start": 352,
+            "end": 385
+          },
+          {
+            "text": "pixel observations",
+            "section": "abstract",
+            "start": 400,
+            "end": 418
+          },
+          {
+            "text": "model-free RL",
+            "section": "abstract",
+            "start": 445,
+            "end": 458
+          },
+          {
+            "text": "DrQ-v2",
+            "section": "abstract",
+            "start": 460,
+            "end": 466
+          },
+          {
+            "text": "signi\ufb01cantly better computational footprint",
+            "section": "abstract",
+            "start": 523,
+            "end": 566
+          },
+          {
+            "text": "prior work",
+            "section": "abstract",
+            "start": 579,
+            "end": 589
+          },
+          {
+            "text": "the majority",
+            "section": "abstract",
+            "start": 596,
+            "end": 608
+          },
+          {
+            "text": "tasks",
+            "section": "abstract",
+            "start": 612,
+            "end": 617
+          },
+          {
+            "text": "just 8 hours",
+            "section": "abstract",
+            "start": 625,
+            "end": 637
+          },
+          {
+            "text": "a single GPU",
+            "section": "abstract",
+            "start": 650,
+            "end": 662
+          },
+          {
+            "text": "we",
+            "section": "abstract",
+            "start": 673,
+            "end": 675
+          },
+          {
+            "text": "DrQ-v2\u2019s implementation",
+            "section": "abstract",
+            "start": 693,
+            "end": 716
+          },
+          {
+            "text": "RL practitioners",
+            "section": "abstract",
+            "start": 728,
+            "end": 744
+          },
+          {
+            "text": "a strong and computationally ef\ufb01cient baseline",
+            "section": "abstract",
+            "start": 750,
+            "end": 796
+          },
+          {
+            "text": "sample-ef\ufb01cient continuous control methods",
+            "section": "introduction",
+            "start": 9,
+            "end": 51
+          },
+          {
+            "text": "that",
+            "section": "introduction",
+            "start": 52,
+            "end": 56
+          },
+          {
+            "text": "high-dimensional images",
+            "section": "introduction",
+            "start": 65,
+            "end": 88
+          },
+          {
+            "text": "a long standing challenge",
+            "section": "introduction",
+            "start": 98,
+            "end": 123
+          },
+          {
+            "text": "reinforcement learning",
+            "section": "introduction",
+            "start": 127,
+            "end": 149
+          },
+          {
+            "text": "RL",
+            "section": "introduction",
+            "start": 151,
+            "end": 153
+          },
+          {
+            "text": "the last three years",
+            "section": "introduction",
+            "start": 162,
+            "end": 182
+          },
+          {
+            "text": "the RL\ncommunity",
+            "section": "introduction",
+            "start": 184,
+            "end": 200
+          },
+          {
+            "text": "signi\ufb01cant headway",
+            "section": "introduction",
+            "start": 210,
+            "end": 228
+          },
+          {
+            "text": "this problem",
+            "section": "introduction",
+            "start": 232,
+            "end": 244
+          },
+          {
+            "text": "sample-ef\ufb01ciency",
+            "section": "introduction",
+            "start": 256,
+            "end": 272
+          },
+          {
+            "text": "The key insight",
+            "section": "introduction",
+            "start": 287,
+            "end": 302
+          },
+          {
+            "text": "visual control",
+            "section": "introduction",
+            "start": 314,
+            "end": 328
+          },
+          {
+            "text": "the learning",
+            "section": "introduction",
+            "start": 332,
+            "end": 344
+          },
+          {
+            "text": "better low-dimensional representations",
+            "section": "introduction",
+            "start": 348,
+            "end": 386
+          },
+          {
+            "text": "autoencoders",
+            "section": "introduction",
+            "start": 403,
+            "end": 415
+          },
+          {
+            "text": "Finn et al",
+            "section": "introduction",
+            "start": 438,
+            "end": 448
+          },
+          {
+            "text": ".",
+            "section": "introduction",
+            "start": 448,
+            "end": 449
+          },
+          {
+            "text": "variational inference",
+            "section": "introduction",
+            "start": 458,
+            "end": 479
+          },
+          {
+            "text": "Hafner",
+            "section": "introduction",
+            "start": 481,
+            "end": 487
+          },
+          {
+            "text": ".",
+            "section": "introduction",
+            "start": 493,
+            "end": 494
+          },
+          {
+            "text": "Lee et al",
+            "section": "introduction",
+            "start": 508,
+            "end": 517
+          },
+          {
+            "text": ".",
+            "section": "introduction",
+            "start": 517,
+            "end": 518
+          },
+          {
+            "text": "contrastive learning",
+            "section": "introduction",
+            "start": 527,
+            "end": 547
+          },
+          {
+            "text": "[Schwarzer et al., 2020b], or data augmentations [Yarats et al., 2021b, Laskin",
+            "section": "introduction",
+            "start": 611,
+            "end": 689
+          },
+          {
+            "text": "the-art",
+            "section": "introduction",
+            "start": 731,
+            "end": 738
+          },
+          {
+            "text": "three ways",
+            "section": "introduction",
+            "start": 779,
+            "end": 789
+          },
+          {
+            "text": "they",
+            "section": "introduction",
+            "start": 798,
+            "end": 802
+          },
+          {
+            "text": "the more challenging visual control problems",
+            "section": "introduction",
+            "start": 823,
+            "end": 867
+          },
+          {
+            "text": "quadruped and humanoid\nlocomotion",
+            "section": "introduction",
+            "start": 876,
+            "end": 909
+          },
+          {
+            "text": "they",
+            "section": "introduction",
+            "start": 919,
+            "end": 923
+          },
+          {
+            "text": "signi\ufb01cant computational resources",
+            "section": "introduction",
+            "start": 938,
+            "end": 972
+          },
+          {
+            "text": "i.e. lengthy training\ntimes",
+            "section": "introduction",
+            "start": 974,
+            "end": 1001
+          },
+          {
+            "text": "distributed multi-GPU infrastructure",
+            "section": "introduction",
+            "start": 1008,
+            "end": 1044
+          },
+          {
+            "text": "it",
+            "section": "introduction",
+            "start": 1054,
+            "end": 1056
+          },
+          {
+            "text": "how different design\nchoices",
+            "section": "introduction",
+            "start": 1074,
+            "end": 1102
+          },
+          {
+            "text": "overall system performance",
+            "section": "introduction",
+            "start": 1110,
+            "end": 1136
+          },
+          {
+            "text": "this paper",
+            "section": "introduction",
+            "start": 1141,
+            "end": 1151
+          },
+          {
+            "text": "we",
+            "section": "introduction",
+            "start": 1152,
+            "end": 1154
+          },
+          {
+            "text": "DrQ-v2",
+            "section": "introduction",
+            "start": 1163,
+            "end": 1169
+          },
+          {
+            "text": "a simple model-free algorithm",
+            "section": "introduction",
+            "start": 1171,
+            "end": 1200
+          },
+          {
+            "text": "that",
+            "section": "introduction",
+            "start": 1201,
+            "end": 1205
+          },
+          {
+            "text": "the idea",
+            "section": "introduction",
+            "start": 1216,
+            "end": 1224
+          },
+          {
+            "text": "data augmentations",
+            "section": "introduction",
+            "start": 1234,
+            "end": 1252
+          },
+          {
+            "text": ".",
+            "section": "introduction",
+            "start": 1266,
+            "end": 1267
+          },
+          {
+            "text": "hard visual control problems",
+            "section": "introduction",
+            "start": 1306,
+            "end": 1334
+          },
+          {
+            "text": "it",
+            "section": "introduction",
+            "start": 1350,
+            "end": 1352
+          },
+          {
+            "text": "the \ufb01rst model-free method",
+            "section": "introduction",
+            "start": 1356,
+            "end": 1382
+          },
+          {
+            "text": "that",
+            "section": "introduction",
+            "start": 1383,
+            "end": 1387
+          },
+          {
+            "text": "complex humanoid tasks",
+            "section": "introduction",
+            "start": 1395,
+            "end": 1417
+          },
+          {
+            "text": "pixels",
+            "section": "introduction",
+            "start": 1432,
+            "end": 1438
+          },
+          {
+            "text": "the-art",
+            "section": "introduction",
+            "start": 1470,
+            "end": 1477
+          },
+          {
+            "text": "DrQ-v2",
+            "section": "introduction",
+            "start": 1498,
+            "end": 1504
+          },
+          {
+            "text": "signi\ufb01cant\nimprovements",
+            "section": "introduction",
+            "start": 1514,
+            "end": 1537
+          },
+          {
+            "text": "sample ef\ufb01ciency",
+            "section": "introduction",
+            "start": 1541,
+            "end": 1557
+          },
+          {
+            "text": "tasks",
+            "section": "introduction",
+            "start": 1565,
+            "end": 1570
+          },
+          {
+            "text": "the DeepMind Control Suite",
+            "section": "introduction",
+            "start": 1576,
+            "end": 1602
+          },
+          {
+            "text": "[Tassa",
+            "section": "introduction",
+            "start": 1603,
+            "end": 1609
+          },
+          {
+            "text": "et",
+            "section": "introduction",
+            "start": 1610,
+            "end": 1612
+          },
+          {
+            "text": "al",
+            "section": "introduction",
+            "start": 1613,
+            "end": 1615
+          },
+          {
+            "text": ".",
+            "section": "introduction",
+            "start": 1615,
+            "end": 1616
+          },
+          {
+            "text": "DrQ-v2",
+            "section": "introduction",
+            "start": 1646,
+            "end": 1652
+          },
+          {
+            "text": "which",
+            "section": "introduction",
+            "start": 1687,
+            "end": 1692
+          },
+          {
+            "text": "most tasks",
+            "section": "introduction",
+            "start": 1708,
+            "end": 1718
+          },
+          {
+            "text": "DeepMind Control Suite",
+            "section": "introduction",
+            "start": 1722,
+            "end": 1744
+          },
+          {
+            "text": "just 8 hours",
+            "section": "introduction",
+            "start": 1748,
+            "end": 1760
+          },
+          {
+            "text": "a single GPU",
+            "section": "introduction",
+            "start": 1764,
+            "end": 1776
+          },
+          {
+            "text": "Figure",
+            "section": "introduction",
+            "start": 1782,
+            "end": 1788
+          },
+          {
+            "text": "Recently, a model-based\nmethod",
+            "section": "introduction",
+            "start": 1793,
+            "end": 1823
+          },
+          {
+            "text": "et al",
+            "section": "introduction",
+            "start": 1843,
+            "end": 1848
+          },
+          {
+            "text": ".",
+            "section": "introduction",
+            "start": 1848,
+            "end": 1849
+          },
+          {
+            "text": "visual continuous control problems",
+            "section": "introduction",
+            "start": 1881,
+            "end": 1915
+          },
+          {
+            "text": "it",
+            "section": "introduction",
+            "start": 1920,
+            "end": 1922
+          },
+          {
+            "text": "the humanoid locomotion problem",
+            "section": "introduction",
+            "start": 1941,
+            "end": 1972
+          },
+          {
+            "text": "pixels",
+            "section": "introduction",
+            "start": 1978,
+            "end": 1984
+          },
+          {
+            "text": "our model-free\nDrQ-v2 matches",
+            "section": "introduction",
+            "start": 1992,
+            "end": 2021
+          },
+          {
+            "text": "terms",
+            "section": "introduction",
+            "start": 2035,
+            "end": 2040
+          },
+          {
+            "text": "sample ef\ufb01ciency",
+            "section": "introduction",
+            "start": 2041,
+            "end": 2057
+          },
+          {
+            "text": "performance",
+            "section": "introduction",
+            "start": 2062,
+            "end": 2073
+          },
+          {
+            "text": "it",
+            "section": "introduction",
+            "start": 2075,
+            "end": 2077
+          },
+          {
+            "text": "terms",
+            "section": "introduction",
+            "start": 2099,
+            "end": 2104
+          },
+          {
+            "text": "wall-clock time",
+            "section": "introduction",
+            "start": 2108,
+            "end": 2123
+          },
+          {
+            "text": "We",
+            "section": "introduction",
+            "start": 2134,
+            "end": 2136
+          },
+          {
+            "text": "this",
+            "section": "introduction",
+            "start": 2145,
+            "end": 2149
+          },
+          {
+            "text": "DrQ-v2",
+            "section": "introduction",
+            "start": 2156,
+            "end": 2162
+          },
+          {
+            "text": "research",
+            "section": "introduction",
+            "start": 2201,
+            "end": 2209
+          },
+          {
+            "text": "visual continuous control",
+            "section": "introduction",
+            "start": 2213,
+            "end": 2238
+          },
+          {
+            "text": "it",
+            "section": "introduction",
+            "start": 2243,
+            "end": 2245
+          },
+          {
+            "text": "the question",
+            "section": "introduction",
+            "start": 2257,
+            "end": 2269
+          },
+          {
+            "text": "the more suitable approach",
+            "section": "introduction",
+            "start": 2310,
+            "end": 2336
+          },
+          {
+            "text": "this type",
+            "section": "introduction",
+            "start": 2346,
+            "end": 2355
+          },
+          {
+            "text": "tasks",
+            "section": "introduction",
+            "start": 2359,
+            "end": 2364
+          },
+          {
+            "text": "DrQ-v2",
+            "section": "introduction",
+            "start": 2366,
+            "end": 2372
+          },
+          {
+            "text": "which",
+            "section": "introduction",
+            "start": 2374,
+            "end": 2379
+          },
+          {
+            "text": "Section",
+            "section": "introduction",
+            "start": 2395,
+            "end": 2402
+          },
+          {
+            "text": "DrQ",
+            "section": "introduction",
+            "start": 2420,
+            "end": 2423
+          },
+          {
+            "text": "[Yarats",
+            "section": "introduction",
+            "start": 2424,
+            "end": 2431
+          },
+          {
+            "text": "several algorithmic changes",
+            "section": "introduction",
+            "start": 2457,
+            "end": 2484
+          },
+          {
+            "text": "(i",
+            "section": "introduction",
+            "start": 2486,
+            "end": 2488
+          },
+          {
+            "text": "the base RL algorithm",
+            "section": "introduction",
+            "start": 2500,
+            "end": 2521
+          },
+          {
+            "text": "SAC",
+            "section": "introduction",
+            "start": 2527,
+            "end": 2530
+          },
+          {
+            "text": "[Haarnoja",
+            "section": "introduction",
+            "start": 2531,
+            "end": 2540
+          },
+          {
+            "text": ".",
+            "section": "introduction",
+            "start": 2546,
+            "end": 2547
+          },
+          {
+            "text": "DDPG",
+            "section": "introduction",
+            "start": 2559,
+            "end": 2563
+          },
+          {
+            "text": "ii",
+            "section": "introduction",
+            "start": 2592,
+            "end": 2594
+          },
+          {
+            "text": "this",
+            "section": "introduction",
+            "start": 2596,
+            "end": 2600
+          },
+          {
+            "text": "us",
+            "section": "introduction",
+            "start": 2608,
+            "end": 2610
+          },
+          {
+            "text": "multi-step\nreturn",
+            "section": "introduction",
+            "start": 2643,
+            "end": 2660
+          },
+          {
+            "text": "interpolation",
+            "section": "introduction",
+            "start": 2684,
+            "end": 2697
+          },
+          {
+            "text": "the random shift image augmentation",
+            "section": "introduction",
+            "start": 2701,
+            "end": 2736
+          },
+          {
+            "text": "an\nexploration schedule",
+            "section": "introduction",
+            "start": 2755,
+            "end": 2778
+          },
+          {
+            "text": "better hyper",
+            "section": "introduction",
+            "start": 2794,
+            "end": 2806
+          },
+          {
+            "text": "-",
+            "section": "introduction",
+            "start": 2806,
+            "end": 2807
+          },
+          {
+            "text": "parameters",
+            "section": "introduction",
+            "start": 2807,
+            "end": 2817
+          },
+          {
+            "text": "a larger capacity",
+            "section": "introduction",
+            "start": 2828,
+            "end": 2845
+          },
+          {
+            "text": "the replay\nbuffer",
+            "section": "introduction",
+            "start": 2849,
+            "end": 2866
+          },
+          {
+            "text": "A careful ablation study",
+            "section": "introduction",
+            "start": 2868,
+            "end": 2892
+          },
+          {
+            "text": "these design choices",
+            "section": "introduction",
+            "start": 2896,
+            "end": 2916
+          }
+        ]
+      },
+      "entity_mentions": [
+        {
+          "text": "model - free reinforcement learning",
+          "type": "Method",
+          "score": 0.993373,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 21,
+          "end": 54
+        },
+        {
+          "text": "reinforcement learning",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "abstract",
+          "start": 32,
+          "end": 54
+        },
+        {
+          "text": "RL",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "abstract",
+          "start": 56,
+          "end": 58
+        },
+        {
+          "text": "rl",
+          "type": "Method",
+          "score": 0.995974,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 56,
+          "end": 58
+        },
+        {
+          "text": "visual continuous control",
+          "type": "Task",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "abstract",
+          "start": 74,
+          "end": 99
+        },
+        {
+          "text": "drq",
+          "type": "Method",
+          "score": 0.987039,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 118,
+          "end": 121
+        },
+        {
+          "text": "actor-critic",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "abstract",
+          "start": 137,
+          "end": 149
+        },
+        {
+          "text": "data augmentation",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "abstract",
+          "start": 169,
+          "end": 186
+        },
+        {
+          "text": "DeepMind Control Suite",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "abstract",
+          "start": 295,
+          "end": 317
+        },
+        {
+          "text": "deepmind control",
+          "type": "Method",
+          "score": 0.845676,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 295,
+          "end": 311
+        },
+        {
+          "text": "complex humanoid locomotion tasks",
+          "type": "Task",
+          "score": 0.907922,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 352,
+          "end": 385
+        },
+        {
+          "text": "model - free rl",
+          "type": "Method",
+          "score": 0.887968,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 445,
+          "end": 458
+        },
+        {
+          "text": "drq - v2",
+          "type": "Method",
+          "score": 0.997282,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 460,
+          "end": 466
+        },
+        {
+          "text": "GPU",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "abstract",
+          "start": 659,
+          "end": 662
+        },
+        {
+          "text": "rl",
+          "type": "Task",
+          "score": 0.96615,
+          "source": "nadiyah_scier_distilbert",
+          "section": "abstract",
+          "start": 728,
+          "end": 730
+        },
+        {
+          "text": "model - free actor - critic rl",
+          "type": "Method",
+          "score": 0.971783,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 41,
+          "end": 67
+        },
+        {
+          "text": "actor-critic",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "conclusion",
+          "start": 52,
+          "end": 64
+        },
+        {
+          "text": "image - based continuous control",
+          "type": "Method",
+          "score": 0.86218,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 82,
+          "end": 112
+        },
+        {
+          "text": "dmc",
+          "type": "Dataset",
+          "score": 0.981793,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 210,
+          "end": 213
+        },
+        {
+          "text": "DMC",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 210,
+          "end": 213
+        },
+        {
+          "text": "Tassa",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 215,
+          "end": 220
+        },
+        {
+          "text": "humanoid locomotion",
+          "type": "Task",
+          "score": 0.981671,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 274,
+          "end": 293
+        },
+        {
+          "text": "PyTorch",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "conclusion",
+          "start": 399,
+          "end": 406
+        },
+        {
+          "text": "drq - v2",
+          "type": "Method",
+          "score": 0.995588,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 425,
+          "end": 431
+        },
+        {
+          "text": "drqv2",
+          "type": "Method",
+          "score": 0.897897,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 499,
+          "end": 504
+        },
+        {
+          "text": "visual rl",
+          "type": "Task",
+          "score": 0.939397,
+          "source": "nadiyah_scier_distilbert",
+          "section": "conclusion",
+          "start": 590,
+          "end": 599
+        },
+        {
+          "text": "- ef",
+          "type": "Method",
+          "score": 0.752071,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 15,
+          "end": 18
+        },
+        {
+          "text": "##nt continuous control",
+          "type": "Method",
+          "score": 0.722423,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 22,
+          "end": 43
+        },
+        {
+          "text": "reinforcement learning",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "introduction",
+          "start": 127,
+          "end": 149
+        },
+        {
+          "text": "rl",
+          "type": "Task",
+          "score": 0.716072,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 188,
+          "end": 190
+        },
+        {
+          "text": "autoencoders",
+          "type": "Method",
+          "score": 0.978446,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 403,
+          "end": 415
+        },
+        {
+          "text": "self - prediction",
+          "type": "Task",
+          "score": 0.766296,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 595,
+          "end": 610
+        },
+        {
+          "text": "data augmentations",
+          "type": "Method",
+          "score": 0.993556,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 641,
+          "end": 659
+        },
+        {
+          "text": "visual control",
+          "type": "Task",
+          "score": 0.992325,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 1311,
+          "end": 1325
+        },
+        {
+          "text": "\ufb01rst model - free",
+          "type": "Method",
+          "score": 0.9645,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 1360,
+          "end": 1375
+        },
+        {
+          "text": "DeepMind Control Suite",
+          "type": "Dataset",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "introduction",
+          "start": 1580,
+          "end": 1602
+        },
+        {
+          "text": "deepmind control",
+          "type": "Method",
+          "score": 0.964624,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 1580,
+          "end": 1596
+        },
+        {
+          "text": "Tassa",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 1604,
+          "end": 1609
+        },
+        {
+          "text": "drq - v2",
+          "type": "Method",
+          "score": 0.998216,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 1646,
+          "end": 1652
+        },
+        {
+          "text": "visual continuous control",
+          "type": "Task",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "introduction",
+          "start": 1881,
+          "end": 1906
+        },
+        {
+          "text": "humanoid locomotion",
+          "type": "Task",
+          "score": 0.98167,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 1945,
+          "end": 1964
+        },
+        {
+          "text": "dreamerv2",
+          "type": "Method",
+          "score": 0.997672,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2022,
+          "end": 2031
+        },
+        {
+          "text": "wall-clock time",
+          "type": "Metric",
+          "score": 1.0,
+          "source": "metric_regex",
+          "section": "introduction",
+          "start": 2108,
+          "end": 2123
+        },
+        {
+          "text": "rl",
+          "type": "Method",
+          "score": 0.987157,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2509,
+          "end": 2511
+        },
+        {
+          "text": "SAC",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 2527,
+          "end": 2530
+        },
+        {
+          "text": "DDPG",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 2559,
+          "end": 2563
+        },
+        {
+          "text": "Lillicrap et al.",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 2565,
+          "end": 2581
+        },
+        {
+          "text": "multi - step return",
+          "type": "Method",
+          "score": 0.941104,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2643,
+          "end": 2660
+        },
+        {
+          "text": "bilinear interpolation",
+          "type": "Method",
+          "score": 0.925595,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2675,
+          "end": 2697
+        },
+        {
+          "text": "random shift image augmentation",
+          "type": "Method",
+          "score": 0.977459,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 2705,
+          "end": 2736
+        },
+        {
+          "text": "DrQ",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 3004,
+          "end": 3007
+        },
+        {
+          "text": "replay buffer management",
+          "type": "Method",
+          "score": 0.902126,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3065,
+          "end": 3089
+        },
+        {
+          "text": "data augmentation",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "introduction",
+          "start": 3091,
+          "end": 3108
+        },
+        {
+          "text": "data augmentation processing",
+          "type": "Method",
+          "score": 0.921813,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3091,
+          "end": 3119
+        },
+        {
+          "text": "FPS",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 3451,
+          "end": 3454
+        },
+        {
+          "text": "visual representation",
+          "type": "Task",
+          "score": 0.764043,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3590,
+          "end": 3611
+        },
+        {
+          "text": "computer vi - sion",
+          "type": "Method",
+          "score": 0.947378,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3624,
+          "end": 3641
+        },
+        {
+          "text": "Doersch",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 3665,
+          "end": 3672
+        },
+        {
+          "text": "Wang",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 3687,
+          "end": 3691
+        },
+        {
+          "text": "Noroozi",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 3709,
+          "end": 3716
+        },
+        {
+          "text": "SAC-AE",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 3887,
+          "end": 3893
+        },
+        {
+          "text": "slac",
+          "type": "Dataset",
+          "score": 0.914421,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 3951,
+          "end": 3955
+        },
+        {
+          "text": "visual rl",
+          "type": "Task",
+          "score": 0.97872,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4041,
+          "end": 4050
+        },
+        {
+          "text": "contrastive learning",
+          "type": "Method",
+          "score": 0.798161,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4109,
+          "end": 4129
+        },
+        {
+          "text": "CURL",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 4133,
+          "end": 4137
+        },
+        {
+          "text": "curl",
+          "type": "Method",
+          "score": 0.839331,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4133,
+          "end": 4137
+        },
+        {
+          "text": "atc",
+          "type": "Dataset",
+          "score": 0.978651,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4166,
+          "end": 4169
+        },
+        {
+          "text": "spr",
+          "type": "Method",
+          "score": 0.972491,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4212,
+          "end": 4215
+        },
+        {
+          "text": "contrastive cluster assignment",
+          "type": "Task",
+          "score": 0.765608,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4243,
+          "end": 4273
+        },
+        {
+          "text": "proto - rl",
+          "type": "Method",
+          "score": 0.851262,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4277,
+          "end": 4285
+        },
+        {
+          "text": "drq",
+          "type": "Dataset",
+          "score": 0.964161,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4332,
+          "end": 4335
+        },
+        {
+          "text": "rad",
+          "type": "Dataset",
+          "score": 0.87733,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4363,
+          "end": 4366
+        },
+        {
+          "text": "RAD",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 4363,
+          "end": 4366
+        },
+        {
+          "text": "##pole swingup dreamer - v2 drq - v2",
+          "type": "Method",
+          "score": 0.946641,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 4509,
+          "end": 4539
+        },
+        {
+          "text": "dreamer - v2",
+          "type": "Method",
+          "score": 0.996765,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 5762,
+          "end": 5772
+        },
+        {
+          "text": "image - based rl",
+          "type": "Method",
+          "score": 0.816375,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 5817,
+          "end": 5831
+        },
+        {
+          "text": "RL",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 5829,
+          "end": 5831
+        },
+        {
+          "text": "control",
+          "type": "Task",
+          "score": 0.707766,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 6166,
+          "end": 6173
+        },
+        {
+          "text": "dmc",
+          "type": "Dataset",
+          "score": 0.974662,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 6370,
+          "end": 6373
+        },
+        {
+          "text": "DMC",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 6370,
+          "end": 6373
+        },
+        {
+          "text": "Humanoid Control",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 6396,
+          "end": 6412
+        },
+        {
+          "text": "humanoid control problem",
+          "type": "Task",
+          "score": 0.772852,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 6417,
+          "end": 6441
+        },
+        {
+          "text": "model - based optimal control",
+          "type": "Method",
+          "score": 0.817565,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 6631,
+          "end": 6658
+        },
+        {
+          "text": "humanoid control",
+          "type": "Task",
+          "score": 0.963842,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 6795,
+          "end": 6811
+        },
+        {
+          "text": "GPU",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "introduction",
+          "start": 7214,
+          "end": 7217
+        },
+        {
+          "text": "\ufb01rst model - free rl",
+          "type": "Method",
+          "score": 0.884978,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7270,
+          "end": 7288
+        },
+        {
+          "text": "solve humanoid control",
+          "type": "Task",
+          "score": 0.845552,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7305,
+          "end": 7327
+        },
+        {
+          "text": "200episode return acrobot swingup drq",
+          "type": "Method",
+          "score": 0.833693,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7488,
+          "end": 7525
+        },
+        {
+          "text": "sac drq",
+          "type": "Method",
+          "score": 0.889889,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7526,
+          "end": 7533
+        },
+        {
+          "text": "800episode return quadruped walk",
+          "type": "Method",
+          "score": 0.783218,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7595,
+          "end": 7627
+        },
+        {
+          "text": "600episode return reacher hard",
+          "type": "Method",
+          "score": 0.895959,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7692,
+          "end": 7722
+        },
+        {
+          "text": "a ) drq",
+          "type": "Method",
+          "score": 0.862183,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7724,
+          "end": 7730
+        },
+        {
+          "text": "dotted silver",
+          "type": "Method",
+          "score": 0.866857,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7732,
+          "end": 7745
+        },
+        {
+          "text": "sac",
+          "type": "Method",
+          "score": 0.998436,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7795,
+          "end": 7798
+        },
+        {
+          "text": "ddpg",
+          "type": "Method",
+          "score": 0.998107,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7804,
+          "end": 7808
+        },
+        {
+          "text": "##de return acrobot swingup drq",
+          "type": "Method",
+          "score": 0.849394,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7926,
+          "end": 7955
+        },
+        {
+          "text": "nstep =",
+          "type": "Method",
+          "score": 0.78617,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7961,
+          "end": 7967
+        },
+        {
+          "text": "nstep = 3 drq",
+          "type": "Method",
+          "score": 0.870175,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7978,
+          "end": 7989
+        },
+        {
+          "text": "nstep",
+          "type": "Method",
+          "score": 0.881513,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 7995,
+          "end": 8000
+        },
+        {
+          "text": "##de return quadruped walk",
+          "type": "Method",
+          "score": 0.769597,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 8067,
+          "end": 8091
+        },
+        {
+          "text": "step td - targets",
+          "type": "Method",
+          "score": 0.930204,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 8405,
+          "end": 8420
+        },
+        {
+          "text": "3 - step returns",
+          "type": "Method",
+          "score": 0.860125,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 8455,
+          "end": 8469
+        },
+        {
+          "text": "ns",
+          "type": "Method",
+          "score": 0.793195,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 8581,
+          "end": 8583
+        },
+        {
+          "text": "drq",
+          "type": "Method",
+          "score": 0.99511,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 9889,
+          "end": 9892
+        },
+        {
+          "text": "ddpg base rl",
+          "type": "Method",
+          "score": 0.993204,
+          "source": "nadiyah_scier_distilbert",
+          "section": "introduction",
+          "start": 9900,
+          "end": 9912
+        },
+        {
+          "text": "image augmentation",
+          "type": "Method",
+          "score": 0.979269,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 0,
+          "end": 18
+        },
+        {
+          "text": "visual continuous control",
+          "type": "Method",
+          "score": 0.863048,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 132,
+          "end": 157
+        },
+        {
+          "text": "visual continuous control",
+          "type": "Task",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "method",
+          "start": 132,
+          "end": 157
+        },
+        {
+          "text": "DMC",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 161,
+          "end": 164
+        },
+        {
+          "text": "dmc",
+          "type": "Method",
+          "score": 0.996643,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 161,
+          "end": 164
+        },
+        {
+          "text": "encoder",
+          "type": "Method",
+          "score": 0.789266,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 300,
+          "end": 307
+        },
+        {
+          "text": "policy",
+          "type": "Method",
+          "score": 0.766669,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 309,
+          "end": 315
+        },
+        {
+          "text": "q -",
+          "type": "Method",
+          "score": 0.826895,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 321,
+          "end": 323
+        },
+        {
+          "text": "random shifts image augmentation",
+          "type": "Method",
+          "score": 0.979992,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 352,
+          "end": 384
+        },
+        {
+          "text": "\u03c3(t",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 386,
+          "end": 389
+        },
+        {
+          "text": "Equation",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 457,
+          "end": 465
+        },
+        {
+          "text": "stddev",
+          "type": "Method",
+          "score": 0.921385,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 629,
+          "end": 635
+        },
+        {
+          "text": "N",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 687,
+          "end": 688
+        },
+        {
+          "text": "D \u2190 D \u222a",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 798,
+          "end": 805
+        },
+        {
+          "text": "replay buffer update critic",
+          "type": "Method",
+          "score": 0.83852,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 858,
+          "end": 885
+        },
+        {
+          "text": "data augmentation",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "method",
+          "start": 1064,
+          "end": 1081
+        },
+        {
+          "text": "Compute",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 1150,
+          "end": 1157
+        },
+        {
+          "text": "L\u03b82,\u03be",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 1168,
+          "end": 1173
+        },
+        {
+          "text": "Apply",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 1498,
+          "end": 1503
+        },
+        {
+          "text": "Compute L\u03c6 using Equation",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 1586,
+          "end": 1611
+        },
+        {
+          "text": "bilinear interpolation",
+          "type": "Method",
+          "score": 0.788838,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 1932,
+          "end": 1954
+        },
+        {
+          "text": "convolutional encoder",
+          "type": "Method",
+          "score": 0.985823,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 2278,
+          "end": 2299
+        },
+        {
+          "text": "sac - ae",
+          "type": "Dataset",
+          "score": 0.975138,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 2389,
+          "end": 2395
+        },
+        {
+          "text": "SAC-AE",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 2389,
+          "end": 2395
+        },
+        {
+          "text": "random shifts augmentation",
+          "type": "Method",
+          "score": 0.939971,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 2514,
+          "end": 2540
+        },
+        {
+          "text": "Actor-Critic",
+          "type": "Method",
+          "score": 1.0,
+          "source": "baseline_gazetteer",
+          "section": "method",
+          "start": 2583,
+          "end": 2595
+        },
+        {
+          "text": "actor - critic",
+          "type": "Method",
+          "score": 0.963057,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 2583,
+          "end": 2595
+        },
+        {
+          "text": "DDPG",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 2613,
+          "end": 2617
+        },
+        {
+          "text": "ddpg",
+          "type": "Method",
+          "score": 0.996273,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 2613,
+          "end": 2617
+        },
+        {
+          "text": "Lillicrap et al.",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 2619,
+          "end": 2635
+        },
+        {
+          "text": "actor - critic rl",
+          "type": "Method",
+          "score": 0.982751,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 2658,
+          "end": 2673
+        },
+        {
+          "text": "Barth-Maron et al",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 2702,
+          "end": 2719
+        },
+        {
+          "text": "##n - step",
+          "type": "Method",
+          "score": 0.703036,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 2744,
+          "end": 2750
+        },
+        {
+          "text": "TD",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 2771,
+          "end": 2773
+        },
+        {
+          "text": "td ( \u03bb",
+          "type": "Method",
+          "score": 0.872073,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 2963,
+          "end": 2967
+        },
+        {
+          "text": "retrace ( \u03bb",
+          "type": "Method",
+          "score": 0.856352,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 2972,
+          "end": 2981
+        },
+        {
+          "text": "##n",
+          "type": "Method",
+          "score": 0.814918,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 3050,
+          "end": 3051
+        },
+        {
+          "text": "clipped double q - learning",
+          "type": "Method",
+          "score": 0.989663,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 3218,
+          "end": 3243
+        },
+        {
+          "text": "q - functionsq\u03b81",
+          "type": "Method",
+          "score": 0.92828,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 3359,
+          "end": 3374
+        },
+        {
+          "text": "##q\u03b82",
+          "type": "Method",
+          "score": 0.924067,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 3378,
+          "end": 3381
+        },
+        {
+          "text": "xt",
+          "type": "Method",
+          "score": 0.720407,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 3926,
+          "end": 3928
+        },
+        {
+          "text": "clip",
+          "type": "Method",
+          "score": 0.871623,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 3978,
+          "end": 3982
+        },
+        {
+          "text": "TD3",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 4012,
+          "end": 4015
+        },
+        {
+          "text": "td3",
+          "type": "Method",
+          "score": 0.991751,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 4012,
+          "end": 4015
+        },
+        {
+          "text": "DPG",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 4150,
+          "end": 4153
+        },
+        {
+          "text": "dpg",
+          "type": "Method",
+          "score": 0.996552,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 4150,
+          "end": 4153
+        },
+        {
+          "text": "exploration",
+          "type": "Task",
+          "score": 0.874696,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 4390,
+          "end": 4401
+        },
+        {
+          "text": "linear decay",
+          "type": "Method",
+          "score": 0.929641,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 4867,
+          "end": 4879
+        },
+        {
+          "text": "\u03c3init +",
+          "type": "Method",
+          "score": 0.786299,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 4946,
+          "end": 4953
+        },
+        {
+          "text": "drq",
+          "type": "Method",
+          "score": 0.996982,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 5435,
+          "end": 5438
+        },
+        {
+          "text": "CURL",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 5555,
+          "end": 5559
+        },
+        {
+          "text": "drq",
+          "type": "Dataset",
+          "score": 0.780161,
+          "source": "nadiyah_scier_distilbert",
+          "section": "method",
+          "start": 5588,
+          "end": 5591
+        },
+        {
+          "text": "DrQ",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "method",
+          "start": 5803,
+          "end": 5806
+        },
+        {
+          "text": "visual continuous control",
+          "type": "Task",
+          "score": 0.96763,
+          "source": "nadiyah_scier_distilbert",
+          "section": "results",
+          "start": 81,
+          "end": 106
+        },
+        {
+          "text": "dmc",
+          "type": "Dataset",
+          "score": 0.98813,
+          "source": "nadiyah_scier_distilbert",
+          "section": "results",
+          "start": 118,
+          "end": 121
+        },
+        {
+          "text": "DMC",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "results",
+          "start": 118,
+          "end": 121
+        },
+        {
+          "text": "Tassa",
+          "type": "Institution",
+          "score": 1.0,
+          "source": "spacy_org",
+          "section": "results",
+          "start": 123,
+          "end": 128
+        },
+        {
+          "text": "wall-clock time",
+          "type": "Metric",
+          "score": 1.0,
+          "source": "metric_regex",
+          "section": "results",
+          "start": 255,
+          "end": 270
+        },
+        {
+          "text": "drq drq - v2",
+          "type": "Method",
+          "score": 0.705502,
+          "source": "nadiyah_scier_distilbert",
+          "section": "results",
+          "start": 448,
+          "end": 458
+        },
+        {
+          "text": "drq - v2",
+          "type": "Method",
+          "score": 0.981892,
+          "source": "nadiyah_scier_distilbert",
+          "section": "results",
+          "start": 852,
+          "end": 858
+        }
+      ],
+      "keyphrases": [
+        {
+          "text": "critic rl algorithm",
+          "score": 0.646,
+          "section": "conclusion",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "visual control learning",
+          "score": 0.6232,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "benchmark consists humanoid",
+          "score": 0.6053,
+          "section": "results",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "deepmind control",
+          "score": 0.6026,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "humanoid locomotion tasks",
+          "score": 0.5938,
+          "section": "results",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "reinforcement learning rl",
+          "score": 0.5783,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "deepmind control suite",
+          "score": 0.573,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "visual continuous control",
+          "score": 0.5677,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "control learning better",
+          "score": 0.5657,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "results deepmind control",
+          "score": 0.5633,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "continuous control drq",
+          "score": 0.5631,
+          "section": "conclusion",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "challenging visual control",
+          "score": 0.5586,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "visual reinforcement learning",
+          "score": 0.5526,
+          "section": "introduction",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "humanoid run",
+          "score": 0.5499,
+          "section": "results",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "free reinforcement learning",
+          "score": 0.5464,
+          "section": "abstract",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "humanoid run figure",
+          "score": 0.5397,
+          "section": "results",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "humanoid walk",
+          "score": 0.5323,
+          "section": "results",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "compute stddev exploration",
+          "score": 0.5306,
+          "section": "method",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "critic rl",
+          "score": 0.5267,
+          "section": "conclusion",
+          "source": "nadiyah_keybert_minilm"
+        },
+        {
+          "text": "stochastic explore",
+          "score": 0.5145,
+          "section": "method",
+          "source": "nadiyah_keybert_minilm"
+        }
+      ],
+      "extractive_summary": {
+        "text": "We present DrQ-v2, a model-free reinforcement learning (RL) algorithm for visual continuous control. [Yarats et al., 2021b, Laskin et al., 2020] to solve hard visual control problems. Compared to previous state-of-the-art model-free methods, DrQ-v2 provides signi\ufb01cant\nimprovements in sample ef\ufb01ciency across tasks from the DeepMind Control Suite In\nthe context of visual control settings, clever use of augmented data [Yarats et al., 2021b, Laskin et al.,\n2020] currently produces state-of-the-art results on visual tasks from DMC We have introduced a conceptually simple model-free actor-critic RL algorithm for image-based\ncontinuous control \u2013 DrQ-v2.",
+        "sentences": [
+          {
+            "text": "We present DrQ-v2, a model-free reinforcement learning (RL) algorithm for visual continuous control.",
+            "section": "abstract",
+            "source": "extractive_textrank"
+          },
+          {
+            "text": "[Yarats et al., 2021b, Laskin et al., 2020] to solve hard visual control problems.",
+            "section": "introduction",
+            "source": "extractive_textrank"
+          },
+          {
+            "text": "Compared to previous state-of-the-art model-free methods, DrQ-v2 provides signi\ufb01cant\nimprovements in sample ef\ufb01ciency across tasks from the DeepMind Control Suite",
+            "section": "introduction",
+            "source": "extractive_textrank"
+          },
+          {
+            "text": "In\nthe context of visual control settings, clever use of augmented data [Yarats et al., 2021b, Laskin et al.,\n2020] currently produces state-of-the-art results on visual tasks from DMC",
+            "section": "introduction",
+            "source": "extractive_textrank"
+          },
+          {
+            "text": "We have introduced a conceptually simple model-free actor-critic RL algorithm for image-based\ncontinuous control \u2013 DrQ-v2.",
+            "section": "conclusion",
+            "source": "extractive_textrank"
+          }
+        ],
+        "candidate_sentence_count": 118,
+        "source_traceable": true
+      },
+      "structural_checks": [
+        {
+          "code": "no_explicit_limitations",
+          "severity": "low",
+          "message": "No explicit limitations section was detected.",
+          "evidence": ""
+        },
+        {
+          "code": "weak_related_work_signal",
+          "severity": "low",
+          "message": "No explicit related-work section was detected.",
+          "evidence": ""
+        }
+      ],
+      "timings_seconds": {
+        "pos": 2.856934,
+        "ner": 6.645795,
+        "keyphrases": 3.396731,
+        "extractive_summary": 0.93932,
+        "structural_checks": 0.000155
+      },
+      "provenance": {
+        "pos": "spaCy en_core_web_sm from team runtime archive",
+        "ner": "Nadiyah fine-tuned SciER DistilBERT at threshold 0.7, plus regex/spaCy completion",
+        "keyphrases": "Nadiyah KeyBERT approach with local all-MiniLM-L6-v2",
+        "summary": "deterministic extractive TextRank",
+        "structural_checks": "deterministic project rules",
+        "bart_status": "historical comparison only; not production"
+      }
+    }
+  },
+  "debug_summary": {
+    "page_count": 18,
+    "headings": [
+      "12 DMC Tasks (Samples)",
+      "12 DMC Tasks (Time)",
+      "1 Introduction",
+      "2 Background",
+      "2.1 Reinforcement Learning from Images",
+      "2.2 Deep Deterministic Policy Gradient",
+      "2.3 Data Augmentation in Reinforcement Learning",
+      "3 DrQ-v2: Improved Data-Augmented Reinforcement Learning",
+      "3.1 Algorithmic Details",
+      "3\nAlgorithm 1 DrQ-v2: Improved data-augmented RL.",
+      "3.2 Implementation Details",
+      "4 Experiments",
+      "4.1 Setup",
+      "4.2 Comparison to Model-Free Methods",
+      "4.3 Comparison to Model-Based Methods",
+      "4.4 Ablation Study",
+      "5 Related Work",
+      "6 Conclusion",
+      "7 Acknowledgements",
+      "13\nReferences",
+      "14\nMatt Hoffman, Bobak Shahriari, John Aslanides, Gabriel Barth-Maron, Feryal Behbahani, Tamara",
+      "15\nAdam Stooke, Kimin Lee, Pieter Abbeel, and Michael Laskin. Decoupling representation learning",
+      "16\nAppendix",
+      "17\nB Hyper-parameters"
+    ],
+    "warnings": []
+  }
+}

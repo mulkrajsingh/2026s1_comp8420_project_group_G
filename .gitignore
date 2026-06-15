@@ -1,0 +1,55 @@
+# OS and editor
+.DS_Store
+.idea/
+.vscode/
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# Node
+node_modules/
+.pnpm-store/
+integration/frontend/dist/
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Downloaded large assets (populated by setup_assets.py)
+modules/pdf_nlp/models/runtime/
+modules/retrieval/data/processed/retrieval_index/
+modules/llm/models/ollama/
+modules/llm/models/adapters/
+modules/llm/models/merged/
+
+# Runtime session outputs
+integration/data/processed/
+integration/outputs/*
+!integration/outputs/README.md
+modules/pdf_nlp/outputs/
+modules/retrieval/outputs/
+modules/llm/outputs/
+tests/logs/
+
+# Derived training/data intermediates
+modules/llm/data/processed/*.jsonl
+modules/llm/data/processed/project_arxiv_rag_packs/
+modules/llm/data/processed/final_dataset/
+modules/dataset/data/raw/
+modules/dataset/data/cache/
+modules/retrieval/data/cache/

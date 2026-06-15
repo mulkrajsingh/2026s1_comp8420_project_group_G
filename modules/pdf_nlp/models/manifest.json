@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "archive_layout": "The ZIP may contain runtime/ or the three asset directories at its root.",
+  "download_url": null,
+  "notes": [
+    "The project owner supplies the team Google Drive URL separately.",
+    "Only final inference assets belong in the archive; training checkpoints and BART weights are excluded."
+  ],
+  "compatibility": {
+    "python": "3.11",
+    "spacy": "3.8.11",
+    "transformers": "4.57.1",
+    "keybert": "0.9.0",
+    "sentence-transformers": "5.2.0"
+  },
+  "assets": [
+    {
+      "name": "Nadiyah SciER DistilBERT",
+      "path": "scier-distilbert-final",
+      "attribution": "Fine-tuned by Nadiyah on the supplied SciER data; compatibility repair removes token_type_ids at inference.",
+      "required_files": [
+        {
+          "path": "config.json",
+          "bytes": 822,
+          "sha256": "c5298c629ec4ddae36b78ee3d4456b84db809b1d361097531b6653aa3f666bb9"
+        },
+        {
+          "path": "model.safetensors",
+          "bytes": 265476168,
+          "sha256": "c319d0efb4e42def7e0058d0367aba024097c35642e687227d9941e38589fe54"
+        },
+        {
+          "path": "tokenizer.json",
+          "bytes": 711396,
+          "sha256": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66"
+        }
+      ]
+    },
+    {
+      "name": "Local MiniLM encoder",
+      "path": "all-MiniLM-L6-v2",
+      "attribution": "sentence-transformers/all-MiniLM-L6-v2, used by Nadiyah's KeyBERT approach.",
+      "required_files": [
+        {
+          "path": "model.safetensors",
+          "sha256": "53aa51172d142c89d9012cce15ae4d6cc0ca6895895114379cacb4fab128d9db"
+        },
+        {
+          "path": "config.json",
+          "sha256": "953f9c0d463486b10a6871cc2fd59f223b2c70184f49815e7efbcab5d8908b41"
+        }
+      ]
+    },
+    {
+      "name": "spaCy English pipeline",
+      "path": "spacy/en_core_web_sm",
+      "attribution": "spaCy en_core_web_sm 3.8.0 for POS, dependencies, noun chunks, and organisations.",
+      "required_files": [
+        {
+          "path": "meta.json",
+          "sha256": "7456349002fa8cf31111051bd37fdbea67a1b7f7a0a60ce235466f98a6758125"
+        },
+        {
+          "path": "config.cfg",
+          "sha256": "65c545ca2da5bd4b87b22d4917318605360b37dee6ed6b18516a036f87319f79"
+        }
+      ]
+    }
+  ]
+}
