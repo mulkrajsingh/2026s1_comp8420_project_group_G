@@ -33,7 +33,7 @@ Runtime assets are deliberately ignored under `models/runtime/`. The project
 owner supplies the team Google Drive ZIP separately; installation also accepts
 any local archive path.
 
-```bash
+```text
 cd modules/pdf_nlp
 python -m app.cli model-assets --archive /absolute/path/to/pdf_nlp_models.zip
 python -m app.cli model-assets
@@ -55,10 +55,10 @@ historical 769 MB checkpoint set are excluded.
 
 ## Commands
 
-Download test PDFs first — see [`tests/README.md`](../../tests/README.md).
-Run from `modules/pdf_nlp/`:
+The test PDFs are committed under `tests/papers/`. Run from
+`modules/pdf_nlp/`:
 
-```bash
+```text
 # Lightweight parser only
 python -m app.cli parse-pdf \
   --pdf ../../tests/papers/drq_v2/2107.09645v1.pdf \
@@ -140,9 +140,9 @@ reason to hide those rows. See [`results/pdf_nlp/`](results/pdf_nlp/).
 
 ## Verification
 
-```bash
+```text
 python -m unittest discover -s tests -p 'test_*.py' -v
-SKIP_OLLAMA=1 ../../tests/run_system_tests.sh
+python ../../tests/run_system_tests.py --skip-ollama
 ```
 
 Current verified module result: 23 PDF-NLP tests pass. DrQ-v2 produces 52

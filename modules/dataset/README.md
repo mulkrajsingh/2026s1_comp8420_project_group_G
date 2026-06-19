@@ -7,7 +7,7 @@ arXiv subset.
 
 ## Standalone use (module owners)
 
-```bash
+```text
 pip install -r requirements.txt   # from the repository root
 cd modules/dataset
 # Notebooks: 01_data_preprocessing_2.ipynb, 03_eda_1.ipynb
@@ -35,7 +35,7 @@ are local, ignored inputs under:
 Do not recreate obsolete duplicate copies of this module elsewhere in the repository.
 The production retrieval corpus is rebuilt locally from the raw snapshot:
 
-```bash
+```text
 python scripts/build_balanced_corpus.py \
   --raw data/raw/arxiv-metadata-oai-snapshot.json \
   --out data/processed/dev_5k_balanced.jsonl \
@@ -49,7 +49,7 @@ buckets. This mitigates the known file-order bias in `dev_5k.jsonl`.
 Evaluate the traditional supervised baseline on a deterministic stratified
 held-out split:
 
-```bash
+```text
 python scripts/evaluate_domain_classifier.py \
   --corpus data/processed/dev_5k_balanced.jsonl \
   --output-dir results/classification
@@ -63,8 +63,8 @@ classification, or a SPECTER2 classification result.
 
 ## Full system
 
-Run from [`integration/`](../../integration/):
+Run from the repository root:
 
-```bash
-cd integration && python -m app.cli run --corpus ../modules/dataset/data/processed/dev_5k_balanced.jsonl
+```text
+python rpa.py run --corpus modules/dataset/data/processed/dev_5k_balanced.jsonl
 ```

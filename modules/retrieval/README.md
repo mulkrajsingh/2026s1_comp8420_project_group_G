@@ -7,7 +7,7 @@ Scope: RAG, recommendation, citation analysis, evidence/source attribution, eval
 
 ## Standalone use
 
-```bash
+```text
 pip install -r requirements.txt   # from the repository root
 cd modules/retrieval
 
@@ -61,7 +61,7 @@ reciprocal rank fusion). `HybridRanker` ensemble and section-aware stacks are
 evaluation baselines only — see `app/retrieval/hybrid_ranker.py` and
 `results/retrieval/retrieval_eval_summary.md`.
 
-```bash
+```text
 python -m app.cli recommend-topic \
     --query "YOUR QUERY HERE" \
     --papers ../dataset/data/processed/dev_5k_balanced.jsonl \
@@ -74,7 +74,7 @@ python -m app.cli recommend-topic \
 
 Retrieval scripts read Yash's enriched dataset directly rather than keeping a
 module-local copy:
-```bash
+```text
 python -m app.cli recommend-topic \
     --query "transformer attention for text classification" \
     --papers ../dataset/data/processed/dev_5k_balanced.jsonl \

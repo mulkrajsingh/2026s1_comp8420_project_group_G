@@ -25,10 +25,10 @@ Cached/offline run so nothing fails on network or model latency. All five member
 | 4:30-5:00 | Findings + limitations | key results, future work | Anyone |
 
 ## Demo commands to run on screen
-```bash
-python -m app.cli run --corpus-limit 200    # topic search with session log
-python -m app.cli search-topic "retrieval augmented generation for science"
-python -m app.cli analyze-pdf ../tests/papers/drq_v2/2107.09645v1.pdf
+```text
+python rpa.py run --corpus-limit 200
+python rpa.py search-topic "retrieval augmented generation for science"
+python rpa.py analyze-pdf tests/papers/drq_v2/2107.09645v1.pdf
 ```
 Show `outputs/demo_report.md` and one evaluation table/chart.
 
@@ -63,7 +63,7 @@ Upload as ONE zip to iLearn.
 
 ## Checklist
 - [ ] All five notebooks run top-to-bottom without errors
-- [ ] README explains setup + how to run `tests/run_system_tests.sh`
+- [ ] README explains setup + how to run `python tests/run_system_tests.py`
 - [ ] Root `requirements.txt` included
 - [ ] Small reproducible sample data (<5MB) included
 - [ ] Cached demo outputs present (`outputs/analysis_result.json`, `demo_report.md`)

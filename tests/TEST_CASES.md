@@ -1,6 +1,6 @@
 # System Test Catalogue
 
-Last updated: 2026-06-14
+Last updated: 2026-06-19
 
 This is the acceptance checklist for the COMP8420 Research Paper Assistant. It
 combines the assignment rubric, integration contract, automated tests, real-PDF
@@ -29,7 +29,7 @@ fixtures, and production session evidence.
 | RET-02 | Hybrid RRF | Synthetic lexical/dense rankings | Papers strong in both rankings receive the best fused rank | `modules/retrieval/tests/test_hybrid_rrf.py` |
 | RET-03 | Embedding choice | Explicit model name | Requested model is used or fails clearly; no silent substitution | `modules/retrieval/tests/test_embedding_selection.py` |
 | RET-04 | Recommendation output | Topic query over canonical corpus | Ranked papers include score, APA citation, reason, and evidence IDs | `tests/e2e/test_retrieval.py` |
-| LLM-01 | Direct chat | Greeting, Ollama | Short answer; route is `direct_llm_chat`; retrieval is not executed | `scripts/rpa chat "hi"` and session JSONL |
+| LLM-01 | Direct chat | Greeting, Ollama | Short answer; route is `direct_llm_chat`; retrieval is not executed | `python rpa.py chat "hi"` and session JSONL |
 | LLM-02 | Topic synthesis | Research question, Ollama | RAG answer is grounded in supplied evidence and records source IDs | `tests/e2e/test_llm.py` plus live session |
 | LLM-03 | Paper summary | Parsed DrQ-v2, Ollama | Paper-only summary uses supplied sections and no retrieval replacement | `tests/e2e/test_llm.py` |
 | LLM-04 | Peer review | Parsed SIGA or DrQ-v2, Ollama | Structured strengths, weaknesses, missing evidence, and improvements | `tests/e2e/test_llm.py` |
@@ -59,17 +59,15 @@ fixtures, and production session evidence.
 
 ## Required Commands
 
-```bash
-# Complete deterministic/module regression
-python -m unittest discover -s modules/dataset/tests -p 'test_*.py' -v
-(cd modules/pdf_nlp && python -m unittest discover -s tests -p 'test_*.py' -v)
-(cd modules/retrieval && python -m unittest discover -s tests -p 'test_*.py' -v)
-(cd modules/llm && python -m unittest discover -s tests -p 'test_*.py' -v)
-(cd integration && PYTHONPATH="..:." python -m unittest discover -s tests -p 'test_*.py' -v)
-(cd integration/frontend && npm run build)
+```text
+# Complete deterministic/module regression and non-Ollama E2E tests
+python tests/run_system_tests.py --skip-ollama
 
-# Real-paper system suite
-REQUIRE_OLLAMA=1 ./tests/run_system_tests.sh
+# Complete live-model E2E suite
+python tests/run_system_tests.py --require-ollama
+
+# Cross-platform smoke checks
+python scripts/smoke_test_all.py --skip-ollama
 ```
 
 ## Balanced Live Acceptance Run
@@ -203,7 +201,7 @@ remove a test only when this section and the progress log are updated.
 Exact names remain in `modules/llm/tests/test_*.py`; the suite count is an
 acceptance assertion.
 
-### Integration (54)
+### Integration (58)
 
 - Sessions/jobs (16): schema, redaction, deletion, lifecycle, transcript,
   concurrency, failure logging, direct chat, and PDF chat.
@@ -213,7 +211,8 @@ acceptance assertion.
 - Production providers (17): corpus limits, source metadata, live CLI calls,
   missing inputs, parse-first behavior, no mocks, and API orchestration.
 - Query routing (4): PDF chat, capability greeting, no-retrieval chat, reuse.
-- Root wrapper (2): caller-relative PDF and parsed-paper JSON paths.
+- Root wrapper (6): caller-relative input/output paths, spaces, option forms,
+  Windows absolute paths, and interpreter/working-directory forwarding.
 - Web launcher (5): build freshness, missing tooling, failures, install/build,
   and uvicorn options.
 

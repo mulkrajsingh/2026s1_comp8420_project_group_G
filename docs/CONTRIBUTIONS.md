@@ -13,16 +13,16 @@ group submission. Module folders are named by **capability**, not by contributor
 
 ## Running the full application
 
-```bash
+```text
 pip install -r requirements.txt
 python setup_assets.py
 ollama pull qwen3:8b
-scripts/rpa run --query "your topic"
-scripts/rpa analyze-pdf tests/papers/drq_v2/2107.09645v1.pdf
-scripts/rpa web
+python rpa.py run --query "your topic"
+python rpa.py analyze-pdf tests/papers/drq_v2/2107.09645v1.pdf
+python rpa.py web
 ```
 
-Download test PDFs first — see [`tests/README.md`](../tests/README.md).
+The five test PDFs are committed under `tests/papers/`.
 
 ## Module-only development
 

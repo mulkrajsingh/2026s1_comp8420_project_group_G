@@ -2,8 +2,8 @@
 
 `runtime/` is local and ignored. Install a user-supplied team archive with:
 
-```bash
-python -m app.cli model-assets --archive /absolute/path/to/archive.zip
+```text
+python -m modules.pdf_nlp.app.cli model-assets --archive <path-to-archive.zip>
 ```
 
 Run the command without `--archive` to validate the current installation.

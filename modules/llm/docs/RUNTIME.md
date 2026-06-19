@@ -19,14 +19,12 @@ The project uses a single model family. Optional evaluation can compare
 
 ## Commands
 
-```bash
+```text
 ollama pull qwen3:8b
 
-python -m app.cli analyze-query --query "Summarise BM25 briefly"
-python -m app.cli summarize --model qwen3:8b --paper <parsed-paper.json> --out outputs/paper_summary.md
-python -m app.cli synthesize --evidence <rag_evidence_pack.json> --out outputs/llm_analysis.md
-python -m app.cli compare-models --models base=qwen3:8b,lora=qwen3-research-lora:latest \
-  --test-set data/eval/fixed_prompts.jsonl --out results/model_comparison/
+python -m modules.llm.app.cli analyze-query --query "Summarise BM25 briefly"
+python -m modules.llm.app.cli summarize --model qwen3:8b --paper <parsed-paper.json> --out modules/llm/outputs/paper_summary.md
+python -m modules.llm.app.cli synthesize --evidence <rag_evidence_pack.json> --out modules/llm/outputs/llm_analysis.md
 ```
 
 `summarize` uses only the supplied `ParsedPaper`; it does not load a
@@ -55,13 +53,12 @@ Prerequisites:
 - Python packages from the repository root `requirements.txt`
 - A local llama.cpp checkout, supplied with `--llama-cpp` or `LLAMA_CPP_ROOT`
 
-From `modules/llm/`:
+From the repository root:
 
-```bash
-python scripts/build_ollama_research_lora_model.py --check-only
+```text
+python modules/llm/scripts/build_ollama_research_lora_model.py --check-only
 
-python scripts/build_ollama_research_lora_model.py \
-  --llama-cpp /path/to/llama.cpp
+python modules/llm/scripts/build_ollama_research_lora_model.py --llama-cpp <path-to-llama.cpp>
 
 ollama list
 ```
@@ -73,11 +70,11 @@ available with `--merge-mode full` for machines with sufficient RAM and disk.
 
 After the tag exists, regenerate comparison rows with:
 
-```bash
-python -m app.cli compare-models \
+```text
+python -m modules.llm.app.cli compare-models \
   --models base=qwen3:8b,lora=qwen3-research-lora:latest \
-  --test-set data/eval/fixed_prompts.jsonl \
-  --out results/model_comparison/
+  --test-set modules/llm/data/eval/fixed_prompts.jsonl \
+  --out modules/llm/results/model_comparison/
 ```
 
 ## Quantization comparison

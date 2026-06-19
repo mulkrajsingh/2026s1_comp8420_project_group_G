@@ -6,7 +6,7 @@ limitations are noted where they apply.
 
 ## Quick setup
 
-```bash
+```text
 pip install -r requirements.txt
 python setup_assets.py              # runtime models + training data (~1.4 GB)
 python setup_assets.py --optional   # + raw arXiv snapshot + E2E logs (~4.9 GB)
@@ -23,7 +23,7 @@ running. Check status with `python setup_assets.py --check`.
 | Committed | JSONL corpora, eval CSV/MD, `tests/papers/artifacts/`, `integration/results/traces/` | In repository |
 | Downloaded | PDF-NLP models, retrieval index, LoRA training data | `setup_assets.py` |
 | Generated on demand | Retrieval chart PNGs, adapter zip after training | Run scripts/notebooks |
-| Local only | Test PDFs, raw arXiv snapshot, session logs | See sections below |
+| Local only | Raw arXiv snapshot, generated test logs, runtime sessions | See sections below |
 
 ---
 
@@ -58,8 +58,8 @@ running. Check status with `python setup_assets.py --check`.
 
 ## Test PDF fixtures
 
-PDF files are **not committed** to the repository (size and licensing). Download
-them from arXiv into the paths expected by `tests/harness/paths.py`:
+The five evaluation PDFs are committed under the paths expected by
+`tests/harness/paths.py`:
 
 | Paper | Local path | Source |
 | --- | --- | --- |
@@ -70,15 +70,7 @@ them from arXiv into the paths expected by `tests/harness/paths.py`:
 | RAG | `tests/papers/rag/2005.11401v4.pdf` | https://arxiv.org/pdf/2005.11401v4 |
 
 Committed reference outputs under `tests/papers/artifacts/` allow offline
-inspection of parse, retrieval, and synthesis results without downloading PDFs.
-
-Example download (DrQ-v2):
-
-```bash
-mkdir -p tests/papers/drq_v2
-curl -L -o tests/papers/drq_v2/2107.09645v1.pdf \
-  https://arxiv.org/pdf/2107.09645v1
-```
+inspection of parse, retrieval, and synthesis results.
 
 ---
 
@@ -100,13 +92,12 @@ balanced 5k production corpus, domain classifier evaluation.
 
 **Reproduce:**
 
-```bash
+```text
 # Corpus already committed; optional full rebuild from raw snapshot:
 python setup_assets.py --optional   # downloads modules/dataset/data/raw/
 
-cd modules/dataset
-python scripts/build_balanced_corpus.py --help
-python scripts/evaluate_domain_classifier.py --help
+python modules/dataset/scripts/build_balanced_corpus.py --help
+python modules/dataset/scripts/evaluate_domain_classifier.py --help
 ```
 
 ---
@@ -126,14 +117,14 @@ keyphrases, TextRank summary, structural checks), five-paper evaluation.
 
 **Reproduce:**
 
-```bash
+```text
 python setup_assets.py   # downloads modules/pdf_nlp/models/runtime/
 
-cd modules/pdf_nlp
-python -m app.cli model-assets
-# After downloading the test PDF (see above):
-python -m app.cli analyze-paper ../../tests/papers/drq_v2/2107.09645v1.pdf
-pytest tests/
+python -m modules.pdf_nlp.app.cli model-assets
+python -m modules.pdf_nlp.app.cli analyze-paper \
+  --pdf tests/papers/drq_v2/2107.09645v1.pdf \
+  --out modules/pdf_nlp/outputs/parsed_paper.json
+python -m unittest discover -s modules/pdf_nlp/tests -p "test_*.py" -v
 ```
 
 ---
@@ -155,22 +146,20 @@ pack export, dual retrieval evaluation on 5k corpus.
 Chart PNGs under `modules/retrieval/results/retrieval/` are not committed.
 Regenerate with:
 
-```bash
-cd modules/retrieval
-python scripts/regenerate_eval_charts.py
+```text
+python modules/retrieval/scripts/regenerate_eval_charts.py
 ```
 
 **Reproduce:**
 
-```bash
+```text
 python setup_assets.py   # downloads retrieval_index/
 
-cd modules/retrieval
-python -m app.cli evaluate-retrieval \
-  --papers ../dataset/data/processed/dev_5k_balanced.jsonl \
-  --out results/retrieval/ \
+python -m modules.retrieval.app.cli evaluate-retrieval \
+  --papers modules/dataset/data/processed/dev_5k_balanced.jsonl \
+  --out modules/retrieval/results/retrieval/ \
   --query-set all
-pytest tests/
+python -m unittest discover -s modules/retrieval/tests -p "test_*.py" -v
 ```
 
 ---
@@ -198,15 +187,17 @@ end-to-end runs, not under `modules/llm/outputs/`.
 
 **Reproduce:**
 
-```bash
+```text
 python setup_assets.py   # downloads training JSONL + RAG packs
 
-cd modules/llm
-python -m lora_dataset.create_dataset --help
-python scripts/build_ollama_research_lora_model.py
-python -m app.cli compare-prompts --help
-pytest tests/
+python -m modules.llm.lora_dataset.create_dataset --help
+python modules/llm/scripts/build_ollama_research_lora_model.py --help
+python -m modules.llm.app.cli compare-prompts --help
+python -m unittest discover -s modules/llm/tests -p "test_*.py" -v
 ```
+
+QLoRA training is an optional Linux GPU or Colab workflow. It is not required
+for the cross-platform application entrypoint or deterministic checker tests.
 
 ---
 
@@ -228,12 +219,11 @@ observability, async jobs, end-to-end PDF and topic flows.
 
 **Reproduce:**
 
-```bash
-scripts/rpa web
-# After downloading the test PDF:
-scripts/rpa analyze-pdf tests/papers/drq_v2/2107.09645v1.pdf
-scripts/rpa run --query "transformer attention mechanisms"
-cd integration && python -m app.cli session-inspect
+```text
+python rpa.py web
+python rpa.py analyze-pdf tests/papers/drq_v2/2107.09645v1.pdf
+python rpa.py run --query "transformer attention mechanisms"
+python rpa.py session-inspect
 ```
 
 ---
@@ -242,17 +232,16 @@ cd integration && python -m app.cli session-inspect
 
 | Evidence | Path |
 |---|---|
-| Test PDF fixtures | Download to `tests/papers/` (see above) |
+| Test PDF fixtures | Committed under `tests/papers/` |
 | Reference artifacts | `tests/papers/artifacts/` |
 | E2E harness | `tests/harness/` |
 | E2E test suite | `tests/e2e/` |
 | Test documentation | `tests/TEST_CASES.md`, `tests/README.md` |
 | Raw E2E logs (optional) | `tests/logs/` after `setup_assets.py --optional` |
 
-```bash
-pytest modules/dataset/tests modules/pdf_nlp/tests \
-       modules/retrieval/tests modules/llm/tests \
-       integration/tests tests/
+```text
+python tests/run_system_tests.py --skip-ollama
+# Use --require-ollama for all live-model E2E cases.
 ```
 
 ---

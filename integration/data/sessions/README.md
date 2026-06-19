@@ -18,6 +18,6 @@ These session folders are committed as rubric evidence for live Ollama
 Each folder contains `session.jsonl` (redacted structured events), `manifest.json`,
 and `summary.md`. Inspect with:
 
-```bash
-scripts/rpa session-inspect 20260614-040608-044342
+```text
+python rpa.py session-inspect 20260614-040608-044342
 ```

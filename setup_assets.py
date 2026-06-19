@@ -181,8 +181,8 @@ def main() -> None:
     print("1. Install Ollama:       https://ollama.ai/download")
     print("2. Pull base model:      ollama pull qwen3:8b")
     print("3. Build LoRA model:     python modules/llm/scripts/build_ollama_research_lora_model.py")
-    print("4. Validate PDF models:  cd modules/pdf_nlp && python -m app.cli model-assets && cd ../..")
-    print("5. Run the web app:      scripts/rpa web   →   http://127.0.0.1:8000")
+    print("4. Validate PDF models:  python -m modules.pdf_nlp.app.cli model-assets")
+    print("5. Run the web app:      python rpa.py web   →   http://127.0.0.1:8000")
     print("6. Evidence map:         docs/REPRODUCIBILITY.md")
 
     required_results = [r for a, r in zip(selected, results) if not a.get("optional")]

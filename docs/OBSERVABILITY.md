@@ -58,11 +58,10 @@ omits token-level POS dumps and sentence-level extractive arrays.
 
 ## Navigation
 
-```bash
-cd integration
-python -m app.cli session-inspect
-python -m app.cli session-inspect <run-id> --component pdf_nlp
-python -m app.cli session-inspect <run-id> --status failed
+```text
+python rpa.py session-inspect
+python rpa.py session-inspect <run-id> --component pdf_nlp
+python rpa.py session-inspect <run-id> --status failed
 ```
 
 `manifest.json` gives turn/message/event counts and aggregate recorded duration.

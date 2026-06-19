@@ -9,21 +9,20 @@ Architecture: [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md)
 
 From the repository root:
 
-```bash
+```text
 pip install -r requirements.txt
 python setup_assets.py
 ollama pull qwen3:8b
 
-scripts/rpa run --query "retrieval augmented generation for scientific literature"
-scripts/rpa analyze-pdf tests/papers/drq_v2/2107.09645v1.pdf
-scripts/rpa analyze-pdf tests/papers/drq_v2/2107.09645v1.pdf --no-related-papers
-scripts/rpa search-topic "your topic keywords here"
-scripts/rpa session-inspect --component pdf_nlp
-scripts/rpa integration-status
+python rpa.py run --query "retrieval augmented generation for scientific literature"
+python rpa.py analyze-pdf tests/papers/drq_v2/2107.09645v1.pdf
+python rpa.py analyze-pdf tests/papers/drq_v2/2107.09645v1.pdf --no-related-papers
+python rpa.py search-topic "your topic keywords here"
+python rpa.py session-inspect --component pdf_nlp
+python rpa.py integration-status
 ```
 
-Download test PDFs before running `analyze-pdf` — see
-[`tests/README.md`](../tests/README.md).
+The five checker fixtures are committed under `tests/papers/`.
 
 ## CLI commands
 
@@ -33,18 +32,18 @@ Download test PDFs before running `analyze-pdf` — see
 | `analyze-pdf <path>` | Parse PDF, optional related-paper retrieval, synthesis |
 | `analyze-pdf <path> --no-related-papers` | Paper-only summary without retrieval |
 | `search-topic "..."` | Retrieval and recommendations only |
-| `run-demo` | Deterministic mock path for smoke testing |
 | `session-inspect` | Inspect structured session logs |
 | `integration-status` | Report provider wiring and module health |
 | `web` | Build frontend (if needed) and serve UI + API |
 
-All commands are also available via `scripts/rpa <command>` from the repository
-root, or `python -m app.cli <command>` from `integration/`.
+All commands are available via `python rpa.py <command>` from the repository
+root. Module developers can also run `python -m app.cli <command>` from
+`integration/`.
 
 ## Web app
 
-```bash
-scripts/rpa web
+```text
+python rpa.py web
 # open http://127.0.0.1:8000
 ```
 
@@ -57,9 +56,9 @@ the previous project model is unloaded before the new one is warmed. Override
 the startup target with `COMP8420_OLLAMA_MODEL` and `COMP8420_OLLAMA_HOST`;
 `/api/health` reports the residency state.
 
-Use `scripts/rpa web --rebuild` to force a new production build. For frontend
-development, keep the backend running with `scripts/rpa web --reload`, then run
-`pnpm dev` in `integration/frontend/`; Vite proxies `/api` requests to
+Use `python rpa.py web --rebuild` to force a new production build. For frontend
+development, keep the backend running with `python rpa.py web --reload`, then
+run `pnpm --dir integration/frontend dev`; Vite proxies `/api` requests to
 `http://127.0.0.1:8000`.
 
 ## Routing behaviour
@@ -84,7 +83,8 @@ development, keep the backend running with `scripts/rpa web --reload`, then run
 - Optional async PDF/topic jobs remain serialized through one local worker. See
   [`docs/OBSERVABILITY.md`](../docs/OBSERVABILITY.md).
 
-Full system tests: [`tests/run_system_tests.sh`](../tests/run_system_tests.sh).
+Full system tests: `python tests/run_system_tests.py --skip-ollama` from the
+repository root. Use `--require-ollama` for live-model E2E coverage.
 
 ## Local latency expectations (`qwen3:8b`)
 

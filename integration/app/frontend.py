@@ -24,13 +24,13 @@ metadata, summary (AI-disclosed), key findings, research gaps, recommended paper
 APA citations, evidence snippets, peer-review feedback.
 
 ## Run
-```bash
+```text
 # production UI and API from the repository root
-scripts/rpa web
+python rpa.py web
 
 # frontend development with Vite hot reload
-scripts/rpa web --reload
-cd integration/frontend && pnpm dev
+python rpa.py web --reload
+pnpm --dir integration/frontend dev
 ```
 If the API is not running, the page shows a clear "start the API" message rather
 than crashing.

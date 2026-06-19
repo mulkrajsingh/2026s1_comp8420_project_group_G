@@ -2,7 +2,7 @@
 
 Exposes thin endpoints that delegate to the same service functions used by the
 CLI. The app is intended for local use only (no auth, no deployment). Start it
-with ``scripts/rpa web`` and open ``http://127.0.0.1:8000``.
+with ``python rpa.py web`` and open ``http://127.0.0.1:8000``.
 
 Endpoints cover topic search, PDF analysis, recommendations, peer review, chat,
 session management, and background jobs.
@@ -601,7 +601,7 @@ def write_api_contract() -> str:
     md = [
         "# Local API contract",
         "",
-        "Run: `scripts/rpa web` then open `/docs`.",
+        "Run: `python rpa.py web` then open `/docs`.",
         "",
         "| Method | Path | Request | Response |",
         "| --- | --- | --- | --- |",

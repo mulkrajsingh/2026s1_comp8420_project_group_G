@@ -25,15 +25,15 @@ docs/                 # Project documentation
 
 From the repository root:
 
-```bash
-scripts/rpa run --query "topic text"
-scripts/rpa analyze-pdf <path-to-pdf>
-scripts/rpa web
+```text
+python rpa.py run --query "topic text"
+python rpa.py analyze-pdf <path-to-pdf>
+python rpa.py web
 ```
 
 Or from `integration/`:
 
-```bash
+```text
 python -m app.cli run --query "topic text"
 ```
 
@@ -53,8 +53,7 @@ python -m app.cli run --query "topic text"
 4. Peer-review synthesis and a single `AnalysisResult.paper_analysis`
 
 Use `--no-related-papers` for the paper-only path. Production commands reject
-executed mock providers; `run-demo` remains the deterministic mock path for
-smoke testing.
+executed mock providers.
 
 The canonical browser UI is the Vite project under `integration/frontend/`.
 Development uses its `/api` proxy; a production build is served by FastAPI from
@@ -136,10 +135,11 @@ with the abstract as fallback.
 
 Each module has its own `app/` package and can be tested independently:
 
-```bash
-cd modules/retrieval
-python -m app.cli recommend-topic \
-  --papers ../dataset/data/processed/dev_5k_balanced.jsonl ...
+```text
+python -m modules.retrieval.app.cli recommend-topic \
+  --papers modules/dataset/data/processed/dev_5k_balanced.jsonl \
+  --out modules/retrieval/outputs/recommendations.json \
+  --query "topic text"
 ```
 
 Integration does not duplicate module implementations. Runtime outputs, session

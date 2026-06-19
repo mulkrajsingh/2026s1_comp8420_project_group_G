@@ -187,7 +187,7 @@ class ProductionProviderTests(unittest.TestCase):
             corpus.write_text("{}\n", encoding="utf-8")
             outputs = root / "outputs"
 
-            def fake_run(command, cwd, capture_output, text):
+            def fake_run(command, cwd, label, required_outputs, session=None):
                 rec_out = Path(command[command.index("--out") + 1])
                 rec_out.parent.mkdir(parents=True, exist_ok=True)
                 rec_out.write_text(
@@ -219,7 +219,7 @@ class ProductionProviderTests(unittest.TestCase):
                 top_k=7,
                 integration_outputs=outputs,
             )
-            with patch("app.providers.live_providers.subprocess.run", side_effect=fake_run) as run:
+            with patch("app.providers.live_providers._run_cli", side_effect=fake_run) as run:
                 recommendation = provider.recommend("topic", [])
 
             command = run.call_args.args[0]
@@ -243,7 +243,7 @@ class ProductionProviderTests(unittest.TestCase):
             corpus.write_text("{}\n", encoding="utf-8")
             outputs = root / "outputs"
 
-            def fake_run(command, cwd, capture_output, text):
+            def fake_run(command, cwd, label, required_outputs, session=None):
                 rec_out = Path(command[command.index("--out") + 1])
                 rec_out.parent.mkdir(parents=True, exist_ok=True)
                 rec_out.write_text("[]", encoding="utf-8")
@@ -260,7 +260,7 @@ class ProductionProviderTests(unittest.TestCase):
                 top_k=5,
                 integration_outputs=outputs,
             )
-            with patch("app.providers.live_providers.subprocess.run", side_effect=fake_run) as run:
+            with patch("app.providers.live_providers._run_cli", side_effect=fake_run) as run:
                 provider.recommend("topic", [])
 
             command = run.call_args.args[0]
@@ -276,7 +276,7 @@ class ProductionProviderTests(unittest.TestCase):
             evidence = outputs / "rag_evidence_pack.json"
             evidence.write_text("{}", encoding="utf-8")
 
-            def fake_run(command, cwd, capture_output, text):
+            def fake_run(command, cwd, label, required_outputs, session=None):
                 if "chat" in command:
                     Path(command[command.index("--out") + 1]).write_text(
                         "generated direct answer", encoding="utf-8"
@@ -315,7 +315,7 @@ class ProductionProviderTests(unittest.TestCase):
                 integration_outputs=outputs,
                 query_analysis=query_analysis,
             )
-            with patch("app.providers.live_providers.subprocess.run", side_effect=fake_run) as run:
+            with patch("app.providers.live_providers._run_cli", side_effect=fake_run) as run:
                 synthesized = provider.synthesize(None, "topic", Mock(), Mock())
                 answer = provider.answer(None, "topic", Mock())
                 direct_answer = provider.answer_direct("hi")
@@ -343,7 +343,7 @@ class ProductionProviderTests(unittest.TestCase):
             outputs = Path(temp_dir)
             parsed = _parsed_paper("p1", "Paper title", "Paper abstract")
 
-            def fake_run(command, cwd, capture_output, text):
+            def fake_run(command, cwd, label, required_outputs, session=None):
                 md_out = Path(command[command.index("--out") + 1])
                 json_out = Path(command[command.index("--json-out") + 1])
                 metadata_out = Path(command[command.index("--metadata-out") + 1])
@@ -372,7 +372,7 @@ class ProductionProviderTests(unittest.TestCase):
 
             provider = SubprocessSynthesizer(integration_outputs=outputs)
             with patch(
-                "app.providers.live_providers.subprocess.run",
+                "app.providers.live_providers._run_cli",
                 side_effect=fake_run,
             ) as run:
                 summary = provider.synthesize(parsed, "query", Mock(), Mock())
@@ -400,7 +400,7 @@ class ProductionProviderTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            def fake_run(command, cwd, capture_output, text):
+            def fake_run(command, cwd, label, required_outputs, session=None):
                 Path(command[command.index("--out") + 1]).write_text(
                     "# analysis", encoding="utf-8"
                 )
@@ -422,7 +422,7 @@ class ProductionProviderTests(unittest.TestCase):
                 prompt_strategy="few_shot",
             )
             with patch(
-                "app.providers.live_providers.subprocess.run",
+                "app.providers.live_providers._run_cli",
                 side_effect=fake_run,
             ) as run:
                 provider.synthesize(None, "topic", Mock(), Mock())
@@ -482,7 +482,7 @@ class ProductionProviderTests(unittest.TestCase):
                 },
             }
 
-            def fake_run(command, cwd, capture_output, text):
+            def fake_run(command, cwd, label, required_outputs, session=None):
                 out = Path(command[command.index("--out") + 1])
                 debug = Path(command[command.index("--debug-out") + 1])
                 analysis = Path(command[command.index("--analysis-out") + 1])
@@ -495,7 +495,7 @@ class ProductionProviderTests(unittest.TestCase):
                 return subprocess.CompletedProcess(command, 0, "", "")
 
             provider = SubprocessPdfParser(integration_outputs=outputs)
-            with patch("app.providers.live_providers.subprocess.run", side_effect=fake_run) as run:
+            with patch("app.providers.live_providers._run_cli", side_effect=fake_run) as run:
                 parsed = provider.parse(str(pdf))
 
             command = run.call_args.args[0]

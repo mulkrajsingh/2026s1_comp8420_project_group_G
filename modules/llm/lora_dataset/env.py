@@ -67,10 +67,9 @@ def require_kaggle_credentials() -> None:
     print(
         "ERROR: Kaggle API credentials not configured.\n\n"
         "1. Create a token at https://www.kaggle.com/settings (API → Generate New Token)\n"
-        "2. Copy .env.example to .env at the repo root:\n"
-        "     cp .env.example .env\n"
+        "2. Create .env at the repository root using .env.example as the template.\n"
         "3. Add: KAGGLE_API_TOKEN=<your token>\n"
-        "4. Re-run: python -m lora_dataset.create_dataset\n",
+        "4. Re-run: python -m modules.llm.lora_dataset.create_dataset\n",
         file=sys.stderr,
     )
     sys.exit(1)

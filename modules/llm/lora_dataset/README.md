@@ -4,9 +4,9 @@ Single entry point for the research LoRA collection: open academic datasets + Re
 
 ## Prerequisites
 
-From `modules/llm/`:
+From the repository root:
 
-```bash
+```text
 pip install kaggle datasets huggingface_hub
 ```
 
@@ -26,15 +26,8 @@ There is **no** synthetic corpus fallback. If credentials are missing when a dow
 
 ## One command
 
-```bash
-cd modules/llm
-python -m lora_dataset.create_dataset
-```
-
-Or:
-
-```bash
-bash scripts/create_dataset.sh
+```text
+python -m modules.llm.lora_dataset.create_dataset
 ```
 
 ### Flags
@@ -50,8 +43,8 @@ bash scripts/create_dataset.sh
 
 Example (corpus + RAG + merge only):
 
-```bash
-python -m lora_dataset.create_dataset --skip-download --skip-hybrid
+```text
+python -m modules.llm.lora_dataset.create_dataset --skip-download --skip-hybrid
 ```
 
 ## Pipeline steps
@@ -75,12 +68,8 @@ python -m lora_dataset.create_dataset --skip-download --skip-hybrid
 
 ## Verification
 
-```bash
-python -c "
-from pathlib import Path
-p = Path('data/processed/final_dataset/research_lora_train.jsonl')
-print('rows', sum(1 for _ in p.open()))
-"
+```text
+python -c "from pathlib import Path; p=Path('modules/llm/data/processed/final_dataset/research_lora_train.jsonl'); print('rows', sum(1 for _ in p.open()))"
 ```
 
 Expected total: **16998** rows (13992 hybrid + 3000 project_arxiv_rag + 6 seeds). The merge step (step 5) writes a `research_lora_train_manifest.md` next to the JSONL with per-source counts; committed per-source manifests are under `data/processed/*_manifest.md`. Upload `final_dataset/research_lora_train.zip` to Colab via Google Drive.
@@ -108,3 +97,6 @@ Train after build:
 
 - Colab or local GPU: `notebooks/train_lora_adapter.ipynb`
 
+QLoRA training is optional and targets Colab or a Linux CUDA environment. The
+dataset builder itself is cross-platform and is not needed for checker-facing
+runtime or deterministic tests.

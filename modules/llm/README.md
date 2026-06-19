@@ -31,7 +31,7 @@ Further documentation:
 
 All generation commands require a running Ollama daemon and a pulled model tag.
 
-```bash
+```text
 ollama pull qwen3:8b
 python -m app.cli summarize --paper <parsed-paper.json> --out outputs/paper_summary.md
 python -m app.cli synthesize --evidence <rag_evidence_pack.json> --out outputs/llm_analysis.md
@@ -45,7 +45,7 @@ During end-to-end runs, outputs are written to `integration/outputs/`.
 embeds the message with pinned `sentence-transformers/all-MiniLM-L6-v2`, then
 reranks low-confidence fields with `cross-encoder/stsb-TinyBERT-L4`.
 
-```bash
+```text
 python -m app.cli analyze-query --query "I'm confused, but show the mathematics"
 ```
 
@@ -81,7 +81,7 @@ building the Ollama tag.
 
 ## Tests
 
-```bash
+```text
 python -m unittest discover -s tests -p 'test_*.py' -v
 ```
 

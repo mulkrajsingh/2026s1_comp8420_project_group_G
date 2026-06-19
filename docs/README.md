@@ -17,11 +17,11 @@ Ollama model.
 Operational instructions (CLI, API, web UI) are in
 [`integration/README.md`](../integration/README.md). From the repository root:
 
-```bash
+```text
 pip install -r requirements.txt
 python setup_assets.py
 ollama pull qwen3:8b
-scripts/rpa web
+python rpa.py web
 ```
 
 ## Module documentation

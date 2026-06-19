@@ -1,0 +1,32 @@
+name: Portability
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  entrypoints:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Compile Python entrypoints
+        run: python -m compileall -q rpa.py scripts tests integration modules
+
+      - name: Test launcher and portability rules
+        run: python -m unittest integration.tests.test_root_wrapper tests.test_portability -v
+
+      - name: Validate smoke runner commands
+        run: python scripts/smoke_test_all.py --skip-ollama --dry-run
+
+      - name: Validate system runner commands
+        run: python tests/run_system_tests.py --skip-ollama --dry-run

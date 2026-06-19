@@ -16,7 +16,7 @@ optional raw arXiv snapshot requires additional space.
 
 Install dependencies:
 
-```bash
+```text
 pip install -r requirements.txt
 ```
 
@@ -24,69 +24,68 @@ Download runtime assets from Google Drive. Fill in the file IDs at the top of
 `setup_assets.py` before the first run. About 1.4 GB is required for the core
 bundles.
 
-```bash
+```text
 python setup_assets.py
 python setup_assets.py --check
 ```
 
 Optional bundles include the raw arXiv snapshot and end-to-end test logs:
 
-```bash
+```text
 python setup_assets.py --optional
 ```
 
 Pull the base language model once (about 5 GB):
 
-```bash
+```text
 ollama pull qwen3:8b
 ```
 
 The fine-tuned LoRA adapter can be built from training data delivered by
 `setup_assets.py`:
 
-```bash
+```text
 python modules/llm/scripts/build_ollama_research_lora_model.py
 ```
 
 Check that PDF-NLP models are present:
 
-```bash
-cd modules/pdf_nlp && python -m app.cli model-assets && cd ../..
+```text
+python -m modules.pdf_nlp.app.cli model-assets
 ```
 
 Install Node.js and pnpm before building the web UI. Vite 5 needs Node 18 or
 newer:
 
-```bash
+```text
 corepack enable
 corepack prepare pnpm@latest --activate
-cd integration/frontend
-pnpm install && pnpm run build
+pnpm --dir integration/frontend install
+pnpm --dir integration/frontend run build
 ```
 
 Start the web app from the repository root and open http://127.0.0.1:8000 when
 the server is ready. The launcher builds the frontend automatically when
 `dist/` is missing or stale.
 
-```bash
-scripts/rpa web
+```text
+python rpa.py web
 ```
 
-CLI examples use the same entry point. Download test PDFs first (see
-[`tests/README.md`](tests/README.md)) or use any local research PDF:
+CLI examples use the same entry point. The five test PDFs are committed under
+`tests/papers/`, or you can supply any local research PDF:
 
-```bash
-scripts/rpa analyze-pdf tests/papers/drq_v2/2107.09645v1.pdf
-scripts/rpa run --query "transformer attention mechanisms"
-scripts/rpa search-topic "retrieval augmented generation"
+```text
+python rpa.py analyze-pdf tests/papers/drq_v2/2107.09645v1.pdf
+python rpa.py run --query "transformer attention mechanisms"
+python rpa.py search-topic "retrieval augmented generation"
 ```
 
 Run the test suite from the repository root:
 
-```bash
-pytest modules/dataset/tests modules/pdf_nlp/tests \
-       modules/retrieval/tests modules/llm/tests \
-       integration/tests tests/
+```text
+python tests/run_system_tests.py --skip-ollama
+# Use --require-ollama for the complete live-model E2E suite.
 ```
 
 The balanced corpus used for production retrieval is
@@ -102,6 +101,9 @@ Google Drive bundles include `pdf_nlp_models.zip` (~1.2 GB, required),
 (~4.9 GB, optional), and `e2e_test_logs.zip` (~29 MB, optional). Evaluation
 tables, notebooks, and small fixtures are committed. Large runtime models and
 training inputs are downloaded via `setup_assets.py`.
+
+LoRA/QLoRA training is an optional Linux GPU or Colab workflow and is not
+required to run the checker-facing CLI, web application, or deterministic tests.
 
 Web routing, session logging, and API details are in
 [`integration/README.md`](integration/README.md). System layout is in

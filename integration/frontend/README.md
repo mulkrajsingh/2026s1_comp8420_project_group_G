@@ -8,8 +8,8 @@ FastAPI backend.
 
 From the repository root:
 
-```bash
-scripts/rpa web
+```text
+python rpa.py web
 ```
 
 This installs frontend dependencies when needed, builds stale or missing assets,
@@ -18,12 +18,12 @@ and serves the UI and API at http://127.0.0.1:8000.
 ## Run (development)
 
 1. Start the backend from the repository root:
-   ```bash
-   scripts/rpa web --reload
+   ```text
+   python rpa.py web --reload
    ```
-2. In `integration/frontend/`:
-   ```bash
-   pnpm dev
+2. Start Vite from the repository root:
+   ```text
+   pnpm --dir integration/frontend dev
    ```
 3. Open http://localhost:5173
 
@@ -31,8 +31,8 @@ The dev server proxies `/api/*` to `http://127.0.0.1:8000`, so no CORS setup is 
 
 ## Build for submission
 
-```bash
-scripts/rpa web --rebuild
+```text
+python rpa.py web --rebuild
 ```
 
 ## What it does
@@ -73,7 +73,7 @@ endpoints remain available for compatibility and observability tooling.
 ## If pnpm pauses on install
 
 pnpm may say `Ignored build scripts: esbuild`. Run this once and select esbuild:
-```bash
+```text
 pnpm approve-builds
 ```
 (It's also pre-approved in `pnpm-workspace.yaml`, so on most setups `pnpm dev` just works.)
